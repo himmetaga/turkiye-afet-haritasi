@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "start": "vite --host",
+    "build": "node scripts/fetch-civic-data.mjs && tsc && vite build",
     "preview": "vite preview",
     "fetch:data": "node scripts/fetch-civic-data.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "maplibre-gl": "^5.1.0",
