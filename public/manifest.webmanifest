@@ -1,7 +1,7 @@
 {
-  "name": "Türkiye 3D Afet ve Toplanma Atlası",
-  "short_name": "Afet Atlası",
-  "description": "3B Harita, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası",
+  "name": "afet.live — Türkiye 3D Afet ve Deprem Atlası",
+  "short_name": "afet.live",
+  "description": "3B Harita, Deprem Erken Uyarı, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#090a0f",

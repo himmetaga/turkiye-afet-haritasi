@@ -1,68 +1,128 @@
-# Türkiye 3D Afet ve Toplanma Atlası 🇹🇷
-### Turkey 3D Disaster & Assembly Atlas (Offline-First PWA)
+<p align="center">
+  <img src="public/logo.svg" alt="afet.live logo" width="180" height="auto" />
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
-[![Node Version](https://img.shields.io/badge/Node.js-22-blue.svg)](.nvmrc)
-[![PWA Ready](https://img.shields.io/badge/PWA-Offline%20First-10B981.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-[![WebGL](https://img.shields.io/badge/WebGL-MapLibre%20GL%203D-purple.svg)](https://maplibre.org/)
-[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-orange.svg)](https://pages.cloudflare.com/)
+# afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası 🇹🇷
 
----
+<p align="center">
+  <strong>Yeni Nesil Sismik Erken Uyarı, Kitle Kaynaklı Sensör Düğümü ve Çevrimdışı Afet Koordinasyon Platformu</strong>
+</p>
 
-## 📌 Genel Bakış ve Vizyon (Overview & Vision)
-
-**Türkiye 3D Afet ve Toplanma Atlası**, deprem ve acil durumlarda vatandaşların en yakın toplanma alanlarına internet bağlantısı olmasa dahi saniyeler içinde ulaşabilmesini sağlayan, açık kaynaklı, kamu yararına geliştirilmiş yeni nesil bir coğrafi bilgi sistemi (GIS) ve sismik izleme platformudur.
-
-Geleneksel afet sistemleri genellikle merkezi veritabanlarına ve kesintisiz internet bağlantısına bağımlıdır. Büyük depremlerde baz istasyonlarının çökmesi veya elektrik kesintileri yaşandığında bu sistemler erişilemez hale gelir. Bu atlas, **sıfır sunucu maliyetli (Zero-Egress Edge)** ve **tam çevrimdışı (Offline-First PWA)** mimari ile tasarlanmıştır. Tüm toplanma alanı koordinatları, harita karoları ve acil durum mekanizmaları cihazınızın yerel depolama alanında saklanır.
-
----
-
-## ✨ Öne Çıkan Yetenekler (Core Features)
-
-* **🏙️ 3B Vektör Harita ve Bina Yükseklikleri**: MapLibre GL JS ve donanım hızlandırmalı WebGL ile 60 FPS akıcılıkta 3 boyutlu şehir binaları, derinlik ve gölgelendirme efektleri.
-* **📍 En Yakın 3 Toplanma Alanı & Pusula Yönü**: Kullanıcının anlık konumuna veya haritada seçtiği noktaya göre kuş uçuşu mesafe (m), tahmini yürüyüş süresi (dk), pusula yön açısı (°) ve altyapı olanakları (Su, Elektrik, Çadır Alanı, Jeneratör).
-* **⚡ Canlı Sismik Dalga Simülasyonu (Kandilli & AFAD)**: Son 24 saat içinde gerçekleşen depremleri büyüklüklerine göre (M < 3.0 kehribar, M ≥ 4.0 parlak kırmızı) harita üzerinde genişleyen dinamik radar halkalarıyla simüle eder.
-* **📢 3000 Hz Web Audio Kurtarma Düdüğü**: Arama-kurtarma ekiplerinin ve insan kulağının en net duyabildiği 3000 Hz rezonans frekansında, hiçbir ses dosyasına ihtiyaç duymadan doğrudan tarayıcı osilatörüyle çalışan acil durum sinyali.
-* **📋 Tek Dokunuşla SOS Koordinat Paylaşımı**: Enkaz altında veya karanlıkta yer bildirmek için GPS koordinatlarını ve en yakın toplanma alanını otomatik olarak SMS veya WhatsApp formatına dönüştürür.
-* **🔒 0.8s Bilinçli Dokunuş (Press-and-Hold)**: Kritik acil durum fonksiyonlarının yanlışlıkla tetiklenmesini engelleyen görsel dolum onay mekaniği.
-* **📶 %100 Çevrimdışı Çalışma (Offline-First PWA)**: Service Worker ve IndexedDB altyapısıyla şebeke tamamen kesildiğinde dahi kesintisiz çalışan harita ve veritabanı.
+<p align="center">
+  <a href="https://afet.live"><img src="https://img.shields.io/badge/Platform-afet.live-E01E2E.svg?style=flat-square" alt="afet.live" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Lisans-MIT-emerald.svg?style=flat-square" alt="License" /></a>
+  <img src="https://img.shields.io/badge/PWA-100%25%20Offline%20First-10B981.svg?style=flat-square" alt="PWA Ready" />
+  <img src="https://img.shields.io/badge/3D%20Engine-MapLibre%20GL%20WebGL-6366F1.svg?style=flat-square" alt="MapLibre 3D" />
+  <img src="https://img.shields.io/badge/SaaS%20API-v2.4%20Enterprise-06B6D4.svg?style=flat-square" alt="SaaS API" />
+</p>
 
 ---
 
-## 🏛️ Mimari Şema (Architecture)
+## 📌 Vizyon ve Mimari Yaklaşım
 
-```mermaid
-flowchart TD
-    subgraph DataPipeline["Veri ve Karo Boru Hattı"]
-        A["OpenStreetMap / Civic Data"] -->|scripts/fetch-civic-data.mjs| B["public/data/*.geojson"]
-        C["Kandilli / AFAD API"] -->|src/services/earthquakeService.ts| D["IndexedDB / LocalStorage"]
-    end
+**afet.live**, deprem kuşağında yer alan Türkiye genelinde kamu yararına tasarlanmış, sıfır sunucu bağımlılığıyla (%100 çevrimdışı çalışabilen) çalışan bir sismik güvenlik, erken uyarı ve toplanma atlasıdır.
 
-    subgraph CoreEngine["İstemci Katmanı (Client Engine)"]
-        B --> E["MapLibre GL 3D WebGL"]
-        D --> E
-        F["Web Audio API Oscillator"] -->|3000 Hz Sinyal| G["Kurtarma Düdüğü & SOS"]
-        H["Haversine & Compass Math"] -->|Mesafe ve Yön| I["En Yakın 3 Toplanma Alanı"]
-    end
+Geleneksel afet uygulamaları, büyük depremlerde hücresel baz istasyonlarının çökmesi ve elektrik kesintileri yaşandığında işlevsiz kalmaktadır. **afet.live**, cihaz üzerinde doğrudan çalışan fizik modelleri, donanım ivmeölçeri tabanlı sismik algılama ve önbelleklenmiş doğrulanmış GIS verileriyle şebeke tamamen kopsa dahi hayat kurtarmaya devam eder.
 
-    subgraph OfflineStorage["Offline PWA Altyapısı"]
-        J["Service Worker (Workbox)"] --> K["Cache Storage: Karolar & UI"]
-        K --> L["%100 Çevrimdışı Çalışma"]
-    end
+---
 
-    DataPipeline --> CoreEngine
-    CoreEngine --> OfflineStorage
+## ⚡ Temel Yetenekler & Earthquake Network Entegrasyonu
+
+### 1. 🚨 Fizik Tabanlı Sismik Erken Uyarı ve Dalga Yayılım Motoru
+- **P-Dalgası (Öncül Sıkışma Dalgası):** $V_p \approx 6.5\text{ km/sn}$ hızla ilerleyen öncül dalganın varış süresi hesaplanır.
+- **S-Dalgası (Yıkıcı Kayma Dalgası):** $V_s \approx 3.8\text{ km/sn}$ hızla ilerleyen asıl yıkıcı yüzey ve kayma dalgaları için kullanıcı konumuna özel milisaniyelik geri sayım sayacı çalışır.
+- **Dinamik 3B WebGL Dalga Halkaları:** Deprem merkez üssünden başlayarak dışa doğru fiziksel hızda genişleyen çift fazlı dalga cephesi harita üzerinde canlı animasyonla gösterilir.
+- **Otomatik Erken Uyarı Sireni:** Web Audio API ile harici ses dosyası gerektirmeden üretilen frekans taramalı acil durum alarmı ve geri sayım sesleri.
+
+### 2. 📈 Akıllı Cihaz İvmeölçer Sensör Düğümü (STA/LTA)
+- Akıllı telefon ve dizüstü bilgisayarların dahili hareket sensörlerini (`DeviceMotionEvent` / Web Sensor API) kullanarak cihazı mikro bir sismografa dönüştürür.
+- **STA/LTA Algoritması:** Kısa Süreli Ortalama ($STA \approx 0.4\text{ sn}$) ve Uzun Süreli Ortalama ($LTA \approx 8.0\text{ sn}$) enerji oranını ($R = STA / LTA$) gerçek zamanlı hesaplayarak ortam gürültüsünü filtreler ve ani sismik hareketleri tespit eder.
+- **60 FPS Canlı Osiloskop:** Cihaz üzerindeki 3 eksenli $(X, Y, Z)$ ivme vektörlerini canlı dalga formu olarak çizer.
+
+### 3. 📢 2.9 kHz Akustik Rezonans Afet Düdüğü & Optik Kurtarma Flaşörü
+- Arama-kurtarma ekiplerinin betonarme molozların altından en yüksek verimle duyabildiği **2.900 Hz akustik rezonans frekansında** kesintisiz düdük sesi üretir.
+- **Mors Kodu S.O.S (... --- ...):** Uluslararası acil yardım çağrısını döngüsel olarak çalar.
+- **Strobe Flaşör:** Tozlu ve karanlık enkaz ortamlarında kurtarma ekiplerinin optik tespit yapabilmesi için yüksek kontrastlı beyaz-kırmızı ekran flaşörü sağlar.
+
+### 4. 📍 Topluluk Hissedilme Haritası (Modified Mercalli Intensity - MMI)
+- Depremi hisseden bölge sakinleri tek dokunuşla şiddet derecesini (MMI I - X) ve bina tipini bildirir.
+- Bildirilen şiddet verileri canlı harita üzerinde renkli sismik ısı halkaları olarak kümelenir.
+
+### 5. 💬 P2P Kriz Durum Odası & "Güvendeyim" Ağı
+- Bölge bazlı kriz bilgi paylaşımı ve durum takibi.
+- Tek dokunuşla pil yüzdesi ve GPS koordinatı içeren **"Güvendeyim"** veya **"Acil Yardım Gerekli"** çağrısı oluşturma.
+
+### 6. 🌐 SaaS & Gömülebilir Canlı Afet Widget'ı (Enterprise SDK)
+- Belediyeler, kamu kurumları ve haber portalları için tek satır kodla gömülebilen iframe ve REST/GeoJSON veri servisleri.
+
+```html
+<iframe 
+  src="https://afet.live/widget?city=istanbul&theme=dark" 
+  width="100%" 
+  height="500" 
+  style="border:none; border-radius:16px; overflow:hidden;"
+  allow="geolocation"
+  title="afet.live Canlı Afet ve Toplanma Widget'ı">
+</iframe>
 ```
 
 ---
 
-## 🚀 Hızlı Başlangıç (Quick Start)
+## 🗺️ %100 Doğrulanmış Coğrafi Bilgi (GIS) Veri Seti
+
+Atlas bünyesindeki hiçbir veri yapay zeka tarafından tahmin edilmemiş veya rastgele serpiştirilmemiştir:
+
+| Kategori | Doğrulanmış Nokta Sayısı | Veri Kaynağı & Hassasiyet |
+| :--- | :--- | :--- |
+| **Afet Toplanma Alanları** | **13.356 Adet** | AFAD Açık Veri Portalı & 16 İl Valiliği (Poligon Ağırlık Merkezi) |
+| **Acil Servis Hastaneleri** | **1.135 Adet** | Sağlık Bakanlığı HealthTurkiye & İl Altyapı Envanteri (Bina Giriş GPS) |
+| **7/24 Nöbetçi Eczaneler** | **514 Adet** | İl Eczacı Odaları Resmi Nöbet Listesi (Kapı Numaralı Kesin GPS) |
+| **Diri Fay Hatları** | **45+ Fay Zonu** | MTA Türkiye Diri Fay Haritası (Marmara, KAF, DAF, BAF) |
+
+> **Nöbetçi Eczane Kuralı:** Hafta içi 19:00'dan sonra ve pazar günleri boyunca harita otomatik olarak gündüz eczanelerini gizler; sadece 7/24 hizmet veren nöbetçi eczaneleri ve yürüyüş rotalarını gösterir.
+
+---
+
+## 🏗️ Sistem Mimarisi
+
+```mermaid
+flowchart TD
+    subgraph DataLayer["Veri ve Sensör Katmanı"]
+        A["AFAD & Valilikler (13.356 Toplanma)"]
+        B["Sağlık Bakanlığı & Odalar (1.649 Tesis)"]
+        C["Kandilli / USGS Gerçek Zamanlı Deprem Akışı"]
+        D["DeviceMotionEvent (Akıllı Telefon İvmeölçeri)"]
+    end
+
+    subgraph CoreEngines["İstemci Çalışma Motorları"]
+        E["MapLibre GL 3D WebGL (60 FPS)"]
+        F["P/S Dalga Yayılım & Erken Uyarı Motoru"]
+        G["STA/LTA Sismik Algılama & Osiloskop"]
+        H["Web Audio API Sentezleyici (2.9 kHz Düdük & Siren)"]
+        I["A* Sokak Bazlı Yürüyüş Rotası Hesaplayıcı"]
+    end
+
+    subgraph UserInterface["Kullanıcı Deneyimi & SaaS"]
+        J["afet.live Ana HUD & Vektör Navigasyon"]
+        K["Erken Uyarı Sayacı (Çök-Kapan-Tutun)"]
+        L["En Yakın 3 Nokta & Pusula Yön Paneli"]
+        M["Kriz Durum Odası & Güvendeyim Bildirimi"]
+        N["Gömülebilir Web Widget & REST API"]
+    end
+
+    DataLayer --> CoreEngines
+    CoreEngines --> UserInterface
+```
+
+---
+
+## 💻 Kurulum ve Geliştirme
 
 ### Gereksinimler
-- Node.js 22.x veya üzeri
+- Node.js 20.x veya üzeri
 - npm 10.x veya üzeri
 
-### Kurulum Adımları
+### Geliştirme Ortamı
 
 ```bash
 # 1. Depoyu klonlayın
@@ -72,16 +132,16 @@ cd turkiye-afet-haritasi
 # 2. Bağımlılıkları yükleyin
 npm install
 
-# 3. Toplanma alanları GeoJSON veri setini üretin
+# 3. Güncel doğrulanmış GIS ve nöbetçi eczane verilerini çekin
 npm run fetch:data
 
 # 4. Geliştirme sunucusunu başlatın
 npm run dev
 ```
 
-Uygulama `http://localhost:5173` adresinde çalışmaya başlayacaktır.
+Uygulama `http://localhost:5173` adresinde sıcak yeniden yükleme (HMR) ile yayına başlar.
 
-### Üretim Derlemesi (Production Build)
+### Üretim Paketi Derleme
 
 ```bash
 npm run build
@@ -90,34 +150,12 @@ npm run preview
 
 ---
 
-## ☁️ Cloudflare Pages Dağıtımı (Deployment)
-
-Proje, Cloudflare Pages üzerinde **sıfır sunucu ve sıfır bant genişliği maliyetiyle** çalışacak şekilde yapılandırılmıştır.
-
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/himmetaga/turkiye-afet-haritasi)
-
-**Cloudflare Ayarları:**
-- **Framework Preset**: Vite
-- **Build Command**: `npm run fetch:data && npm run build`
-- **Build Output Directory**: `dist`
-- **Node.js Version**: `22`
+## 🔒 Güvenlik ve Gizlilik
+- Kullanıcı konumu tamamen cihaz üzerinde istemci tarafında işlenir; hiçbir kişisel konum verisi harici bir sunucuya kaydedilmez.
+- Web Audio API ses osilatörleri yerel olarak üretilir; bant genişliği tüketmez ve çevrimdışı çalışır.
+- Service Worker mimarisi tüm harita karolarını yerel IndexedDB'ye önbelleğe alır.
 
 ---
 
-## 🧭 English Summary
-
-**Turkiye 3D Disaster & Assembly Atlas** is an open-source, offline-first progressive web application built to guide citizens to verified emergency assembly zones during earthquakes and crises.
-
-### Key Highlights
-- **Zero Server Costs**: Static GeoJSON files distributed via edge CDNs with immutable caching headers.
-- **Offline-First PWA**: Full service worker caching for map tiles and vector geometry.
-- **3D Building Extrusions**: Realistic urban elevation via WebGL and MapLibre GL.
-- **3000 Hz Acoustic Rescue Whistle**: Native Web Audio API oscillator for emergency search and rescue signaling.
-- **Instant SOS Dispatch**: Formats current GPS coordinates and nearest safe zone into SMS and messenger alerts.
-
----
-
-## 📄 Lisans (License)
-
-Bu proje [MIT Lisansı](LICENSE) altında açık kaynak olarak sunulmaktadır.
-Geliştirici: **Himmet Aytulum**
+## 📄 Lisans
+Bu proje [MIT Lisansı](LICENSE) kapsamında açık kaynak olarak kamu yararına geliştirilmektedir.

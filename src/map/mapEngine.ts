@@ -5,6 +5,7 @@ import { createPulsingDot } from './pulsingMarker';
 import { generateSafeEvacuationRoute } from '../utils/geoMath';
 import { fetchWalkingRoute, WalkingRouteResult } from '../services/routingService';
 import { filterPharmaciesBySchedule } from '../utils/pharmacySchedule';
+import { FeltReport } from '../services/feltReportsService';
 
 const MAP_STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
 const MAP_STYLE_FALLBACK = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
@@ -309,8 +310,81 @@ export class MapEngine {
       }
     });
 
+    // 6. Seismic Early Warning Wavefronts (P-Wave & S-Wave)
+    this.map.addSource('early-warning-waves', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+
+    this.map.addLayer({
+      id: 's-wave-fill',
+      type: 'fill',
+      source: 'early-warning-waves',
+      filter: ['==', ['get', 'waveType'], 'S'],
+      paint: {
+        'fill-color': '#EF4444',
+        'fill-opacity': 0.12
+      }
+    });
+
+    this.map.addLayer({
+      id: 's-wave-stroke',
+      type: 'line',
+      source: 'early-warning-waves',
+      filter: ['==', ['get', 'waveType'], 'S'],
+      paint: {
+        'line-color': '#EF4444',
+        'line-width': 3.5,
+        'line-opacity': 0.9
+      }
+    });
+
+    this.map.addLayer({
+      id: 'p-wave-stroke',
+      type: 'line',
+      source: 'early-warning-waves',
+      filter: ['==', ['get', 'waveType'], 'P'],
+      paint: {
+        'line-color': '#38BDF8',
+        'line-width': 2.5,
+        'line-dasharray': [3, 2],
+        'line-opacity': 0.85
+      }
+    });
+
+    // 7. Community Felt Reports Layer
+    this.map.addSource('felt-reports', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+
+    this.map.addLayer({
+      id: 'felt-reports-glow',
+      type: 'circle',
+      source: 'felt-reports',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 8, 14, 20],
+        'circle-color': ['get', 'color'],
+        'circle-opacity': 0.35,
+        'circle-blur': 0.6
+      }
+    });
+
+    this.map.addLayer({
+      id: 'felt-reports-core',
+      type: 'circle',
+      source: 'felt-reports',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 4, 14, 8],
+        'circle-color': ['get', 'color'],
+        'circle-stroke-width': 1.5,
+        'circle-stroke-color': '#FFFFFF',
+        'circle-opacity': 0.95
+      }
+    });
+
     // Cursor interactions
-    const interactiveLayers = ['assembly-core', 'facility-core', 'fault-lines-core'];
+    const interactiveLayers = ['assembly-core', 'facility-core', 'fault-lines-core', 'felt-reports-core'];
     for (const l of interactiveLayers) {
       this.map.on('mouseenter', l, () => {
         if (this.map) this.map.getCanvas().style.cursor = 'pointer';
@@ -786,6 +860,78 @@ export class MapEngine {
 
   public onMapClick(cb: (coords: [number, number]) => void): void {
     this.onMapClickCallback = cb;
+  }
+
+  public updateEarlyWarningWaves(center: [number, number], pRadiusKm: number, sRadiusKm: number): void {
+    if (!this.map || !this.isLoaded) return;
+    const source = this.map.getSource('early-warning-waves') as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    const pPolygon = this.createCirclePolygon(center, pRadiusKm);
+    const sPolygon = this.createCirclePolygon(center, sRadiusKm);
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: [pPolygon] },
+          properties: { waveType: 'P', radiusKm: pRadiusKm }
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: [sPolygon] },
+          properties: { waveType: 'S', radiusKm: sRadiusKm }
+        }
+      ]
+    });
+  }
+
+  public clearEarlyWarningWaves(): void {
+    if (!this.map || !this.isLoaded) return;
+    const source = this.map.getSource('early-warning-waves') as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData({ type: 'FeatureCollection', features: [] });
+    }
+  }
+
+  public setFeltReports(reports: FeltReport[]): void {
+    if (!this.map || !this.isLoaded) return;
+    const source = this.map.getSource('felt-reports') as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: reports.map((r) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: r.coordinates },
+        properties: {
+          id: r.id,
+          intensity: r.intensity,
+          roman: r.intensityRoman,
+          label: r.intensityLabel,
+          color: r.intensityColor,
+          city: r.city,
+          district: r.district,
+          comment: r.comment || ''
+        }
+      }))
+    });
+  }
+
+  private createCirclePolygon(center: [number, number], radiusKm: number, points = 48): [number, number][] {
+    if (radiusKm <= 0.1) return [];
+    const coords: [number, number][] = [];
+    const [lon, lat] = center;
+    const earthRadiusKm = 6371;
+
+    for (let i = 0; i <= points; i++) {
+      const angle = (i * 2 * Math.PI) / points;
+      const dLat = (radiusKm / earthRadiusKm) * (180 / Math.PI) * Math.cos(angle);
+      const dLon = ((radiusKm / earthRadiusKm) * (180 / Math.PI) * Math.sin(angle)) / Math.cos((lat * Math.PI) / 180);
+      coords.push([lon + dLon, lat + dLat]);
+    }
+    return coords;
   }
 
   public getMapInstance(): maplibregl.Map | null {

@@ -16,6 +16,15 @@ import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
 
+import { EarlyWarningHUD } from './ui/EarlyWarningHUD';
+import { earlyWarningEngine } from './services/earlyWarningEngine';
+import { SeismographModal } from './ui/SeismographModal';
+import { EmergencyWhistleModal } from './ui/EmergencyWhistleModal';
+import { FeltReportModal } from './ui/FeltReportModal';
+import { feltReportsService } from './services/feltReportsService';
+import { CrisisChatHUD } from './ui/CrisisChatHUD';
+import { SaaSDashboardModal } from './ui/SaaSDashboardModal';
+
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
   private assemblyPoints: AssemblyPoint[] = [];
@@ -39,6 +48,13 @@ class DisasterAtlasApp {
   private seismicFeedHUD!: SeismicFeedHUD;
   private notificationToast!: OfflineNotificationToast;
 
+  private earlyWarningHUD!: EarlyWarningHUD;
+  private seismographModal!: SeismographModal;
+  private whistleModal!: EmergencyWhistleModal;
+  private feltModal!: FeltReportModal;
+  private crisisHUD!: CrisisChatHUD;
+  private saasModal!: SaaSDashboardModal;
+
   constructor() {
     this.mapEngine = new MapEngine();
   }
@@ -58,7 +74,15 @@ class DisasterAtlasApp {
       onToggleBag: () => this.bagHUD.show(),
       onToggleFamily: () => this.openFamilyModal(),
       onToggleLayers: () => this.layerHUD.toggle(),
-      onSelectProvince: (prov) => this.handleProvinceSelect(prov)
+      onSelectProvince: (prov) => this.handleProvinceSelect(prov),
+      onToggleEarlyWarning: () => {
+        earlyWarningEngine.triggerSimulation([28.18, 40.85], 6.4, 12, 'Marmara Denizi (Silivri Açıkları)');
+      },
+      onToggleSeismograph: () => this.seismographModal.show(),
+      onToggleWhistle: () => this.whistleModal.show(),
+      onToggleFelt: () => this.feltModal.show(),
+      onToggleCrisis: () => this.crisisHUD.show(),
+      onToggleSaaS: () => this.saasModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -80,6 +104,23 @@ class DisasterAtlasApp {
     this.sosModal = new EmergencySOSModal(appEl);
     this.bagHUD = new EmergencyBagHUD(appEl);
     this.familyHUD = new FamilySafetyHUD(appEl);
+
+    this.earlyWarningHUD = new EarlyWarningHUD(appEl, () => {
+      if (this.assemblyPoints.length > 0) {
+        const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+        if (nearest.length > 0) {
+          this.focusPoint(nearest[0].point);
+        }
+      }
+    });
+
+    this.seismographModal = new SeismographModal(appEl);
+    this.whistleModal = new EmergencyWhistleModal(appEl);
+    this.feltModal = new FeltReportModal(appEl, this.userCoords, (report) => {
+      this.notificationToast.show(`📍 Hissedildi bildirimi alındı (${report.intensityRoman} - ${report.district}).`, false);
+    });
+    this.crisisHUD = new CrisisChatHUD(appEl, this.userCoords);
+    this.saasModal = new SaaSDashboardModal(appEl);
 
     this.layerHUD = new LayerControlHUD(appEl, (layerKey, visible) => {
       this.handleLayerToggle(layerKey, visible);
@@ -116,6 +157,24 @@ class DisasterAtlasApp {
 
     this.mapEngine.onMapClick((coords) => {
       this.setUserLocationManual(coords);
+    });
+
+    // Connect Early Warning propagating waves to 3D map
+    earlyWarningEngine.subscribe((status) => {
+      if (status.isActive && status.earthquake) {
+        this.mapEngine.updateEarlyWarningWaves(
+          status.earthquake.coordinates,
+          status.pWaveRadiusKm,
+          status.sWaveRadiusKm
+        );
+      } else {
+        this.mapEngine.clearEarlyWarningWaves();
+      }
+    });
+
+    // Connect Felt Reports to 3D map
+    feltReportsService.subscribe((reports) => {
+      this.mapEngine.setFeltReports(reports);
     });
 
     // 4. Load Datasets in Parallel
@@ -245,6 +304,10 @@ class DisasterAtlasApp {
       (pos) => {
         const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
         this.userCoords = coords;
+        earlyWarningEngine.setUserCoordinates(coords);
+        this.feltModal.setUserCoords(coords);
+        this.crisisHUD.setUserLocation(coords);
+
         this.mapEngine.setUserLocation(coords, pos.coords.heading || 0);
 
         if (flyToUser) {
@@ -263,6 +326,10 @@ class DisasterAtlasApp {
 
   private setUserLocationManual(coords: [number, number]): void {
     this.userCoords = coords;
+    earlyWarningEngine.setUserCoordinates(coords);
+    this.feltModal.setUserCoords(coords);
+    this.crisisHUD.setUserLocation(coords);
+
     this.mapEngine.setUserLocation(coords, 0);
     this.mapEngine.flyTo(coords, 15.5, 52, -15);
     this.updateUserContextCalculations('Seçilen Konuma En Yakın Noktalar');
@@ -300,8 +367,6 @@ class DisasterAtlasApp {
     if (assemblyResults.length > 0) {
       this.mapEngine.drawRoute(this.userCoords, assemblyResults[0].point.coordinates, this.obstacles);
     }
-
-    this.updateFaultProximity();
   }
 
   private updateFaultProximity(): void {
@@ -368,84 +433,90 @@ class DisasterAtlasApp {
     const q = query.trim().toLowerCase();
     if (!q) {
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
-      this.updateUserContextCalculations();
+      this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
       return;
     }
 
-    const matchedPoints = this.assemblyPoints.filter(
+    const filteredAssembly = this.assemblyPoints.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.district.toLowerCase().includes(q) ||
         p.city.toLowerCase().includes(q)
     );
 
-    const matchedFacilities = this.facilities.filter(
+    const filteredFacilities = this.facilities.filter(
       (f) =>
         f.name.toLowerCase().includes(q) ||
         f.district.toLowerCase().includes(q) ||
         f.city.toLowerCase().includes(q)
     );
 
-    if (matchedPoints.length > 0) {
-      this.mapEngine.setAssemblyPoints(matchedPoints);
-      const target = matchedPoints[0];
-      this.userCoords = target.coordinates;
-      this.mapEngine.setUserLocation(target.coordinates, 0);
-      this.mapEngine.flyTo(target.coordinates, 14.5, 52, -15);
-      this.updateUserContextCalculations(`"${query}" Bölgesi ve Çevresi`);
-    } else if (matchedFacilities.length > 0) {
-      const target = matchedFacilities[0];
-      this.userCoords = target.coordinates;
-      this.mapEngine.setUserLocation(target.coordinates, 0);
-      this.mapEngine.flyTo(target.coordinates, 15, 52, -15);
-      this.updateUserContextCalculations(`"${query}" Arama Sonuçları`);
+    this.mapEngine.setAssemblyPoints(filteredAssembly);
+    this.mapEngine.setEmergencyFacilities(filteredFacilities, this.onlyDutyPharmacies);
+
+    if (filteredAssembly.length > 0) {
+      this.mapEngine.flyTo(filteredAssembly[0].coordinates, 14, 45, 0);
+    } else if (filteredFacilities.length > 0) {
+      this.mapEngine.flyTo(filteredFacilities[0].coordinates, 14, 45, 0);
     }
   }
 
   private handleProvinceSelect(province: string): void {
     if (!province) {
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
-      this.mapEngine.flyTo([35.24, 38.96], 6.5, 45, 0);
+      this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+      this.mapEngine.flyTo([35.2433, 38.9637], 6, 30, 0);
       return;
     }
 
-    const filtered = this.assemblyPoints.filter((p) => p.city === province);
-    this.mapEngine.setAssemblyPoints(filtered);
+    const filteredAssembly = this.assemblyPoints.filter((p) => p.city === province);
+    const filteredFacilities = this.facilities.filter((f) => f.city === province);
 
-    if (filtered.length > 0) {
-      const first = filtered[0];
-      this.userCoords = first.coordinates;
-      this.mapEngine.setUserLocation(first.coordinates, 0);
-      this.mapEngine.flyTo(first.coordinates, 13.5, 55, -15);
-      this.updateUserContextCalculations(`${province} İli ve Çevresi`);
+    this.mapEngine.setAssemblyPoints(filteredAssembly);
+    this.mapEngine.setEmergencyFacilities(filteredFacilities, this.onlyDutyPharmacies);
+
+    if (filteredAssembly.length > 0) {
+      this.mapEngine.flyTo(filteredAssembly[0].coordinates, 11, 45, -10);
+    } else if (filteredFacilities.length > 0) {
+      this.mapEngine.flyTo(filteredFacilities[0].coordinates, 11, 45, -10);
     }
   }
 
   private handleLayerToggle(layerKey: string, visible: boolean): void {
-    if (layerKey === 'assembly') {
-      this.mapEngine.toggleLayer('assembly-core', visible);
-      this.mapEngine.toggleLayer('assembly-glow', visible);
-      this.mapEngine.toggleLayer('assembly-label', visible);
-      this.mapEngine.toggleLayer('assembly-3d-extrusions', visible);
-    } else if (layerKey === 'faults') {
-      this.mapEngine.toggleLayer('fault-lines-core', visible);
-      this.mapEngine.toggleLayer('fault-lines-glow', visible);
-    } else if (layerKey === 'hospitals') {
-      this.mapEngine.updateFacilityFilters({ showHospitals: visible });
-    } else if (layerKey === 'pharmacies') {
-      this.mapEngine.updateFacilityFilters({ showPharmacies: visible });
-    } else if (layerKey === 'dutyOnly') {
+    const map = this.mapEngine.getMapInstance();
+    if (!map) return;
+
+    const layerMap: Record<string, string[]> = {
+      assembly: ['assembly-glow', 'assembly-core', 'assembly-label', 'assembly-3d-extrusions'],
+      faults: ['fault-lines-glow', 'fault-lines-core', 'fault-lines-label'],
+      earthquakes: [],
+      hospitals: ['facility-glow', 'facility-core', 'facility-label'],
+      pharmacies: ['facility-glow', 'facility-core', 'facility-label'],
+      dutyOnly: []
+    };
+
+    if (layerKey === 'dutyOnly') {
       this.onlyDutyPharmacies = visible;
-      this.mapEngine.updateFacilityFilters({ onlyDutyPharmacies: visible });
+      this.mapEngine.setEmergencyFacilities(this.facilities, visible);
       this.updateUserContextCalculations();
-      this.notificationToast.show(
-        visible
-          ? '🌙 19:00 Sonrası Yalnızca Nöbetçi Eczaneler Filtresi Aktif'
-          : '💊 Tüm Gündüz ve Nöbetçi Eczaneler Haritada Gösteriliyor',
-        false
-      );
-    } else if (layerKey === 'buildings') {
-      this.mapEngine.toggleLayer('3d-buildings', visible);
+      return;
+    }
+
+    if (layerKey === 'hospitals') {
+      this.mapEngine.updateFacilityFilters({ showHospitals: visible });
+      return;
+    }
+
+    if (layerKey === 'pharmacies') {
+      this.mapEngine.updateFacilityFilters({ showPharmacies: visible });
+      return;
+    }
+
+    const targetLayerIds = layerMap[layerKey] || [layerKey];
+    for (const lid of targetLayerIds) {
+      if (map.getLayer(lid)) {
+        map.setLayoutProperty(lid, 'visibility', visible ? 'visible' : 'none');
+      }
     }
   }
 
