@@ -2,6 +2,7 @@ import { NearestResult, AssemblyPoint, EmergencyFacility } from '../types';
 import { Icons } from './icons';
 import { getBearingDirectionText } from '../utils/geoMath';
 import { voiceGuide } from '../services/voiceGuideService';
+import { isAfterClosingHours } from '../utils/pharmacySchedule';
 
 export type HUDCategory = 'assembly' | 'hospitals' | 'pharmacies';
 
@@ -40,12 +41,58 @@ export class NearestPointsHUD {
 
   private render(): void {
     const list = this.currentData[this.activeCategory] || [];
+    const isClosedHours = isAfterClosingHours();
 
     const categoryBadges: { key: HUDCategory; label: string; icon: string; count: number }[] = [
       { key: 'assembly', label: 'Toplanma', icon: '🛡️', count: this.currentData.assembly.length },
       { key: 'hospitals', label: 'Hastaneler', icon: '🏥', count: this.currentData.hospitals.length },
       { key: 'pharmacies', label: 'Eczaneler', icon: '💊', count: this.currentData.pharmacies.length }
     ];
+
+    let categoryHeaderBanner = '';
+    if (this.activeCategory === 'pharmacies') {
+      if (isClosedHours) {
+        categoryHeaderBanner = `
+          <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300 flex items-center justify-between">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="animate-pulse">🌙</span>
+              <span>19:00 sonrası: Yalnızca nöbetçi eczaneler listeleniyor</span>
+            </span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">7/24 Açık</span>
+          </div>
+        `;
+      } else {
+        categoryHeaderBanner = `
+          <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex items-center justify-between">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span>💊</span>
+              <span>Mesai saatleri: Gündüz ve nöbetçi eczaneler (Kapanış: 19:00)</span>
+            </span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200">Açık</span>
+          </div>
+        `;
+      }
+    } else if (this.activeCategory === 'hospitals') {
+      categoryHeaderBanner = `
+        <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-[11px] text-cyan-300 flex items-center justify-between">
+          <span class="flex items-center gap-1.5 font-medium">
+            <span>🏥</span>
+            <span>Sağlık Bakanlığı tescilli acil servis ve travma merkezleri</span>
+          </span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200">7/24 Açık</span>
+        </div>
+      `;
+    } else if (this.activeCategory === 'assembly') {
+      categoryHeaderBanner = `
+        <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex items-center justify-between">
+          <span class="flex items-center gap-1.5 font-medium">
+            <span>🛡️</span>
+            <span>Valilik & AFAD onaylı afet acil toplanma sahaları</span>
+          </span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200">Tescilli</span>
+        </div>
+      `;
+    }
 
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-3.5 shadow-2xl backdrop-blur-xl transition-all">
@@ -100,6 +147,8 @@ export class NearestPointsHUD {
             .join('')}
         </div>
 
+        ${categoryHeaderBanner}
+
         <!-- En Yakın Noktalar Listesi -->
         <div id="nearest-items-list" class="flex flex-col gap-2 ${this.isCollapsed ? 'hidden' : ''}">
           ${
@@ -129,6 +178,10 @@ export class NearestPointsHUD {
                         ? 'text-cyan-400 bg-cyan-500/15'
                         : 'text-amber-400 bg-amber-500/15';
 
+                    const phone = (p as any).phone;
+                    const address = (p as any).address;
+                    const neighborhood = (p as any).neighborhood;
+
                     return `
                       <div
                         data-point-id="${p.id}"
@@ -144,9 +197,14 @@ export class NearestPointsHUD {
                             </div>
                             <p class="text-[11px] text-gray-400 mt-0.5 truncate">
                               ${p.district}, ${p.city} ${
-                                (p as any).typeText ? `• ${(p as any).typeText}` : p.capacity ? `• Kapasite: ${p.capacity.toLocaleString()}` : ''
+                                neighborhood ? `• ${neighborhood}` : (p as any).typeText ? `• ${(p as any).typeText}` : p.capacity ? `• Kapasite: ${p.capacity.toLocaleString()}` : ''
                               }
                             </p>
+                            ${
+                              address
+                                ? `<p class="text-[10px] text-gray-400 mt-0.5 truncate font-mono">📍 ${address}</p>`
+                                : ''
+                            }
                           </div>
 
                           <!-- Pusula ve Mesafe Rozeti -->
@@ -178,11 +236,29 @@ export class NearestPointsHUD {
                                     ${Icons.tent('w-3 h-3')} Çadır
                                   </span>
                                 `
+                                : this.activeCategory === 'pharmacies'
+                                ? (p as any).isDuty
+                                  ? '<span class="text-amber-400 font-bold">🌙 24 Saat Nöbetçi</span>'
+                                  : '<span class="text-gray-400">💊 Gündüz (19:00 Kapanış)</span>'
                                 : (p as any).hasTraumaCenter
-                                ? '<span class="text-rose-400">🔴 Travma Merkezi</span>'
-                                : (p as any).helipad
-                                ? '<span class="text-cyan-400">🚁 Helikopter Pisti</span>'
-                                : '<span class="text-amber-400">⚡ 24/7 Acil Hizmet</span>'
+                                ? '<span class="text-rose-400 font-semibold">🔴 Travma Merkezi</span>'
+                                : (p as any).emergencyBeds
+                                ? `<span class="text-cyan-400 font-mono">${(p as any).emergencyBeds} Acil Yatak</span>`
+                                : '<span class="text-cyan-400 font-medium">⚡ 7/24 Acil Servis</span>'
+                            }
+                            ${
+                              phone
+                                ? `
+                              <a
+                                href="tel:${phone.replace(/[^0-9+]/g, '')}"
+                                class="phone-link text-emerald-400 hover:underline flex items-center gap-1 font-mono ml-1 font-medium"
+                                title="Telefonla Ara"
+                              >
+                                <span>📞</span>
+                                <span>${phone}</span>
+                              </a>
+                            `
+                                : ''
                             }
                           </div>
 
@@ -220,6 +296,13 @@ export class NearestPointsHUD {
         if (found) {
           this.onSelectPoint(found.point as any);
         }
+      });
+    });
+
+    const phoneLinks = this.container.querySelectorAll('.phone-link');
+    phoneLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
     });
 

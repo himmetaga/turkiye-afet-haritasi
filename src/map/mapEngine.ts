@@ -4,6 +4,7 @@ import { AssemblyPoint, Earthquake, FaultLine, EmergencyFacility, ObstaclePoint 
 import { createPulsingDot } from './pulsingMarker';
 import { generateSafeEvacuationRoute } from '../utils/geoMath';
 import { fetchWalkingRoute, WalkingRouteResult } from '../services/routingService';
+import { filterPharmaciesBySchedule } from '../utils/pharmacySchedule';
 
 const MAP_STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
 const MAP_STYLE_FALLBACK = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
@@ -20,6 +21,10 @@ export class MapEngine {
   private pendingEarthquakes: Earthquake[] | null = null;
   private pendingFaultLines: FaultLine[] | null = null;
   private pendingFacilities: EmergencyFacility[] | null = null;
+  private allFacilities: EmergencyFacility[] = [];
+  private showHospitals = true;
+  private showPharmacies = true;
+  private onlyDutyPharmacies = true;
 
   private onAssemblyPointClickCallback?: (point: AssemblyPoint) => void;
   private onEarthquakeClickCallback?: (eq: Earthquake) => void;
@@ -354,11 +359,16 @@ export class MapEngine {
         category: props.category,
         city: props.city,
         district: props.district,
+        neighborhood: props.neighborhood,
+        address: props.address,
+        phone: props.phone,
         typeText: props.typeText,
         emergencyBeds: Number(props.emergencyBeds || 0),
         hasTraumaCenter: props.hasTraumaCenter === true || props.hasTraumaCenter === 'true',
         helipad: props.helipad === true || props.helipad === 'true',
-        coordinates: coords
+        coordinates: coords,
+        isDuty: props.isDuty === true || props.isDuty === 'true',
+        closingHour: props.closingHour
       };
 
       if (this.onFacilityClickCallback) {
@@ -518,17 +528,45 @@ export class MapEngine {
     });
   }
 
-  public setEmergencyFacilities(facilities: EmergencyFacility[]): void {
+  public setEmergencyFacilities(facilities: EmergencyFacility[], onlyDutyAfterHours = true): void {
+    this.allFacilities = facilities;
+    this.onlyDutyPharmacies = onlyDutyAfterHours;
     if (!this.map || !this.isLoaded) {
       this.pendingFacilities = facilities;
       return;
     }
+    this.refreshFacilitiesSource();
+  }
+
+  public updateFacilityFilters(filters: {
+    showHospitals?: boolean;
+    showPharmacies?: boolean;
+    onlyDutyPharmacies?: boolean;
+  }): void {
+    if (filters.showHospitals !== undefined) this.showHospitals = filters.showHospitals;
+    if (filters.showPharmacies !== undefined) this.showPharmacies = filters.showPharmacies;
+    if (filters.onlyDutyPharmacies !== undefined) this.onlyDutyPharmacies = filters.onlyDutyPharmacies;
+    this.refreshFacilitiesSource();
+  }
+
+  private refreshFacilitiesSource(): void {
+    if (!this.map || !this.isLoaded) return;
     const source = this.map.getSource('emergency-facilities') as maplibregl.GeoJSONSource;
     if (!source) return;
 
+    let list = this.allFacilities;
+    if (!this.showHospitals) {
+      list = list.filter((f) => f.category !== 'hospital' && f.category !== 'blood_center');
+    }
+    if (!this.showPharmacies) {
+      list = list.filter((f) => f.category !== 'pharmacy');
+    } else {
+      list = filterPharmaciesBySchedule(list, this.onlyDutyPharmacies);
+    }
+
     source.setData({
       type: 'FeatureCollection',
-      features: facilities.map((f) => ({
+      features: list.map((f) => ({
         type: 'Feature',
         id: f.id,
         geometry: {

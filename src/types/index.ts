@@ -61,12 +61,19 @@ export interface EmergencyFacility {
   category: 'hospital' | 'pharmacy' | 'blood_center' | 'water';
   city: string;
   district: string;
+  neighborhood?: string;
+  address?: string;
+  phone?: string;
   typeText: string;
   emergencyBeds: number;
   hasTraumaCenter: boolean;
   helipad: boolean;
   coordinates: [number, number];
   distanceMeters?: number;
+  walkingMinutes?: number;
+  bearingDegrees?: number;
+  isDuty?: boolean;
+  closingHour?: string; // e.g. "19:00"
 }
 
 export interface ObstaclePoint {

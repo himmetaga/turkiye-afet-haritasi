@@ -25,22 +25,40 @@ export class PointDetailHUD {
 
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${point.coordinates[1]},${point.coordinates[0]}`;
     const category = (point as any).category || 'assembly';
+    const fac = point as any;
 
-    let badgeText = '🛡️ Onaylı Afet Toplanma Sahası';
+    let badgeText = '🛡️ Valilik & AFAD Onaylı Toplanma Sahası';
     let badgeColor = 'text-emerald-400';
+    let statusLabel = 'Açık Saha';
+    let statusClass = 'text-emerald-400';
+
     if (category === 'hospital') {
-      badgeText = '🏥 Acil Travma & Şehir Hastanesi';
+      badgeText = '🏥 Sağlık Bakanlığı Tescilli Hastane';
       badgeColor = 'text-cyan-400';
+      statusLabel = fac.hasTraumaCenter ? 'Acil Travma & 7/24 Açık' : '7/24 Acil Servis Aktif';
+      statusClass = 'text-cyan-400';
     } else if (category === 'pharmacy') {
-      badgeText = '💊 24 Saat Açık Nöbetçi Eczane';
-      badgeColor = 'text-amber-400';
+      const isDuty = fac.isDuty === true;
+      if (isDuty) {
+        badgeText = '🌙 24 Saat Açık Nöbetçi Eczane';
+        badgeColor = 'text-amber-400';
+        statusLabel = '24/7 Kesintisiz Nöbetçi';
+        statusClass = 'text-amber-400';
+      } else {
+        badgeText = '💊 Gündüz Eczanesi (19:00 Kapanış)';
+        badgeColor = 'text-yellow-400';
+        statusLabel = 'Haftaiçi 08:30 - 19:00';
+        statusClass = 'text-yellow-400';
+      }
     } else if (category === 'blood_center') {
       badgeText = '🩸 Türk Kızılay Kan Bankası';
       badgeColor = 'text-rose-400';
+      statusLabel = 'Acil Kan Bağış Merkezi';
+      statusClass = 'text-rose-400';
     }
 
     this.container.innerHTML = `
-      <div class="hud-glass rounded-2xl p-4 shadow-2xl backdrop-blur-xl">
+      <div class="hud-glass rounded-2xl p-4 shadow-2xl backdrop-blur-xl border border-white/10">
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
             <span class="inline-flex items-center gap-1 text-[11px] font-mono ${badgeColor} uppercase tracking-wider mb-0.5">
@@ -50,8 +68,13 @@ export class PointDetailHUD {
               ${point.name}
             </h3>
             <p class="text-xs text-gray-400 mt-0.5">
-              ${point.district}, ${point.city} ${(point as any).typeText ? `• ${(point as any).typeText}` : ''}
+              ${point.district ? `${point.district}, ` : ''}${point.city} ${fac.typeText ? `• ${fac.typeText}` : ''}
             </p>
+            ${
+              fac.address
+                ? `<p class="text-[11px] text-gray-300 mt-1 line-clamp-2 font-mono">📍 ${fac.address}</p>`
+                : ''
+            }
           </div>
           <button id="btn-close-detail" class="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition-colors">
             ${Icons.close('w-4 h-4')}
@@ -60,24 +83,42 @@ export class PointDetailHUD {
 
         <div class="grid grid-cols-2 gap-2 my-3 text-xs">
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : 'Kapasite'}</span>
+            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : category === 'pharmacy' ? 'Hizmet Türü' : 'Kapasite'}</span>
             <span class="text-xs font-semibold text-white font-mono">
               ${
-                (point as any).emergencyBeds
-                  ? `${(point as any).emergencyBeds} yatak`
-                  : (point as any).capacity
-                  ? `${(point as any).capacity.toLocaleString()} kişi`
-                  : 'Aktif Hizmet'
+                fac.emergencyBeds
+                  ? `${fac.emergencyBeds} yatak`
+                  : category === 'pharmacy'
+                  ? fac.isDuty ? '24 Saat Nöbetçi' : 'Gündüz Eczanesi'
+                  : fac.capacity
+                  ? `${fac.capacity.toLocaleString()} kişi`
+                  : 'Aktif Tesis'
               }
             </span>
           </div>
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">Durum</span>
-            <span class="text-xs font-semibold text-emerald-400 font-mono">
-              ${category === 'pharmacy' ? '24/7 Açık' : category === 'hospital' ? 'Acil Servis Aktif' : 'Açık Saha'}
+            <span class="text-[10px] text-gray-400 block">Çalışma Saati</span>
+            <span class="text-xs font-semibold ${statusClass} font-mono">
+              ${statusLabel}
             </span>
           </div>
         </div>
+
+        ${
+          fac.phone
+            ? `
+          <div class="mb-3">
+            <a
+              href="tel:${fac.phone.replace(/[^0-9+]/g, '')}"
+              class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all"
+            >
+              <span>📞</span>
+              <span>Ara: ${fac.phone}</span>
+            </a>
+          </div>
+        `
+            : ''
+        }
 
         <div class="flex items-center gap-2 pt-2 border-t border-white/5">
           <button

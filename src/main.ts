@@ -14,6 +14,7 @@ import { EmergencyBagHUD } from './ui/EmergencyBagHUD';
 import { FamilySafetyHUD } from './ui/FamilySafetyHUD';
 import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
+import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -24,6 +25,7 @@ class DisasterAtlasApp {
   private obstacles: ObstaclePoint[] = [];
   private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul (Yoğurtçu Parkı çevresi)
   private selectedPoint: AssemblyPoint | null = null;
+  private onlyDutyPharmacies = true;
 
   private headerHUD!: HeaderHUD;
   private nearestHUD!: NearestPointsHUD;
@@ -204,13 +206,19 @@ class DisasterAtlasApp {
           category: f.properties.category,
           city: f.properties.city,
           district: f.properties.district,
+          neighborhood: f.properties.neighborhood,
+          address: f.properties.address,
+          phone: f.properties.phone,
+          isDuty: Boolean(f.properties.isDuty),
+          closingHour: f.properties.closingHour,
           typeText: f.properties.typeText,
           emergencyBeds: Number(f.properties.emergencyBeds || 0),
           hasTraumaCenter: Boolean(f.properties.hasTraumaCenter),
           helipad: Boolean(f.properties.helipad),
           coordinates: f.geometry.coordinates as [number, number]
         }));
-        this.mapEngine.setEmergencyFacilities(this.facilities);
+        this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+        this.updateUserContextCalculations();
       }
     } catch {}
   }
@@ -271,9 +279,12 @@ class DisasterAtlasApp {
       ? findNearestAssemblyPoints(this.userCoords, hospitalsList as any, 3)
       : [];
 
-    const pharmaciesList = this.facilities.filter((f) => f.category === 'pharmacy');
-    const pharmacyResults = pharmaciesList.length > 0
-      ? findNearestAssemblyPoints(this.userCoords, pharmaciesList as any, 3)
+    const activePharmacies = filterPharmaciesBySchedule(
+      this.facilities.filter((f) => f.category === 'pharmacy'),
+      this.onlyDutyPharmacies
+    );
+    const pharmacyResults = activePharmacies.length > 0
+      ? findNearestAssemblyPoints(this.userCoords, activePharmacies as any, 3)
       : [];
 
     this.nearestHUD.updateAll(
@@ -419,10 +430,20 @@ class DisasterAtlasApp {
     } else if (layerKey === 'faults') {
       this.mapEngine.toggleLayer('fault-lines-core', visible);
       this.mapEngine.toggleLayer('fault-lines-glow', visible);
-    } else if (layerKey === 'facilities') {
-      this.mapEngine.toggleLayer('facility-core', visible);
-      this.mapEngine.toggleLayer('facility-glow', visible);
-      this.mapEngine.toggleLayer('facility-label', visible);
+    } else if (layerKey === 'hospitals') {
+      this.mapEngine.updateFacilityFilters({ showHospitals: visible });
+    } else if (layerKey === 'pharmacies') {
+      this.mapEngine.updateFacilityFilters({ showPharmacies: visible });
+    } else if (layerKey === 'dutyOnly') {
+      this.onlyDutyPharmacies = visible;
+      this.mapEngine.updateFacilityFilters({ onlyDutyPharmacies: visible });
+      this.updateUserContextCalculations();
+      this.notificationToast.show(
+        visible
+          ? '🌙 19:00 Sonrası Yalnızca Nöbetçi Eczaneler Filtresi Aktif'
+          : '💊 Tüm Gündüz ve Nöbetçi Eczaneler Haritada Gösteriliyor',
+        false
+      );
     } else if (layerKey === 'buildings') {
       this.mapEngine.toggleLayer('3d-buildings', visible);
     }
