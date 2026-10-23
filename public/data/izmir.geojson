@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "izm-kon-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.146,
+          38.428
+        ]
+      },
+      "properties": {
+        "id": "izm-kon-01",
+        "name": "Kültürpark Fuar Afet Ana Koordinasyon Alanı",
+        "city": "İzmir",
+        "district": "Konak",
+        "capacity": 120000,
+        "areaSqM": 420000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "izm-ksk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.112,
+          38.455
+        ]
+      },
+      "properties": {
+        "id": "izm-ksk-01",
+        "name": "Karşıyaka Sahil Parkı",
+        "city": "İzmir",
+        "district": "Karşıyaka",
+        "capacity": 50000,
+        "areaSqM": 140000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "izm-byr-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.185,
+          38.462
+        ]
+      },
+      "properties": {
+        "id": "izm-byr-01",
+        "name": "Bayraklı Mansuroğlu Afet Parkı",
+        "city": "İzmir",
+        "district": "Bayraklı",
+        "capacity": 35000,
+        "areaSqM": 80000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "izm-bor-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.202,
+          38.448
+        ]
+      },
+      "properties": {
+        "id": "izm-bor-01",
+        "name": "Aşık Veysel Rekreasyon Alanı",
+        "city": "İzmir",
+        "district": "Bornova",
+        "capacity": 75000,
+        "areaSqM": 230000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    }
+  ]
+}

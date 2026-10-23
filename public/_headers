@@ -1,0 +1,11 @@
+/data/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+*.geojson
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+*.pmtiles
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *

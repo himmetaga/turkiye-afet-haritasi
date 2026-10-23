@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "ank-cnt-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.868,
+          39.927
+        ]
+      },
+      "properties": {
+        "id": "ank-cnt-01",
+        "name": "Anıt Park ve Kurtuluş Parkı Sahası",
+        "city": "Ankara",
+        "district": "Çankaya",
+        "capacity": 55000,
+        "areaSqM": 130000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ank-alt-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.885,
+          39.965
+        ]
+      },
+      "properties": {
+        "id": "ank-alt-01",
+        "name": "Altınpark Afet ve İnsani Yardım Merkezi",
+        "city": "Ankara",
+        "district": "Altındağ",
+        "capacity": 95000,
+        "areaSqM": 260000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ank-yen-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.795,
+          39.94
+        ]
+      },
+      "properties": {
+        "id": "ank-yen-01",
+        "name": "Atatürk Orman Çiftliği Toplanma Sahası",
+        "city": "Ankara",
+        "district": "Yenimahalle",
+        "capacity": 150000,
+        "areaSqM": 500000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ank-mam-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.915,
+          39.928
+        ]
+      },
+      "properties": {
+        "id": "ank-mam-01",
+        "name": "Mamak Şehir Parkı",
+        "city": "Ankara",
+        "district": "Mamak",
+        "capacity": 40000,
+        "areaSqM": 95000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    }
+  ]
+}
