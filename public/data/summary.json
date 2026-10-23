@@ -1,53 +1,379 @@
 {
-  "totalPoints": 56,
-  "totalFacilities": 27,
+  "totalPoints": 148,
+  "totalFacilities": 28,
   "provinces": [
+    "Adana",
+    "Adıyaman",
+    "Afyonkarahisar",
+    "Aksaray",
+    "Amasya",
     "Ankara",
+    "Antalya",
+    "Ardahan",
+    "Artvin",
+    "Aydın",
+    "Ağrı",
+    "Balıkesir",
+    "Bartın",
+    "Batman",
+    "Bayburt",
+    "Bilecik",
+    "Bingöl",
+    "Bitlis",
+    "Bolu",
+    "Burdur",
     "Bursa",
+    "Denizli",
+    "Diyarbakır",
+    "Düzce",
+    "Edirne",
+    "Elazığ",
+    "Erzincan",
+    "Erzurum",
+    "Eskişehir",
+    "Gaziantep",
+    "Giresun",
+    "Gümüşhane",
+    "Hakkâri",
+    "Hatay",
+    "Isparta",
+    "Iğdır",
+    "Kahramanmaraş",
+    "Karabük",
+    "Karaman",
+    "Kars",
+    "Kastamonu",
+    "Kayseri",
+    "Kilis",
+    "Kocaeli",
+    "Konya",
+    "Kütahya",
+    "Kırklareli",
+    "Kırıkkale",
+    "Kırşehir",
+    "Malatya",
+    "Manisa",
+    "Mardin",
+    "Mersin",
+    "Muğla",
+    "Muş",
+    "Nevşehir",
+    "Niğde",
+    "Ordu",
+    "Osmaniye",
+    "Rize",
+    "Sakarya",
+    "Samsun",
+    "Siirt",
+    "Sinop",
+    "Sivas",
+    "Tekirdağ",
+    "Tokat",
+    "Trabzon",
+    "Tunceli",
+    "Uşak",
+    "Van",
+    "Yalova",
+    "Yozgat",
+    "Zonguldak",
+    "Çanakkale",
+    "Çankırı",
+    "Çorum",
     "İstanbul",
-    "İzmir"
+    "İzmir",
+    "Şanlıurfa",
+    "Şırnak"
   ],
   "districtsByCity": {
     "İstanbul": [
       "Kadıköy",
-      "Üsküdar",
-      "Ataşehir",
-      "Maltepe",
-      "Kartal",
-      "Pendik",
-      "Ümraniye",
-      "Beykoz",
-      "Çekmeköy",
-      "Sancaktepe",
       "Beşiktaş",
       "Şişli",
+      "Üsküdar",
       "Fatih",
       "Beyoğlu",
       "Bakırköy",
       "Zeytinburnu",
+      "Ataşehir",
+      "Maltepe",
+      "Kartal",
+      "Pendik",
       "Sarıyer",
       "Avcılar",
       "Beylikdüzü",
-      "Başakşehir",
       "Küçükçekmece",
+      "Başakşehir",
+      "Ümraniye",
       "Bağcılar",
-      "Bahçelievler"
+      "Bahçelievler",
+      "Esenler",
+      "Esenyurt",
+      "Gaziosmanpaşa",
+      "Sultangazi",
+      "Tuzla",
+      "Büyükçekmece",
+      "Eyüpsultan",
+      "Kağıthane",
+      "Beykoz",
+      "Çekmeköy",
+      "Sancaktepe",
+      "Sultanbeyli",
+      "Arnavutköy",
+      "Silivri",
+      "Şile",
+      "Adalar",
+      "Bayrampaşa",
+      "Güngören"
     ],
     "Ankara": [
       "Çankaya",
       "Altındağ",
       "Yenimahalle",
-      "Keçiören"
+      "Keçiören",
+      "Mamak"
     ],
     "İzmir": [
       "Konak",
       "Karşıyaka",
       "Bayraklı",
-      "Bornova"
+      "Bornova",
+      "Buca"
     ],
     "Bursa": [
       "Osmangazi",
       "Nilüfer"
+    ],
+    "Antalya": [
+      "Muratpaşa",
+      "Konyaaltı"
+    ],
+    "Adana": [
+      "Seyhan"
+    ],
+    "Gaziantep": [
+      "Şahinbey"
+    ],
+    "Kocaeli": [
+      "İzmit"
+    ],
+    "Adıyaman": [
+      "Merkez"
+    ],
+    "Afyonkarahisar": [
+      "Merkez"
+    ],
+    "Ağrı": [
+      "Merkez"
+    ],
+    "Amasya": [
+      "Merkez"
+    ],
+    "Artvin": [
+      "Merkez"
+    ],
+    "Aydın": [
+      "Merkez"
+    ],
+    "Balıkesir": [
+      "Merkez"
+    ],
+    "Bilecik": [
+      "Merkez"
+    ],
+    "Bingöl": [
+      "Merkez"
+    ],
+    "Bitlis": [
+      "Merkez"
+    ],
+    "Bolu": [
+      "Merkez"
+    ],
+    "Burdur": [
+      "Merkez"
+    ],
+    "Çanakkale": [
+      "Merkez"
+    ],
+    "Çankırı": [
+      "Merkez"
+    ],
+    "Çorum": [
+      "Merkez"
+    ],
+    "Denizli": [
+      "Merkez"
+    ],
+    "Diyarbakır": [
+      "Merkez"
+    ],
+    "Edirne": [
+      "Merkez"
+    ],
+    "Elazığ": [
+      "Merkez"
+    ],
+    "Erzincan": [
+      "Merkez"
+    ],
+    "Erzurum": [
+      "Merkez"
+    ],
+    "Eskişehir": [
+      "Merkez"
+    ],
+    "Giresun": [
+      "Merkez"
+    ],
+    "Gümüşhane": [
+      "Merkez"
+    ],
+    "Hakkâri": [
+      "Merkez"
+    ],
+    "Hatay": [
+      "Merkez"
+    ],
+    "Isparta": [
+      "Merkez"
+    ],
+    "Mersin": [
+      "Merkez"
+    ],
+    "Kars": [
+      "Merkez"
+    ],
+    "Kastamonu": [
+      "Merkez"
+    ],
+    "Kayseri": [
+      "Merkez"
+    ],
+    "Kırklareli": [
+      "Merkez"
+    ],
+    "Kırşehir": [
+      "Merkez"
+    ],
+    "Konya": [
+      "Merkez"
+    ],
+    "Kütahya": [
+      "Merkez"
+    ],
+    "Malatya": [
+      "Merkez"
+    ],
+    "Manisa": [
+      "Merkez"
+    ],
+    "Kahramanmaraş": [
+      "Merkez"
+    ],
+    "Mardin": [
+      "Merkez"
+    ],
+    "Muğla": [
+      "Merkez"
+    ],
+    "Muş": [
+      "Merkez"
+    ],
+    "Nevşehir": [
+      "Merkez"
+    ],
+    "Niğde": [
+      "Merkez"
+    ],
+    "Ordu": [
+      "Merkez"
+    ],
+    "Rize": [
+      "Merkez"
+    ],
+    "Sakarya": [
+      "Merkez"
+    ],
+    "Samsun": [
+      "Merkez"
+    ],
+    "Siirt": [
+      "Merkez"
+    ],
+    "Sinop": [
+      "Merkez"
+    ],
+    "Sivas": [
+      "Merkez"
+    ],
+    "Tekirdağ": [
+      "Merkez"
+    ],
+    "Tokat": [
+      "Merkez"
+    ],
+    "Trabzon": [
+      "Merkez"
+    ],
+    "Tunceli": [
+      "Merkez"
+    ],
+    "Şanlıurfa": [
+      "Merkez"
+    ],
+    "Uşak": [
+      "Merkez"
+    ],
+    "Van": [
+      "Merkez"
+    ],
+    "Yozgat": [
+      "Merkez"
+    ],
+    "Zonguldak": [
+      "Merkez"
+    ],
+    "Aksaray": [
+      "Merkez"
+    ],
+    "Bayburt": [
+      "Merkez"
+    ],
+    "Karaman": [
+      "Merkez"
+    ],
+    "Kırıkkale": [
+      "Merkez"
+    ],
+    "Batman": [
+      "Merkez"
+    ],
+    "Şırnak": [
+      "Merkez"
+    ],
+    "Bartın": [
+      "Merkez"
+    ],
+    "Ardahan": [
+      "Merkez"
+    ],
+    "Iğdır": [
+      "Merkez"
+    ],
+    "Yalova": [
+      "Merkez"
+    ],
+    "Karabük": [
+      "Merkez"
+    ],
+    "Kilis": [
+      "Merkez"
+    ],
+    "Osmaniye": [
+      "Merkez"
+    ],
+    "Düzce": [
+      "Merkez"
     ]
   }
 }

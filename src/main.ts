@@ -13,6 +13,7 @@ import { OfflineNotificationToast } from './ui/OfflineNotificationToast';
 import { EmergencyBagHUD } from './ui/EmergencyBagHUD';
 import { FamilySafetyHUD } from './ui/FamilySafetyHUD';
 import { LayerControlHUD } from './ui/LayerControlHUD';
+import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -21,12 +22,13 @@ class DisasterAtlasApp {
   private faultLines: FaultLine[] = [];
   private facilities: EmergencyFacility[] = [];
   private obstacles: ObstaclePoint[] = [];
-  private userCoords: [number, number] = [29.0345, 40.9858]; // Default Kadıköy/İstanbul
+  private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul (Yoğurtçu Parkı çevresi)
   private selectedPoint: AssemblyPoint | null = null;
 
   private headerHUD!: HeaderHUD;
   private nearestHUD!: NearestPointsHUD;
   private detailHUD!: PointDetailHUD;
+  private navHUD!: RouteNavigationHUD;
   private sosModal!: EmergencySOSModal;
   private bagHUD!: EmergencyBagHUD;
   private familyHUD!: FamilySafetyHUD;
@@ -67,6 +69,10 @@ class DisasterAtlasApp {
         this.selectedPoint = null;
         this.clearActiveRoute();
       }
+    });
+
+    this.navHUD = new RouteNavigationHUD(appEl, {
+      onClose: () => this.clearActiveRoute()
     });
 
     this.sosModal = new EmergencySOSModal(appEl);
@@ -123,7 +129,7 @@ class DisasterAtlasApp {
     this.updateUserContextCalculations('Kadıköy / İstanbul (Örnek Konum)');
 
     // 6. Request real GPS location if permission granted
-    this.requestUserLocation(false);
+    this.requestUserLocation(true);
 
     // 7. PWA Service Worker
     this.registerPWA();
@@ -252,6 +258,7 @@ class DisasterAtlasApp {
     this.mapEngine.setUserLocation(coords, 0);
     this.mapEngine.flyTo(coords, 15.5, 52, -15);
     this.updateUserContextCalculations('Seçilen Konuma En Yakın Noktalar');
+    this.notificationToast.show('📍 Konumunuz güncellendi. En yakın toplanma alanları ve yürüyüş rotası hesaplandı.', false);
   }
 
   private updateUserContextCalculations(label?: string): void {
@@ -293,11 +300,15 @@ class DisasterAtlasApp {
     }
   }
 
-  private focusPoint(point: AssemblyPoint | EmergencyFacility): void {
+  private async focusPoint(point: AssemblyPoint | EmergencyFacility): Promise<void> {
     this.selectedPoint = point as any;
-    this.mapEngine.flyTo(point.coordinates, 16.5, 60, -25);
     this.detailHUD.show(point);
-    this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
+    try {
+      const route = await this.mapEngine.drawWalkingRoute(this.userCoords, point.coordinates, this.obstacles);
+      this.navHUD.show(route, point);
+    } catch {
+      this.mapEngine.flyTo(point.coordinates, 16.5, 60, -25);
+    }
   }
 
   private focusFacility(fac: EmergencyFacility): void {
@@ -309,12 +320,26 @@ class DisasterAtlasApp {
     this.mapEngine.flyTo(center, 10, 45, 0);
   }
 
-  private routeToPoint(point: AssemblyPoint | EmergencyFacility): void {
-    this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
-    this.mapEngine.flyTo(point.coordinates, 16, 55, -20);
+  private async routeToPoint(point: AssemblyPoint | EmergencyFacility): Promise<void> {
+    try {
+      this.detailHUD.setRoutingState(true);
+      const route = await this.mapEngine.drawWalkingRoute(this.userCoords, point.coordinates, this.obstacles);
+      this.detailHUD.setRoutingState(false);
+      this.navHUD.show(route, point);
+      const km = (route.distanceMeters / 1000).toFixed(1);
+      this.notificationToast.show(
+        `📍 "${point.name}" için gerçek sokak yürüyüş rotası çizildi (${km} km, ~${route.durationMinutes} dk).`,
+        false
+      );
+    } catch {
+      this.detailHUD.setRoutingState(false);
+      this.notificationToast.show('Yürüyüş rotası hesaplanırken hata oluştu.', true);
+    }
   }
 
   private clearActiveRoute(): void {
+    this.navHUD.hide();
+    this.mapEngine.clearRoute();
     if (this.assemblyPoints.length > 0) {
       const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
       if (nearest.length > 0) {

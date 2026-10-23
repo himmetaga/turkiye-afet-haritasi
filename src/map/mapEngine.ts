@@ -3,6 +3,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { AssemblyPoint, Earthquake, FaultLine, EmergencyFacility, ObstaclePoint } from '../types';
 import { createPulsingDot } from './pulsingMarker';
 import { generateSafeEvacuationRoute } from '../utils/geoMath';
+import { fetchWalkingRoute, WalkingRouteResult } from '../services/routingService';
 
 const MAP_STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
 const MAP_STYLE_FALLBACK = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
@@ -11,6 +12,7 @@ export class MapEngine {
   private map: maplibregl.Map | null = null;
   private isLoaded = false;
   private userMarker: maplibregl.Marker | null = null;
+  private destinationMarker: maplibregl.Marker | null = null;
   private earthquakeMarkers: maplibregl.Marker[] = [];
   private obstacleMarkers: maplibregl.Marker[] = [];
 
@@ -265,7 +267,7 @@ export class MapEngine {
       minzoom: 13,
       paint: {
         'fill-extrusion-color': '#10B981',
-        'fill-extrusion-height': 38,
+        'fill-extrusion-height': 2.5,
         'fill-extrusion-base': 0,
         'fill-extrusion-opacity': 0.35
       }
@@ -284,8 +286,8 @@ export class MapEngine {
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
         'line-color': '#10B981',
-        'line-width': 8,
-        'line-opacity': 0.4,
+        'line-width': 10,
+        'line-opacity': 0.6,
         'line-blur': 3
       }
     });
@@ -297,8 +299,8 @@ export class MapEngine {
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
         'line-color': '#34D399',
-        'line-width': 3.5,
-        'line-dasharray': [2, 2]
+        'line-width': 4.5,
+        'line-dasharray': [2, 1.5]
       }
     });
 
@@ -575,30 +577,72 @@ export class MapEngine {
     });
   }
 
+  public async drawWalkingRoute(
+    from: [number, number],
+    to: [number, number],
+    _obstacles: ObstaclePoint[] = []
+  ): Promise<WalkingRouteResult> {
+    const route = await fetchWalkingRoute(from, to);
+
+    if (this.map && this.isLoaded) {
+      const source = this.map.getSource('walking-route') as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: route.coordinates
+              },
+              properties: {
+                distanceMeters: route.distanceMeters,
+                durationMinutes: route.durationMinutes
+              }
+            }
+          ]
+        });
+      }
+
+      // Add or update destination marker
+      if (!this.destinationMarker) {
+        const el = document.createElement('div');
+        el.className = 'destination-flag-marker';
+        el.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-obsidian-950 text-sm font-bold shadow-glow-emerald">
+            🎯
+          </div>
+        `;
+        this.destinationMarker = new maplibregl.Marker({ element: el })
+          .setLngLat(to)
+          .addTo(this.map);
+      } else {
+        this.destinationMarker.setLngLat(to);
+      }
+
+      if (route.coordinates.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        for (const c of route.coordinates) {
+          bounds.extend(c);
+        }
+        this.map.fitBounds(bounds, {
+          padding: { top: 90, bottom: 140, left: 60, right: 380 },
+          maxZoom: 16.5,
+          duration: 900
+        });
+      }
+    }
+
+    return route;
+  }
+
   public drawRoute(
     from: [number, number],
     to: [number, number],
     obstacles: ObstaclePoint[] = []
   ): void {
-    if (!this.map || !this.isLoaded) return;
-    const source = this.map.getSource('walking-route') as maplibregl.GeoJSONSource;
-    if (!source) return;
-
-    const routeCoords = generateSafeEvacuationRoute(from, to, obstacles);
-
-    source.setData({
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: routeCoords
-          },
-          properties: {}
-        }
-      ]
-    });
+    this.drawWalkingRoute(from, to, obstacles).catch(() => {});
   }
 
   public clearRoute(): void {
@@ -609,6 +653,10 @@ export class MapEngine {
         type: 'FeatureCollection',
         features: []
       });
+    }
+    if (this.destinationMarker) {
+      this.destinationMarker.remove();
+      this.destinationMarker = null;
     }
   }
 

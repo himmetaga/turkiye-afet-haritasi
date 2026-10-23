@@ -110,9 +110,30 @@ export class PointDetailHUD {
     const routeBtn = this.container.querySelector('#btn-route-action') as HTMLButtonElement;
     routeBtn.addEventListener('click', () => {
       if (this.currentPoint) {
+        this.setRoutingState(true);
         this.callbacks.onRoute(this.currentPoint);
       }
     });
+  }
+
+  public setRoutingState(isLoading: boolean): void {
+    const routeBtn = this.container.querySelector('#btn-route-action') as HTMLButtonElement;
+    if (!routeBtn) return;
+    if (isLoading) {
+      routeBtn.disabled = true;
+      routeBtn.classList.add('opacity-75');
+      routeBtn.innerHTML = `
+        <span class="inline-block w-3.5 h-3.5 border-2 border-obsidian-950 border-t-transparent rounded-full animate-spin"></span>
+        <span>Sokak Rotası Çiziliyor...</span>
+      `;
+    } else {
+      routeBtn.disabled = false;
+      routeBtn.classList.remove('opacity-75');
+      routeBtn.innerHTML = `
+        ${Icons.walking('w-4 h-4')}
+        <span>Canlı Rota Çiz</span>
+      `;
+    }
   }
 
   public hide(): void {

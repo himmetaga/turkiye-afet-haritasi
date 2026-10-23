@@ -7,23 +7,23 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.0195,
-          40.9998
+          29.021,
+          41.0065
         ]
       },
       "properties": {
         "id": "hosp-ist-01",
-        "name": "Haydarpaşa Numune Eğitim ve Araştırma Hastanesi",
+        "name": "Haydarpaşa Numune E.A. Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Kadıköy",
-        "typeText": "1. Basamak Acil Travma & Şehir Hastanesi",
+        "typeText": "1. Seviye Acil Travma & Şehir Hastanesi",
         "emergencyBeds": 750,
         "hasTraumaCenter": true,
         "helipad": true,
         "coordinates": [
-          29.0195,
-          40.9998
+          29.021,
+          41.0065
         ]
       }
     },
@@ -33,8 +33,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.022,
-          41.006
+          29.0225,
+          41.009
         ]
       },
       "properties": {
@@ -48,8 +48,8 @@
         "hasTraumaCenter": true,
         "helipad": true,
         "coordinates": [
-          29.022,
-          41.006
+          29.0225,
+          41.009
         ]
       }
     },
@@ -59,7 +59,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.062,
+          29.0625,
           40.988
         ]
       },
@@ -74,7 +74,7 @@
         "hasTraumaCenter": true,
         "helipad": true,
         "coordinates": [
-          29.062,
+          29.0625,
           40.988
         ]
       }
@@ -85,7 +85,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          28.939,
+          28.9395,
           41.015
         ]
       },
@@ -100,7 +100,7 @@
         "hasTraumaCenter": true,
         "helipad": false,
         "coordinates": [
-          28.939,
+          28.9395,
           41.015
         ]
       }
@@ -169,7 +169,7 @@
       },
       "properties": {
         "id": "hosp-ist-07",
-        "name": "Şişli Hamidiye Etfal E.A. Hastanesi (Sarıyer)",
+        "name": "Şişli Hamidiye Etfal E.A. Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Sarıyer",
@@ -325,7 +325,7 @@
       },
       "properties": {
         "id": "hosp-ank-02",
-        "name": "Hacettepe Üniversitesi Tıp Fakültesi Hastanesi",
+        "name": "Hacettepe Üniversitesi Hastaneleri",
         "category": "hospital",
         "city": "Ankara",
         "district": "Altındağ",
@@ -407,7 +407,7 @@
         "category": "pharmacy",
         "city": "İstanbul",
         "district": "Kadıköy",
-        "typeText": "Kesintisiz 24/7 Acil İlaç Temini",
+        "typeText": "24/7 Kesintisiz Acil İlaç Temini",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
         "helipad": false,
@@ -433,7 +433,7 @@
         "category": "pharmacy",
         "city": "İstanbul",
         "district": "Kadıköy",
-        "typeText": "Acil İlaç & İlk Yardım Tedariği",
+        "typeText": "Acil İlaç İstasyonu",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
         "helipad": false,
@@ -485,39 +485,13 @@
         "category": "pharmacy",
         "city": "İstanbul",
         "district": "Beşiktaş",
-        "typeText": "Kesintisiz 24/7 Eczane",
+        "typeText": "24 Saat Kesintisiz Eczane",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
         "helipad": false,
         "coordinates": [
           29.006,
           41.043
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "pharm-bsk-02",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.026,
-          41.049
-        ]
-      },
-      "properties": {
-        "id": "pharm-bsk-02",
-        "name": "Ortaköy Meydan Nöbetçi Eczanesi",
-        "category": "pharmacy",
-        "city": "İstanbul",
-        "district": "Beşiktaş",
-        "typeText": "Acil İlaç İstasyonu",
-        "emergencyBeds": 0,
-        "hasTraumaCenter": false,
-        "helipad": false,
-        "coordinates": [
-          29.026,
-          41.049
         ]
       }
     },
@@ -537,7 +511,7 @@
         "category": "pharmacy",
         "city": "İstanbul",
         "district": "Şişli",
-        "typeText": "24 Saat Kesintisiz Nöbetçi Eczane",
+        "typeText": "Kesintisiz Nöbetçi Eczane",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
         "helipad": false,
@@ -585,11 +559,11 @@
       },
       "properties": {
         "id": "pharm-fth-01",
-        "name": "Çapa Tıp Karşısı Nöbetçi Eczane",
+        "name": "Çapa Nöbetçi Eczanesi",
         "category": "pharmacy",
         "city": "İstanbul",
         "district": "Fatih",
-        "typeText": "24/7 Hayati İlaç Tedarik",
+        "typeText": "24/7 Acil İlaç Tedarik",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
         "helipad": false,
@@ -622,6 +596,58 @@
         "coordinates": [
           29.0165,
           41.0265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-ank-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.861,
+          39.904
+        ]
+      },
+      "properties": {
+        "id": "pharm-ank-01",
+        "name": "Tunalı Hilmi Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "Ankara",
+        "district": "Çankaya",
+        "typeText": "24 Saat Açık Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          32.861,
+          39.904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-izm-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.142,
+          38.435
+        ]
+      },
+      "properties": {
+        "id": "pharm-izm-01",
+        "name": "Alsancak Kıbrıs Şehitleri Eczanesi",
+        "category": "pharmacy",
+        "city": "İzmir",
+        "district": "Konak",
+        "typeText": "24 Saat Nöbetçi Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          27.142,
+          38.435
         ]
       }
     },

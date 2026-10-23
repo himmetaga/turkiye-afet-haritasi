@@ -127,5 +127,10 @@ export const Icons = {
       <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
       <line x1="12" y1="20" x2="12.01" y2="20"></line>
     </svg>
+  `,
+  navigation: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+    </svg>
   `
 };
