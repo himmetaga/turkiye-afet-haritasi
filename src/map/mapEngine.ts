@@ -149,17 +149,17 @@ export class MapEngine {
       type: 'circle',
       source: 'emergency-facilities',
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 8, 16, 16],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 16, 18, 24],
         'circle-color': [
           'match',
           ['get', 'category'],
           'hospital', '#06B6D4',
-          'blood_center', '#F43F5E',
-          'pharmacy', '#10B981',
+          'blood_center', '#EF4444',
+          'pharmacy', '#F59E0B',
           '#3B82F6'
         ],
         'circle-blur': 0.6,
-        'circle-opacity': 0.5
+        'circle-opacity': 0.6
       }
     });
 
@@ -168,18 +168,37 @@ export class MapEngine {
       type: 'circle',
       source: 'emergency-facilities',
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 4, 16, 7],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 14, 8, 18, 12],
         'circle-color': [
           'match',
           ['get', 'category'],
           'hospital', '#06B6D4',
-          'blood_center', '#F43F5E',
-          'pharmacy', '#10B981',
+          'blood_center', '#EF4444',
+          'pharmacy', '#F59E0B',
           '#3B82F6'
         ],
-        'circle-stroke-width': 1.5,
+        'circle-stroke-width': 2,
         'circle-stroke-color': '#FFFFFF',
-        'circle-opacity': 0.95
+        'circle-opacity': 0.98
+      }
+    });
+
+    this.map.addLayer({
+      id: 'facility-label',
+      type: 'symbol',
+      source: 'emergency-facilities',
+      minzoom: 12.5,
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-size': 11,
+        'text-offset': [0, 1.3],
+        'text-anchor': 'top',
+        'text-max-width': 12
+      },
+      paint: {
+        'text-color': '#FFFFFF',
+        'text-halo-color': '#090A0F',
+        'text-halo-width': 2.5
       }
     });
 
@@ -194,7 +213,7 @@ export class MapEngine {
       type: 'circle',
       source: 'assembly-points',
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 9, 14, 20, 18, 30],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 8, 14, 18, 18, 28],
         'circle-color': '#10B981',
         'circle-blur': 0.65,
         'circle-opacity': 0.6
@@ -206,11 +225,30 @@ export class MapEngine {
       type: 'circle',
       source: 'assembly-points',
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4.5, 14, 8, 18, 11],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4.5, 14, 8.5, 18, 12],
         'circle-color': '#10B981',
         'circle-stroke-width': 2,
         'circle-stroke-color': '#FFFFFF',
-        'circle-opacity': 0.95
+        'circle-opacity': 0.98
+      }
+    });
+
+    this.map.addLayer({
+      id: 'assembly-label',
+      type: 'symbol',
+      source: 'assembly-points',
+      minzoom: 12.5,
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-size': 11,
+        'text-offset': [0, 1.3],
+        'text-anchor': 'top',
+        'text-max-width': 14
+      },
+      paint: {
+        'text-color': '#34D399',
+        'text-halo-color': '#090A0F',
+        'text-halo-width': 2.5
       }
     });
 

@@ -222,7 +222,10 @@ class DisasterAtlasApp {
   }
 
   private requestUserLocation(flyToUser = true): void {
-    if (!('geolocation' in navigator)) return;
+    if (!('geolocation' in navigator)) {
+      this.notificationToast.show('Tarayıcınız konum servisini desteklemiyor. Haritaya dokunarak seçebilirsiniz.', true);
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -234,9 +237,12 @@ class DisasterAtlasApp {
           this.mapEngine.flyTo(coords, 15.5, 52, -15);
         }
 
-        this.updateUserContextCalculations('Konumunuza En Yakın 3 Toplanma Alanı');
+        this.updateUserContextCalculations('GPS Doğrulandı: Bölgenizdeki Acil Noktalar');
+        this.notificationToast.show('📍 GPS konumunuz başarıyla doğrulandı.', false);
       },
-      () => {},
+      () => {
+        this.notificationToast.show('GPS konumu alınamadı. Haritada istediğiniz yere dokunarak konum belirleyebilirsiniz.', true);
+      },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
     );
   }
@@ -244,18 +250,37 @@ class DisasterAtlasApp {
   private setUserLocationManual(coords: [number, number]): void {
     this.userCoords = coords;
     this.mapEngine.setUserLocation(coords, 0);
-    this.updateUserContextCalculations('Seçilen Noktaya En Yakın 3 Alan');
+    this.mapEngine.flyTo(coords, 15.5, 52, -15);
+    this.updateUserContextCalculations('Seçilen Konuma En Yakın Noktalar');
   }
 
   private updateUserContextCalculations(label?: string): void {
-    if (this.assemblyPoints.length > 0) {
-      const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 3);
-      this.nearestHUD.updatePoints(nearest, label);
+    const assemblyResults = this.assemblyPoints.length > 0
+      ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 3)
+      : [];
 
-      if (nearest.length > 0) {
-        const topPoint = nearest[0].point;
-        this.mapEngine.drawRoute(this.userCoords, topPoint.coordinates, this.obstacles);
-      }
+    const hospitalsList = this.facilities.filter((f) => f.category === 'hospital');
+    const hospitalResults = hospitalsList.length > 0
+      ? findNearestAssemblyPoints(this.userCoords, hospitalsList as any, 3)
+      : [];
+
+    const pharmaciesList = this.facilities.filter((f) => f.category === 'pharmacy');
+    const pharmacyResults = pharmaciesList.length > 0
+      ? findNearestAssemblyPoints(this.userCoords, pharmaciesList as any, 3)
+      : [];
+
+    this.nearestHUD.updateAll(
+      {
+        assembly: assemblyResults,
+        hospitals: hospitalResults,
+        pharmacies: pharmacyResults
+      },
+      label
+    );
+
+    // Default route to #1 nearest assembly point
+    if (assemblyResults.length > 0) {
+      this.mapEngine.drawRoute(this.userCoords, assemblyResults[0].point.coordinates, this.obstacles);
     }
 
     this.updateFaultProximity();
@@ -268,30 +293,15 @@ class DisasterAtlasApp {
     }
   }
 
-  private focusPoint(point: AssemblyPoint): void {
-    this.selectedPoint = point;
+  private focusPoint(point: AssemblyPoint | EmergencyFacility): void {
+    this.selectedPoint = point as any;
     this.mapEngine.flyTo(point.coordinates, 16.5, 60, -25);
     this.detailHUD.show(point);
     this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
   }
 
   private focusFacility(fac: EmergencyFacility): void {
-    this.mapEngine.flyTo(fac.coordinates, 16, 55, -15);
-    const pointLike: AssemblyPoint = {
-      id: fac.id,
-      name: `[${fac.category.toUpperCase()}] ${fac.name}`,
-      city: fac.city,
-      district: fac.district,
-      coordinates: fac.coordinates,
-      capacity: fac.emergencyBeds,
-      areaSqM: 0,
-      hasWater: true,
-      hasElectricity: true,
-      hasTentArea: false,
-      hasGenerator: true
-    };
-    this.detailHUD.show(pointLike);
-    this.mapEngine.drawRoute(this.userCoords, fac.coordinates, this.obstacles);
+    this.focusPoint(fac);
   }
 
   private focusFault(fault: FaultLine): void {
@@ -299,7 +309,7 @@ class DisasterAtlasApp {
     this.mapEngine.flyTo(center, 10, 45, 0);
   }
 
-  private routeToPoint(point: AssemblyPoint): void {
+  private routeToPoint(point: AssemblyPoint | EmergencyFacility): void {
     this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
     this.mapEngine.flyTo(point.coordinates, 16, 55, -20);
   }
@@ -322,21 +332,37 @@ class DisasterAtlasApp {
     const q = query.trim().toLowerCase();
     if (!q) {
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
+      this.updateUserContextCalculations();
       return;
     }
 
-    const matched = this.assemblyPoints.filter(
+    const matchedPoints = this.assemblyPoints.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.district.toLowerCase().includes(q) ||
         p.city.toLowerCase().includes(q)
     );
 
-    this.mapEngine.setAssemblyPoints(matched);
-    if (matched.length > 0) {
-      this.mapEngine.flyTo(matched[0].coordinates, 14.5, 52, -15);
-      const nearest = findNearestAssemblyPoints(this.userCoords, matched, 3);
-      this.nearestHUD.updatePoints(nearest, `"${query}" Arama Sonuçları`);
+    const matchedFacilities = this.facilities.filter(
+      (f) =>
+        f.name.toLowerCase().includes(q) ||
+        f.district.toLowerCase().includes(q) ||
+        f.city.toLowerCase().includes(q)
+    );
+
+    if (matchedPoints.length > 0) {
+      this.mapEngine.setAssemblyPoints(matchedPoints);
+      const target = matchedPoints[0];
+      this.userCoords = target.coordinates;
+      this.mapEngine.setUserLocation(target.coordinates, 0);
+      this.mapEngine.flyTo(target.coordinates, 14.5, 52, -15);
+      this.updateUserContextCalculations(`"${query}" Bölgesi ve Çevresi`);
+    } else if (matchedFacilities.length > 0) {
+      const target = matchedFacilities[0];
+      this.userCoords = target.coordinates;
+      this.mapEngine.setUserLocation(target.coordinates, 0);
+      this.mapEngine.flyTo(target.coordinates, 15, 52, -15);
+      this.updateUserContextCalculations(`"${query}" Arama Sonuçları`);
     }
   }
 
@@ -352,9 +378,10 @@ class DisasterAtlasApp {
 
     if (filtered.length > 0) {
       const first = filtered[0];
+      this.userCoords = first.coordinates;
+      this.mapEngine.setUserLocation(first.coordinates, 0);
       this.mapEngine.flyTo(first.coordinates, 13.5, 55, -15);
-      const nearest = findNearestAssemblyPoints(this.userCoords, filtered, 3);
-      this.nearestHUD.updatePoints(nearest, `${province} Toplanma Alanları`);
+      this.updateUserContextCalculations(`${province} İli ve Çevresi`);
     }
   }
 
@@ -362,6 +389,7 @@ class DisasterAtlasApp {
     if (layerKey === 'assembly') {
       this.mapEngine.toggleLayer('assembly-core', visible);
       this.mapEngine.toggleLayer('assembly-glow', visible);
+      this.mapEngine.toggleLayer('assembly-label', visible);
       this.mapEngine.toggleLayer('assembly-3d-extrusions', visible);
     } else if (layerKey === 'faults') {
       this.mapEngine.toggleLayer('fault-lines-core', visible);
@@ -369,6 +397,7 @@ class DisasterAtlasApp {
     } else if (layerKey === 'facilities') {
       this.mapEngine.toggleLayer('facility-core', visible);
       this.mapEngine.toggleLayer('facility-glow', visible);
+      this.mapEngine.toggleLayer('facility-label', visible);
     } else if (layerKey === 'buildings') {
       this.mapEngine.toggleLayer('3d-buildings', visible);
     }

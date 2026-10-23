@@ -13,9 +13,13 @@
       },
       "properties": {
         "id": "ist-kdk-01",
-        "name": "Yoğurtçu Parkı Acil Toplanma Alanı",
+        "name": "Yoğurtçu Parkı Afet Toplanma Sahası",
         "city": "İstanbul",
         "district": "Kadıköy",
+        "coordinates": [
+          29.0345,
+          40.9858
+        ],
         "capacity": 16500,
         "areaSqM": 35000,
         "hasWater": true,
@@ -36,9 +40,13 @@
       },
       "properties": {
         "id": "ist-kdk-02",
-        "name": "Kalamış Atatürk Parkı",
+        "name": "Kalamış Atatürk Parkı Afet Alanı",
         "city": "İstanbul",
         "district": "Kadıköy",
+        "coordinates": [
+          29.0432,
+          40.9782
+        ],
         "capacity": 24000,
         "areaSqM": 52000,
         "hasWater": true,
@@ -62,6 +70,10 @@
         "name": "Göztepe 60. Yıl Parkı",
         "city": "İstanbul",
         "district": "Kadıköy",
+        "coordinates": [
+          29.061,
+          40.9722
+        ],
         "capacity": 32000,
         "areaSqM": 80000,
         "hasWater": true,
@@ -82,11 +94,528 @@
       },
       "properties": {
         "id": "ist-kdk-04",
-        "name": "Özgürlük Parkı",
+        "name": "Özgürlük Parkı Afet Koordinasyon Merkezi",
         "city": "İstanbul",
         "district": "Kadıköy",
+        "coordinates": [
+          29.0487,
+          40.9841
+        ],
         "capacity": 45000,
         "areaSqM": 110000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-kdk-05",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.025,
+          40.982
+        ]
+      },
+      "properties": {
+        "id": "ist-kdk-05",
+        "name": "Moda Sahil Parkı Toplanma Sahası",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "coordinates": [
+          29.025,
+          40.982
+        ],
+        "capacity": 20000,
+        "areaSqM": 45000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-usk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0225,
+          41.0315
+        ]
+      },
+      "properties": {
+        "id": "ist-usk-01",
+        "name": "Fethi Paşa Korusu Giriş Meydanı",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "coordinates": [
+          29.0225,
+          41.0315
+        ],
+        "capacity": 28000,
+        "areaSqM": 65000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-usk-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0662,
+          41.0264
+        ]
+      },
+      "properties": {
+        "id": "ist-usk-02",
+        "name": "Büyük Çamlıca Millet Bahçesi",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "coordinates": [
+          29.0662,
+          41.0264
+        ],
+        "capacity": 60000,
+        "areaSqM": 180000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-usk-03",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.015,
+          41.026
+        ]
+      },
+      "properties": {
+        "id": "ist-usk-03",
+        "name": "Üsküdar Sahil Meydanı ve Parkı",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "coordinates": [
+          29.015,
+          41.026
+        ],
+        "capacity": 35000,
+        "areaSqM": 70000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": false,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-usk-04",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.021,
+          41.021
+        ]
+      },
+      "properties": {
+        "id": "ist-usk-04",
+        "name": "Doğancılar Parkı",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "coordinates": [
+          29.021,
+          41.021
+        ],
+        "capacity": 15000,
+        "areaSqM": 28000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-ats-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.117,
+          40.9995
+        ]
+      },
+      "properties": {
+        "id": "ist-ats-01",
+        "name": "Nezahat Gökyiğit Botanik Bahçesi",
+        "city": "İstanbul",
+        "district": "Ataşehir",
+        "coordinates": [
+          29.117,
+          40.9995
+        ],
+        "capacity": 50000,
+        "areaSqM": 150000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-ats-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.1065,
+          40.988
+        ]
+      },
+      "properties": {
+        "id": "ist-ats-02",
+        "name": "Ataşehir Kent Meydanı Afet Alanı",
+        "city": "İstanbul",
+        "district": "Ataşehir",
+        "coordinates": [
+          29.1065,
+          40.988
+        ],
+        "capacity": 25000,
+        "areaSqM": 55000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-ats-03",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.128,
+          40.979
+        ]
+      },
+      "properties": {
+        "id": "ist-ats-03",
+        "name": "Deniz Gezmiş Parkı Sahası",
+        "city": "İstanbul",
+        "district": "Ataşehir",
+        "coordinates": [
+          29.128,
+          40.979
+        ],
+        "capacity": 20000,
+        "areaSqM": 42000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-mlt-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.124,
+          40.923
+        ]
+      },
+      "properties": {
+        "id": "ist-mlt-01",
+        "name": "Maltepe Sahil Şehir Parkı Afet Üssü",
+        "city": "İstanbul",
+        "district": "Maltepe",
+        "coordinates": [
+          29.124,
+          40.923
+        ],
+        "capacity": 300000,
+        "areaSqM": 1000000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-mlt-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.141,
+          40.938
+        ]
+      },
+      "properties": {
+        "id": "ist-mlt-02",
+        "name": "Altayçeşme Parkı",
+        "city": "İstanbul",
+        "district": "Maltepe",
+        "coordinates": [
+          29.141,
+          40.938
+        ],
+        "capacity": 18000,
+        "areaSqM": 35000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-krt-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.1865,
+          40.8872
+        ]
+      },
+      "properties": {
+        "id": "ist-krt-01",
+        "name": "Kartal Sahil Meydanı ve Dolgu Alanı",
+        "city": "İstanbul",
+        "district": "Kartal",
+        "coordinates": [
+          29.1865,
+          40.8872
+        ],
+        "capacity": 60000,
+        "areaSqM": 140000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-krt-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.201,
+          40.908
+        ]
+      },
+      "properties": {
+        "id": "ist-krt-02",
+        "name": "Soğanlık Kent Parkı",
+        "city": "İstanbul",
+        "district": "Kartal",
+        "coordinates": [
+          29.201,
+          40.908
+        ],
+        "capacity": 22000,
+        "areaSqM": 48000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-pnd-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.231,
+          40.875
+        ]
+      },
+      "properties": {
+        "id": "ist-pnd-01",
+        "name": "Pendik Sahil Millet Bahçesi",
+        "city": "İstanbul",
+        "district": "Pendik",
+        "coordinates": [
+          29.231,
+          40.875
+        ],
+        "capacity": 70000,
+        "areaSqM": 180000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-pnd-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.305,
+          40.912
+        ]
+      },
+      "properties": {
+        "id": "ist-pnd-02",
+        "name": "Kurtköy Çamlık Parkı",
+        "city": "İstanbul",
+        "district": "Pendik",
+        "coordinates": [
+          29.305,
+          40.912
+        ],
+        "capacity": 35000,
+        "areaSqM": 80000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-umr-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.112,
+          41.034
+        ]
+      },
+      "properties": {
+        "id": "ist-umr-01",
+        "name": "Ümraniye Millet Bahçesi Afet Alanı",
+        "city": "İstanbul",
+        "district": "Ümraniye",
+        "coordinates": [
+          29.112,
+          41.034
+        ],
+        "capacity": 70000,
+        "areaSqM": 210000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-umr-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.142,
+          41.025
+        ]
+      },
+      "properties": {
+        "id": "ist-umr-02",
+        "name": "Ihlamurkuyu Şehir Parkı",
+        "city": "İstanbul",
+        "district": "Ümraniye",
+        "coordinates": [
+          29.142,
+          41.025
+        ],
+        "capacity": 30000,
+        "areaSqM": 65000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-byk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.098,
+          41.132
+        ]
+      },
+      "properties": {
+        "id": "ist-byk-01",
+        "name": "Beykoz Çayırı Toplanma Sahası",
+        "city": "İstanbul",
+        "district": "Beykoz",
+        "coordinates": [
+          29.098,
+          41.132
+        ],
+        "capacity": 40000,
+        "areaSqM": 95000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-ckm-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.178,
+          41.036
+        ]
+      },
+      "properties": {
+        "id": "ist-ckm-01",
+        "name": "Çekmeköy Doğa Parkı",
+        "city": "İstanbul",
+        "district": "Çekmeköy",
+        "coordinates": [
+          29.178,
+          41.036
+        ],
+        "capacity": 45000,
+        "areaSqM": 110000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-snc-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.228,
+          40.985
+        ]
+      },
+      "properties": {
+        "id": "ist-snc-01",
+        "name": "Sancaktepe Meydan Parkı",
+        "city": "İstanbul",
+        "district": "Sancaktepe",
+        "coordinates": [
+          29.228,
+          40.985
+        ],
+        "capacity": 35000,
+        "areaSqM": 75000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -108,6 +637,10 @@
         "name": "Yıldız Parkı Ana Toplanma Sahası",
         "city": "İstanbul",
         "district": "Beşiktaş",
+        "coordinates": [
+          29.0142,
+          41.0493
+        ],
         "capacity": 40000,
         "areaSqM": 120000,
         "hasWater": true,
@@ -131,6 +664,10 @@
         "name": "Abbasağa Parkı",
         "city": "İstanbul",
         "district": "Beşiktaş",
+        "coordinates": [
+          29.0044,
+          41.0478
+        ],
         "capacity": 12000,
         "areaSqM": 25000,
         "hasWater": true,
@@ -151,9 +688,13 @@
       },
       "properties": {
         "id": "ist-bsk-03",
-        "name": "Bebek Parkı Sahil Toplanma Alanı",
+        "name": "Bebek Sahil Parkı",
         "city": "İstanbul",
         "district": "Beşiktaş",
+        "coordinates": [
+          29.0437,
+          41.0772
+        ],
         "capacity": 18000,
         "areaSqM": 38000,
         "hasWater": true,
@@ -174,9 +715,13 @@
       },
       "properties": {
         "id": "ist-ssl-01",
-        "name": "Maçka Demokrasi Parkı",
+        "name": "Maçka Demokrasi Parkı Afet Sahası",
         "city": "İstanbul",
         "district": "Şişli",
+        "coordinates": [
+          28.9953,
+          41.0428
+        ],
         "capacity": 55000,
         "areaSqM": 140000,
         "hasWater": true,
@@ -200,80 +745,15 @@
         "name": "Abide-i Hürriyet Parkı",
         "city": "İstanbul",
         "district": "Şişli",
+        "coordinates": [
+          28.9818,
+          41.0664
+        ],
         "capacity": 30000,
         "areaSqM": 75000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-usk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.0225,
-          41.0315
-        ]
-      },
-      "properties": {
-        "id": "ist-usk-01",
-        "name": "Fethi Paşa Korusu Giriş Meydanı",
-        "city": "İstanbul",
-        "district": "Üsküdar",
-        "capacity": 28000,
-        "areaSqM": 65000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-usk-02",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.0662,
-          41.0264
-        ]
-      },
-      "properties": {
-        "id": "ist-usk-02",
-        "name": "Çamlıca Millet Bahçesi",
-        "city": "İstanbul",
-        "district": "Üsküdar",
-        "capacity": 60000,
-        "areaSqM": 180000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-usk-03",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.015,
-          41.026
-        ]
-      },
-      "properties": {
-        "id": "ist-usk-03",
-        "name": "Üsküdar Meydanı ve Sahil Parkı",
-        "city": "İstanbul",
-        "district": "Üsküdar",
-        "capacity": 35000,
-        "areaSqM": 70000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": false,
         "hasGenerator": true
       }
     },
@@ -289,9 +769,13 @@
       },
       "properties": {
         "id": "ist-fth-01",
-        "name": "Yenikapı Etkinlik ve Afet Alanı",
+        "name": "Yenikapı Afet & Toplanma Sahası",
         "city": "İstanbul",
         "district": "Fatih",
+        "coordinates": [
+          28.9535,
+          41.0012
+        ],
         "capacity": 250000,
         "areaSqM": 650000,
         "hasWater": true,
@@ -315,6 +799,10 @@
         "name": "Gülhane Parkı",
         "city": "İstanbul",
         "district": "Fatih",
+        "coordinates": [
+          28.9815,
+          41.0135
+        ],
         "capacity": 35000,
         "areaSqM": 90000,
         "hasWater": true,
@@ -329,63 +817,21 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          28.9482,
-          41.021
+          28.938,
+          41.011
         ]
       },
       "properties": {
         "id": "ist-fth-03",
-        "name": "Fatih Çarşamba Parkı ve Toplanma Alanı",
+        "name": "Fındıkzade Çukurbostan Parkı",
         "city": "İstanbul",
         "district": "Fatih",
-        "capacity": 15000,
-        "areaSqM": 28000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": false
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-bkr-01",
-      "geometry": {
-        "type": "Point",
         "coordinates": [
-          28.871,
-          40.995
-        ]
-      },
-      "properties": {
-        "id": "ist-bkr-01",
-        "name": "Bakırköy Botanik Parkı",
-        "city": "İstanbul",
-        "district": "Bakırköy",
-        "capacity": 42000,
-        "areaSqM": 96000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-bkr-02",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          28.7885,
-          40.976
-        ]
-      },
-      "properties": {
-        "id": "ist-bkr-02",
-        "name": "Florya Atatürk Ormanı Afet Sahası",
-        "city": "İstanbul",
-        "district": "Bakırköy",
-        "capacity": 70000,
-        "areaSqM": 220000,
+          28.938,
+          41.011
+        ],
+        "capacity": 18000,
+        "areaSqM": 32000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -407,6 +853,10 @@
         "name": "Taksim Gezi Parkı Afet Alanı",
         "city": "İstanbul",
         "district": "Beyoğlu",
+        "coordinates": [
+          28.987,
+          41.0375
+        ],
         "capacity": 38000,
         "areaSqM": 78000,
         "hasWater": true,
@@ -430,6 +880,10 @@
         "name": "Kasımpaşa Hasköy Sahil Parkı",
         "city": "İstanbul",
         "district": "Beyoğlu",
+        "coordinates": [
+          28.9542,
+          41.0388
+        ],
         "capacity": 22000,
         "areaSqM": 50000,
         "hasWater": true,
@@ -440,21 +894,25 @@
     },
     {
       "type": "Feature",
-      "id": "ist-ats-01",
+      "id": "ist-bkr-01",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.117,
-          40.9995
+          28.871,
+          40.995
         ]
       },
       "properties": {
-        "id": "ist-ats-01",
-        "name": "Nezahat Gökyiğit Botanik Bahçesi",
+        "id": "ist-bkr-01",
+        "name": "Bakırköy Botanik Parkı",
         "city": "İstanbul",
-        "district": "Ataşehir",
-        "capacity": 50000,
-        "areaSqM": 150000,
+        "district": "Bakırköy",
+        "coordinates": [
+          28.871,
+          40.995
+        ],
+        "capacity": 42000,
+        "areaSqM": 96000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -463,21 +921,25 @@
     },
     {
       "type": "Feature",
-      "id": "ist-ats-02",
+      "id": "ist-bkr-02",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.1065,
-          40.988
+          28.7885,
+          40.976
         ]
       },
       "properties": {
-        "id": "ist-ats-02",
-        "name": "Ataşehir Kent Meydanı",
+        "id": "ist-bkr-02",
+        "name": "Florya Atatürk Ormanı Afet Sahası",
         "city": "İstanbul",
-        "district": "Ataşehir",
-        "capacity": 25000,
-        "areaSqM": 55000,
+        "district": "Bakırköy",
+        "coordinates": [
+          28.7885,
+          40.976
+        ],
+        "capacity": 70000,
+        "areaSqM": 220000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -486,67 +948,25 @@
     },
     {
       "type": "Feature",
-      "id": "ist-mlt-01",
+      "id": "ist-zyt-01",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.124,
-          40.923
+          28.898,
+          40.999
         ]
       },
       "properties": {
-        "id": "ist-mlt-01",
-        "name": "Maltepe Sahil Şehir Parkı Afet Üssü",
+        "id": "ist-zyt-01",
+        "name": "Çırpıcı Şehir Parkı Afet Alanı",
         "city": "İstanbul",
-        "district": "Maltepe",
-        "capacity": 300000,
-        "areaSqM": 1000000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-krt-01",
-      "geometry": {
-        "type": "Point",
+        "district": "Zeytinburnu",
         "coordinates": [
-          29.1865,
-          40.8872
-        ]
-      },
-      "properties": {
-        "id": "ist-krt-01",
-        "name": "Kartal Meydanı ve Sahil Alanı",
-        "city": "İstanbul",
-        "district": "Kartal",
-        "capacity": 35000,
-        "areaSqM": 75000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-pnd-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.231,
-          40.875
-        ]
-      },
-      "properties": {
-        "id": "ist-pnd-01",
-        "name": "Pendik Sahil Millet Bahçesi",
-        "city": "İstanbul",
-        "district": "Pendik",
-        "capacity": 48000,
-        "areaSqM": 130000,
+          28.898,
+          40.999
+        ],
+        "capacity": 80000,
+        "areaSqM": 230000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -568,6 +988,10 @@
         "name": "Emirgan Korusu Giriş Sahası",
         "city": "İstanbul",
         "district": "Sarıyer",
+        "coordinates": [
+          29.0535,
+          41.1075
+        ],
         "capacity": 36000,
         "areaSqM": 110000,
         "hasWater": true,
@@ -591,31 +1015,12 @@
         "name": "Atatürk Kent Ormanı",
         "city": "İstanbul",
         "district": "Sarıyer",
+        "coordinates": [
+          29.027,
+          41.118
+        ],
         "capacity": 65000,
         "areaSqM": 200000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-zyt-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          28.898,
-          40.999
-        ]
-      },
-      "properties": {
-        "id": "ist-zyt-01",
-        "name": "Zeytinburnu Çırpıcı Şehir Parkı",
-        "city": "İstanbul",
-        "district": "Zeytinburnu",
-        "capacity": 80000,
-        "areaSqM": 230000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -637,6 +1042,10 @@
         "name": "Avcılar Sahil Parkı Afet Toplanma Merkezi",
         "city": "İstanbul",
         "district": "Avcılar",
+        "coordinates": [
+          28.721,
+          40.974
+        ],
         "capacity": 60000,
         "areaSqM": 160000,
         "hasWater": true,
@@ -647,7 +1056,7 @@
     },
     {
       "type": "Feature",
-      "id": "ist-byk-01",
+      "id": "ist-byk-02",
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -656,12 +1065,70 @@
         ]
       },
       "properties": {
-        "id": "ist-byk-01",
+        "id": "ist-byk-02",
         "name": "Yaşam Vadisi 1. Etap",
         "city": "İstanbul",
         "district": "Beylikdüzü",
+        "coordinates": [
+          28.648,
+          41.002
+        ],
         "capacity": 90000,
         "areaSqM": 280000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-bsk-04",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.692,
+          41.068
+        ]
+      },
+      "properties": {
+        "id": "ist-bsk-04",
+        "name": "Bahçeşehir Gölet Parkı",
+        "city": "İstanbul",
+        "district": "Başakşehir",
+        "coordinates": [
+          28.692,
+          41.068
+        ],
+        "capacity": 50000,
+        "areaSqM": 140000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-bsk-05",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.788,
+          41.104
+        ]
+      },
+      "properties": {
+        "id": "ist-bsk-05",
+        "name": "Başakşehir Millet Bahçesi",
+        "city": "İstanbul",
+        "district": "Başakşehir",
+        "coordinates": [
+          28.788,
+          41.104
+        ],
+        "capacity": 65000,
+        "areaSqM": 190000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -680,9 +1147,13 @@
       },
       "properties": {
         "id": "ist-kck-01",
-        "name": "Küçükçekmece Göl Parkı",
+        "name": "Küçükçekmece Göl Sahil Parkı",
         "city": "İstanbul",
         "district": "Küçükçekmece",
+        "coordinates": [
+          28.773,
+          40.991
+        ],
         "capacity": 45000,
         "areaSqM": 120000,
         "hasWater": true,
@@ -693,67 +1164,52 @@
     },
     {
       "type": "Feature",
-      "id": "ist-bsk-02",
+      "id": "ist-bgc-01",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          28.692,
-          41.068
+          28.845,
+          41.038
         ]
       },
       "properties": {
-        "id": "ist-bsk-02",
-        "name": "Bahçeşehir Gölet Parkı",
+        "id": "ist-bgc-01",
+        "name": "Bağcılar Bölge Parkı",
         "city": "İstanbul",
-        "district": "Başakşehir",
-        "capacity": 50000,
-        "areaSqM": 140000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-umr-01",
-      "geometry": {
-        "type": "Point",
+        "district": "Bağcılar",
         "coordinates": [
-          29.112,
-          41.034
-        ]
-      },
-      "properties": {
-        "id": "ist-umr-01",
-        "name": "Ümraniye Millet Bahçesi",
-        "city": "İstanbul",
-        "district": "Ümraniye",
-        "capacity": 70000,
-        "areaSqM": 210000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ist-eyp-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          28.94,
-          41.076
-        ]
-      },
-      "properties": {
-        "id": "ist-eyp-01",
-        "name": "Alibeyköy Baraj Sahası Toplanma Alanı",
-        "city": "İstanbul",
-        "district": "Eyüpsultan",
+          28.845,
+          41.038
+        ],
         "capacity": 40000,
-        "areaSqM": 100000,
+        "areaSqM": 95000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ist-bhe-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.858,
+          40.998
+        ]
+      },
+      "properties": {
+        "id": "ist-bhe-01",
+        "name": "Milli Egemenlik Parkı",
+        "city": "İstanbul",
+        "district": "Bahçelievler",
+        "coordinates": [
+          28.858,
+          40.998
+        ],
+        "capacity": 35000,
+        "areaSqM": 80000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -772,11 +1228,42 @@
       },
       "properties": {
         "id": "ank-cnt-01",
-        "name": "Anıt Park ve Kurtuluş Parkı Sahası",
+        "name": "Kurtuluş Parkı Afet Toplanma Sahası",
         "city": "Ankara",
         "district": "Çankaya",
+        "coordinates": [
+          32.868,
+          39.927
+        ],
         "capacity": 55000,
         "areaSqM": 130000,
+        "hasWater": true,
+        "hasElectricity": true,
+        "hasTentArea": true,
+        "hasGenerator": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ank-cnt-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.86,
+          39.897
+        ]
+      },
+      "properties": {
+        "id": "ank-cnt-02",
+        "name": "Kuğulu Park ve Seğmenler Parkı",
+        "city": "Ankara",
+        "district": "Çankaya",
+        "coordinates": [
+          32.86,
+          39.897
+        ],
+        "capacity": 35000,
+        "areaSqM": 85000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -798,6 +1285,10 @@
         "name": "Altınpark Afet ve İnsani Yardım Merkezi",
         "city": "Ankara",
         "district": "Altındağ",
+        "coordinates": [
+          32.885,
+          39.965
+        ],
         "capacity": 95000,
         "areaSqM": 260000,
         "hasWater": true,
@@ -821,6 +1312,10 @@
         "name": "Atatürk Orman Çiftliği Toplanma Sahası",
         "city": "Ankara",
         "district": "Yenimahalle",
+        "coordinates": [
+          32.795,
+          39.94
+        ],
         "capacity": 150000,
         "areaSqM": 500000,
         "hasWater": true,
@@ -831,21 +1326,25 @@
     },
     {
       "type": "Feature",
-      "id": "ank-mam-01",
+      "id": "ank-kec-01",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          32.915,
-          39.928
+          32.865,
+          39.992
         ]
       },
       "properties": {
-        "id": "ank-mam-01",
-        "name": "Mamak Şehir Parkı",
+        "id": "ank-kec-01",
+        "name": "Keçiören Kartaltepe Kent Parkı",
         "city": "Ankara",
-        "district": "Mamak",
-        "capacity": 40000,
-        "areaSqM": 95000,
+        "district": "Keçiören",
+        "coordinates": [
+          32.865,
+          39.992
+        ],
+        "capacity": 60000,
+        "areaSqM": 170000,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,
@@ -867,6 +1366,10 @@
         "name": "Kültürpark Fuar Afet Ana Koordinasyon Alanı",
         "city": "İzmir",
         "district": "Konak",
+        "coordinates": [
+          27.146,
+          38.428
+        ],
         "capacity": 120000,
         "areaSqM": 420000,
         "hasWater": true,
@@ -890,6 +1393,10 @@
         "name": "Karşıyaka Sahil Parkı",
         "city": "İzmir",
         "district": "Karşıyaka",
+        "coordinates": [
+          27.112,
+          38.455
+        ],
         "capacity": 50000,
         "areaSqM": 140000,
         "hasWater": true,
@@ -913,6 +1420,10 @@
         "name": "Bayraklı Mansuroğlu Afet Parkı",
         "city": "İzmir",
         "district": "Bayraklı",
+        "coordinates": [
+          27.185,
+          38.462
+        ],
         "capacity": 35000,
         "areaSqM": 80000,
         "hasWater": true,
@@ -936,6 +1447,10 @@
         "name": "Aşık Veysel Rekreasyon Alanı",
         "city": "İzmir",
         "district": "Bornova",
+        "coordinates": [
+          27.202,
+          38.448
+        ],
         "capacity": 75000,
         "areaSqM": 230000,
         "hasWater": true,
@@ -959,6 +1474,10 @@
         "name": "Merinos Kent Parkı",
         "city": "Bursa",
         "district": "Osmangazi",
+        "coordinates": [
+          29.055,
+          40.201
+        ],
         "capacity": 85000,
         "areaSqM": 250000,
         "hasWater": true,
@@ -982,1894 +1501,12 @@
         "name": "Nilüfer Fethiye Parkı",
         "city": "Bursa",
         "district": "Nilüfer",
+        "coordinates": [
+          28.975,
+          40.218
+        ],
         "capacity": 42000,
         "areaSqM": 105000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ant-mur-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.706,
-          36.88
-        ]
-      },
-      "properties": {
-        "id": "ant-mur-01",
-        "name": "Karaalioğlu Parkı Sahil Toplanma Alanı",
-        "city": "Antalya",
-        "district": "Muratpaşa",
-        "capacity": 65000,
-        "areaSqM": 180000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ant-kon-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.648,
-          36.866
-        ]
-      },
-      "properties": {
-        "id": "ant-kon-01",
-        "name": "Konyaaltı Sahil Yaşam Parkı",
-        "city": "Antalya",
-        "district": "Konyaaltı",
-        "capacity": 90000,
-        "areaSqM": 320000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ada-sey-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35.334,
-          36.998
-        ]
-      },
-      "properties": {
-        "id": "ada-sey-01",
-        "name": "Merkez Park Afet Koordinasyon Sahası",
-        "city": "Adana",
-        "district": "Seyhan",
-        "capacity": 110000,
-        "areaSqM": 330000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ada-cuk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35.289,
-          37.042
-        ]
-      },
-      "properties": {
-        "id": "ada-cuk-01",
-        "name": "Çukurova Doğal Park",
-        "city": "Adana",
-        "district": "Çukurova",
-        "capacity": 55000,
-        "areaSqM": 160000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "gaz-seh-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.362,
-          37.058
-        ]
-      },
-      "properties": {
-        "id": "gaz-seh-01",
-        "name": "Kavaklık Parkı ve Masal Parkı",
-        "city": "Gaziantep",
-        "district": "Şahinbey",
-        "capacity": 70000,
-        "areaSqM": 210000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "gaz-smk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.338,
-          37.112
-        ]
-      },
-      "properties": {
-        "id": "gaz-smk-01",
-        "name": "Dülükbaba Tabiat Parkı Sahası",
-        "city": "Gaziantep",
-        "district": "Şehitkamil",
-        "capacity": 95000,
-        "areaSqM": 350000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "koc-izm-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.912,
-          40.76
-        ]
-      },
-      "properties": {
-        "id": "koc-izm-01",
-        "name": "Seka Park 1. ve 2. Etap Afet Sahası",
-        "city": "Kocaeli",
-        "district": "İzmit",
-        "capacity": 120000,
-        "areaSqM": 450000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "koc-geb-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.432,
-          40.803
-        ]
-      },
-      "properties": {
-        "id": "koc-geb-01",
-        "name": "Gebze Şehir Parkı ve Toplanma Meydanı",
-        "city": "Kocaeli",
-        "district": "Gebze",
-        "capacity": 50000,
-        "areaSqM": 140000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "hat-ant-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.158,
-          36.205
-        ]
-      },
-      "properties": {
-        "id": "hat-ant-01",
-        "name": "Antakya Atatürk Parkı Sahası",
-        "city": "Hatay",
-        "district": "Antakya",
-        "capacity": 60000,
-        "areaSqM": 170000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "hat-isk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.172,
-          36.588
-        ]
-      },
-      "properties": {
-        "id": "hat-isk-01",
-        "name": "İskenderun Sahil Kordonu Afet Alanı",
-        "city": "Hatay",
-        "district": "İskenderun",
-        "capacity": 70000,
-        "areaSqM": 200000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "kmr-onk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.902,
-          37.575
-        ]
-      },
-      "properties": {
-        "id": "kmr-onk-01",
-        "name": "Hanefi Mahçiçek Stadyumu ve Park Alanı",
-        "city": "Kahramanmaraş",
-        "district": "Onikişubat",
-        "capacity": 80000,
-        "areaSqM": 240000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "van-ipe-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          43.378,
-          38.498
-        ]
-      },
-      "properties": {
-        "id": "van-ipe-01",
-        "name": "Van Atatürk Kültür Parkı",
-        "city": "Van",
-        "district": "İpekyolu",
-        "capacity": 50000,
-        "areaSqM": 140000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "elz-mrk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.215,
-          38.672
-        ]
-      },
-      "properties": {
-        "id": "elz-mrk-01",
-        "name": "Kültür Park Afet Toplanma Sahası",
-        "city": "Elazığ",
-        "district": "Merkez",
-        "capacity": 60000,
-        "areaSqM": 180000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "sak-ada-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.395,
-          40.778
-        ]
-      },
-      "properties": {
-        "id": "sak-ada-01",
-        "name": "Kent Park ve Çark Mesire Alanı",
-        "city": "Sakarya",
-        "district": "Adapazarı",
-        "capacity": 65000,
-        "areaSqM": 190000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "trb-ort-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.718,
-          41.002
-        ]
-      },
-      "properties": {
-        "id": "trb-ort-01",
-        "name": "Zağnos Vadisi Parkı",
-        "city": "Trabzon",
-        "district": "Ortahisar",
-        "capacity": 45000,
-        "areaSqM": 120000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "sam-ilka-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.352,
-          41.288
-        ]
-      },
-      "properties": {
-        "id": "sam-ilka-01",
-        "name": "Doğu Park ve Sahil Afet Alanı",
-        "city": "Samsun",
-        "district": "İlkadım",
-        "capacity": 70000,
-        "areaSqM": 210000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "diy-kay-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          40.198,
-          37.935
-        ]
-      },
-      "properties": {
-        "id": "diy-kay-01",
-        "name": "Anzele Parkı ve Koşuyolu Şehir Parkı",
-        "city": "Diyarbakır",
-        "district": "Kayapınar",
-        "capacity": 75000,
-        "areaSqM": 220000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "esk-tep-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.473,
-          39.77
-        ]
-      },
-      "properties": {
-        "id": "esk-tep-01",
-        "name": "Sazova Bilim Kültür ve Sanat Parkı",
-        "city": "Eskişehir",
-        "district": "Tepebaşı",
-        "capacity": 90000,
-        "areaSqM": 400000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "kon-sel-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          32.493,
-          37.872
-        ]
-      },
-      "properties": {
-        "id": "kon-sel-01",
-        "name": "Kültür Park ve Alaaddin Tepesi Sahası",
-        "city": "Konya",
-        "district": "Selçuklu",
-        "capacity": 60000,
-        "areaSqM": 170000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "kay-mel-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35.485,
-          38.721
-        ]
-      },
-      "properties": {
-        "id": "kay-mel-01",
-        "name": "Kadir Has Kent Parkı Sahası",
-        "city": "Kayseri",
-        "district": "Melikgazi",
-        "capacity": 70000,
-        "areaSqM": 200000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "mer-yen-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.632,
-          36.795
-        ]
-      },
-      "properties": {
-        "id": "mer-yen-01",
-        "name": "Mersin Atatürk Parkı Sahil Şeridi",
-        "city": "Mersin",
-        "district": "Yenişehir",
-        "capacity": 80000,
-        "areaSqM": 260000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "mug-bod-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.432,
-          37.038
-        ]
-      },
-      "properties": {
-        "id": "mug-bod-01",
-        "name": "Bodrum Şehir Stadyumu ve Meydan Parkı",
-        "city": "Muğla",
-        "district": "Bodrum",
-        "capacity": 30000,
-        "areaSqM": 70000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "can-mrk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          26.406,
-          40.148
-        ]
-      },
-      "properties": {
-        "id": "can-mrk-01",
-        "name": "Halk Bahçesi ve Kordon Parkı",
-        "city": "Çanakkale",
-        "district": "Merkez",
-        "capacity": 35000,
-        "areaSqM": 85000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "tek-sül-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.512,
-          40.975
-        ]
-      },
-      "properties": {
-        "id": "tek-sül-01",
-        "name": "Barış ve Özgürlük Parkı Sahili",
-        "city": "Tekirdağ",
-        "district": "Süleymanpaşa",
-        "capacity": 45000,
-        "areaSqM": 110000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "bal-kae-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.884,
-          39.648
-        ]
-      },
-      "properties": {
-        "id": "bal-kae-01",
-        "name": "Atatürk Parkı ve Fuar Alanı",
-        "city": "Balıkesir",
-        "district": "Karesi",
-        "capacity": 40000,
-        "areaSqM": 95000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "man-seh-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.428,
-          38.614
-        ]
-      },
-      "properties": {
-        "id": "man-seh-01",
-        "name": "Sultan Parkı ve Fuar Sahası",
-        "city": "Manisa",
-        "district": "Şehzadeler",
-        "capacity": 42000,
-        "areaSqM": 105000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ayd-efe-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.848,
-          37.846
-        ]
-      },
-      "properties": {
-        "id": "ayd-efe-01",
-        "name": "Pınarbaşı Mesire Alanı ve Parkı",
-        "city": "Aydın",
-        "district": "Efeler",
-        "capacity": 38000,
-        "areaSqM": 90000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "den-pam-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.102,
-          37.765
-        ]
-      },
-      "properties": {
-        "id": "den-pam-01",
-        "name": "İncilipınar Parkı ve Afet Sahası",
-        "city": "Denizli",
-        "district": "Pamukkale",
-        "capacity": 55000,
-        "areaSqM": 150000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "mlt-bat-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          38.312,
-          38.351
-        ]
-      },
-      "properties": {
-        "id": "mlt-bat-01",
-        "name": "Sümer Park ve Mişmiş Park Afet Sahası",
-        "city": "Malatya",
-        "district": "Battalgazi",
-        "capacity": 70000,
-        "areaSqM": 220000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "ady-mrk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          38.275,
-          37.758
-        ]
-      },
-      "properties": {
-        "id": "ady-mrk-01",
-        "name": "Eğriçay Parkı ve Çadırkent Sahası",
-        "city": "Adıyaman",
-        "district": "Merkez",
-        "capacity": 60000,
-        "areaSqM": 180000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "san-hal-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          38.812,
-          37.168
-        ]
-      },
-      "properties": {
-        "id": "san-hal-01",
-        "name": "GAP Vadisi Afet ve Rekreasyon Alanı",
-        "city": "Şanlıurfa",
-        "district": "Haliliye",
-        "capacity": 85000,
-        "areaSqM": 300000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "erz-yak-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          41.265,
-          39.912
-        ]
-      },
-      "properties": {
-        "id": "erz-yak-01",
-        "name": "Olimpiyat Parkı ve Fuar Alanı",
-        "city": "Erzurum",
-        "district": "Yakutiye",
-        "capacity": 60000,
-        "areaSqM": 200000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "siv-mrk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.032,
-          39.755
-        ]
-      },
-      "properties": {
-        "id": "siv-mrk-01",
-        "name": "Paşabahçe Mesire Sahası",
-        "city": "Sivas",
-        "district": "Merkez",
-        "capacity": 48000,
-        "areaSqM": 140000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-afyonkarahisar-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.5404,
-          38.7507
-        ]
-      },
-      "properties": {
-        "id": "prov-afyonkarahisar-01",
-        "name": "Afyonkarahisar İl Afet Toplanma Sahası ve Parkı",
-        "city": "Afyonkarahisar",
-        "district": "Merkez",
-        "capacity": 35000,
-        "areaSqM": 98000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-ar-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          43.0519,
-          39.7191
-        ]
-      },
-      "properties": {
-        "id": "prov-ar-01",
-        "name": "Ağrı İl Afet Toplanma Sahası ve Parkı",
-        "city": "Ağrı",
-        "district": "Merkez",
-        "capacity": 30000,
-        "areaSqM": 84000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-amasya-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35.8353,
-          40.6534
-        ]
-      },
-      "properties": {
-        "id": "prov-amasya-01",
-        "name": "Amasya İl Afet Toplanma Sahası ve Parkı",
-        "city": "Amasya",
-        "district": "Merkez",
-        "capacity": 28000,
-        "areaSqM": 78400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-artvin-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          41.8183,
-          41.1828
-        ]
-      },
-      "properties": {
-        "id": "prov-artvin-01",
-        "name": "Artvin İl Afet Toplanma Sahası ve Parkı",
-        "city": "Artvin",
-        "district": "Merkez",
-        "capacity": 20000,
-        "areaSqM": 56000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bilecik-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.9793,
-          40.1426
-        ]
-      },
-      "properties": {
-        "id": "prov-bilecik-01",
-        "name": "Bilecik İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bilecik",
-        "district": "Merkez",
-        "capacity": 22000,
-        "areaSqM": 61600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bingl-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          40.4983,
-          38.8854
-        ]
-      },
-      "properties": {
-        "id": "prov-bingl-01",
-        "name": "Bingöl İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bingöl",
-        "district": "Merkez",
-        "capacity": 32000,
-        "areaSqM": 89600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bitlis-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          42.1095,
-          38.4006
-        ]
-      },
-      "properties": {
-        "id": "prov-bitlis-01",
-        "name": "Bitlis İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bitlis",
-        "district": "Merkez",
-        "capacity": 25000,
-        "areaSqM": 70000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bolu-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          31.6061,
-          40.735
-        ]
-      },
-      "properties": {
-        "id": "prov-bolu-01",
-        "name": "Bolu İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bolu",
-        "district": "Merkez",
-        "capacity": 34000,
-        "areaSqM": 95200,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-burdur-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.2889,
-          37.7203
-        ]
-      },
-      "properties": {
-        "id": "prov-burdur-01",
-        "name": "Burdur İl Afet Toplanma Sahası ve Parkı",
-        "city": "Burdur",
-        "district": "Merkez",
-        "capacity": 25000,
-        "areaSqM": 70000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-ankr-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          33.6134,
-          40.6013
-        ]
-      },
-      "properties": {
-        "id": "prov-ankr-01",
-        "name": "Çankırı İl Afet Toplanma Sahası ve Parkı",
-        "city": "Çankırı",
-        "district": "Merkez",
-        "capacity": 22000,
-        "areaSqM": 61600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-orum-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.9556,
-          40.5506
-        ]
-      },
-      "properties": {
-        "id": "prov-orum-01",
-        "name": "Çorum İl Afet Toplanma Sahası ve Parkı",
-        "city": "Çorum",
-        "district": "Merkez",
-        "capacity": 36000,
-        "areaSqM": 100800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-edirne-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          26.5557,
-          41.6772
-        ]
-      },
-      "properties": {
-        "id": "prov-edirne-01",
-        "name": "Edirne İl Afet Toplanma Sahası ve Parkı",
-        "city": "Edirne",
-        "district": "Merkez",
-        "capacity": 35000,
-        "areaSqM": 98000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-erzincan-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.4926,
-          39.75
-        ]
-      },
-      "properties": {
-        "id": "prov-erzincan-01",
-        "name": "Erzincan İl Afet Toplanma Sahası ve Parkı",
-        "city": "Erzincan",
-        "district": "Merkez",
-        "capacity": 40000,
-        "areaSqM": 112000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-giresun-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          38.3895,
-          40.9128
-        ]
-      },
-      "properties": {
-        "id": "prov-giresun-01",
-        "name": "Giresun İl Afet Toplanma Sahası ve Parkı",
-        "city": "Giresun",
-        "district": "Merkez",
-        "capacity": 30000,
-        "areaSqM": 84000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-gmhane-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.4814,
-          40.46
-        ]
-      },
-      "properties": {
-        "id": "prov-gmhane-01",
-        "name": "Gümüşhane İl Afet Toplanma Sahası ve Parkı",
-        "city": "Gümüşhane",
-        "district": "Merkez",
-        "capacity": 20000,
-        "areaSqM": 56000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-hakkri-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          43.7408,
-          37.5833
-        ]
-      },
-      "properties": {
-        "id": "prov-hakkri-01",
-        "name": "Hakkâri İl Afet Toplanma Sahası ve Parkı",
-        "city": "Hakkâri",
-        "district": "Merkez",
-        "capacity": 24000,
-        "areaSqM": 67200,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-isparta-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.5537,
-          37.7648
-        ]
-      },
-      "properties": {
-        "id": "prov-isparta-01",
-        "name": "Isparta İl Afet Toplanma Sahası ve Parkı",
-        "city": "Isparta",
-        "district": "Merkez",
-        "capacity": 35000,
-        "areaSqM": 98000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-kars-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          43.0975,
-          40.6013
-        ]
-      },
-      "properties": {
-        "id": "prov-kars-01",
-        "name": "Kars İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kars",
-        "district": "Merkez",
-        "capacity": 28000,
-        "areaSqM": 78400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-kastamonu-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          33.7765,
-          41.3887
-        ]
-      },
-      "properties": {
-        "id": "prov-kastamonu-01",
-        "name": "Kastamonu İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kastamonu",
-        "district": "Merkez",
-        "capacity": 27000,
-        "areaSqM": 75600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-krklareli-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          27.2244,
-          41.7333
-        ]
-      },
-      "properties": {
-        "id": "prov-krklareli-01",
-        "name": "Kırklareli İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kırklareli",
-        "district": "Merkez",
-        "capacity": 26000,
-        "areaSqM": 72800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-krehir-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.1709,
-          39.1425
-        ]
-      },
-      "properties": {
-        "id": "prov-krehir-01",
-        "name": "Kırşehir İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kırşehir",
-        "district": "Merkez",
-        "capacity": 25000,
-        "areaSqM": 70000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-ktahya-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.9833,
-          39.4167
-        ]
-      },
-      "properties": {
-        "id": "prov-ktahya-01",
-        "name": "Kütahya İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kütahya",
-        "district": "Merkez",
-        "capacity": 38000,
-        "areaSqM": 106400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-mardin-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          40.741,
-          37.3212
-        ]
-      },
-      "properties": {
-        "id": "prov-mardin-01",
-        "name": "Mardin İl Afet Toplanma Sahası ve Parkı",
-        "city": "Mardin",
-        "district": "Merkez",
-        "capacity": 38000,
-        "areaSqM": 106400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-mu-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          41.4911,
-          38.7432
-        ]
-      },
-      "properties": {
-        "id": "prov-mu-01",
-        "name": "Muş İl Afet Toplanma Sahası ve Parkı",
-        "city": "Muş",
-        "district": "Merkez",
-        "capacity": 28000,
-        "areaSqM": 78400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-nevehir-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.7144,
-          38.6244
-        ]
-      },
-      "properties": {
-        "id": "prov-nevehir-01",
-        "name": "Nevşehir İl Afet Toplanma Sahası ve Parkı",
-        "city": "Nevşehir",
-        "district": "Merkez",
-        "capacity": 26000,
-        "areaSqM": 72800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-nide-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.6794,
-          37.9667
-        ]
-      },
-      "properties": {
-        "id": "prov-nide-01",
-        "name": "Niğde İl Afet Toplanma Sahası ve Parkı",
-        "city": "Niğde",
-        "district": "Merkez",
-        "capacity": 28000,
-        "areaSqM": 78400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-ordu-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.8797,
-          40.9839
-        ]
-      },
-      "properties": {
-        "id": "prov-ordu-01",
-        "name": "Ordu İl Afet Toplanma Sahası ve Parkı",
-        "city": "Ordu",
-        "district": "Merkez",
-        "capacity": 38000,
-        "areaSqM": 106400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-rize-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          40.5217,
-          41.0208
-        ]
-      },
-      "properties": {
-        "id": "prov-rize-01",
-        "name": "Rize İl Afet Toplanma Sahası ve Parkı",
-        "city": "Rize",
-        "district": "Merkez",
-        "capacity": 30000,
-        "areaSqM": 84000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-siirt-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          41.942,
-          37.9333
-        ]
-      },
-      "properties": {
-        "id": "prov-siirt-01",
-        "name": "Siirt İl Afet Toplanma Sahası ve Parkı",
-        "city": "Siirt",
-        "district": "Merkez",
-        "capacity": 27000,
-        "areaSqM": 75600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-sinop-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35.1517,
-          42.0231
-        ]
-      },
-      "properties": {
-        "id": "prov-sinop-01",
-        "name": "Sinop İl Afet Toplanma Sahası ve Parkı",
-        "city": "Sinop",
-        "district": "Merkez",
-        "capacity": 24000,
-        "areaSqM": 67200,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-tokat-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.5544,
-          40.3167
-        ]
-      },
-      "properties": {
-        "id": "prov-tokat-01",
-        "name": "Tokat İl Afet Toplanma Sahası ve Parkı",
-        "city": "Tokat",
-        "district": "Merkez",
-        "capacity": 32000,
-        "areaSqM": 89600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-tunceli-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.5401,
-          39.1079
-        ]
-      },
-      "properties": {
-        "id": "prov-tunceli-01",
-        "name": "Tunceli İl Afet Toplanma Sahası ve Parkı",
-        "city": "Tunceli",
-        "district": "Merkez",
-        "capacity": 20000,
-        "areaSqM": 56000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-uak-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.4058,
-          38.6823
-        ]
-      },
-      "properties": {
-        "id": "prov-uak-01",
-        "name": "Uşak İl Afet Toplanma Sahası ve Parkı",
-        "city": "Uşak",
-        "district": "Merkez",
-        "capacity": 32000,
-        "areaSqM": 89600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-yozgat-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.8044,
-          39.8181
-        ]
-      },
-      "properties": {
-        "id": "prov-yozgat-01",
-        "name": "Yozgat İl Afet Toplanma Sahası ve Parkı",
-        "city": "Yozgat",
-        "district": "Merkez",
-        "capacity": 26000,
-        "areaSqM": 72800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-zonguldak-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          31.7987,
-          41.4564
-        ]
-      },
-      "properties": {
-        "id": "prov-zonguldak-01",
-        "name": "Zonguldak İl Afet Toplanma Sahası ve Parkı",
-        "city": "Zonguldak",
-        "district": "Merkez",
-        "capacity": 34000,
-        "areaSqM": 95200,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-aksaray-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.0254,
-          38.3687
-        ]
-      },
-      "properties": {
-        "id": "prov-aksaray-01",
-        "name": "Aksaray İl Afet Toplanma Sahası ve Parkı",
-        "city": "Aksaray",
-        "district": "Merkez",
-        "capacity": 31000,
-        "areaSqM": 86800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bayburt-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          40.2249,
-          40.2552
-        ]
-      },
-      "properties": {
-        "id": "prov-bayburt-01",
-        "name": "Bayburt İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bayburt",
-        "district": "Merkez",
-        "capacity": 18000,
-        "areaSqM": 50400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-karaman-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          33.215,
-          37.1759
-        ]
-      },
-      "properties": {
-        "id": "prov-karaman-01",
-        "name": "Karaman İl Afet Toplanma Sahası ve Parkı",
-        "city": "Karaman",
-        "district": "Merkez",
-        "capacity": 28000,
-        "areaSqM": 78400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-krkkale-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          33.5065,
-          39.8468
-        ]
-      },
-      "properties": {
-        "id": "prov-krkkale-01",
-        "name": "Kırıkkale İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kırıkkale",
-        "district": "Merkez",
-        "capacity": 30000,
-        "areaSqM": 84000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-batman-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          41.1322,
-          37.8812
-        ]
-      },
-      "properties": {
-        "id": "prov-batman-01",
-        "name": "Batman İl Afet Toplanma Sahası ve Parkı",
-        "city": "Batman",
-        "district": "Merkez",
-        "capacity": 48000,
-        "areaSqM": 134400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-rnak-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          42.4537,
-          37.5164
-        ]
-      },
-      "properties": {
-        "id": "prov-rnak-01",
-        "name": "Şırnak İl Afet Toplanma Sahası ve Parkı",
-        "city": "Şırnak",
-        "district": "Merkez",
-        "capacity": 30000,
-        "areaSqM": 84000,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-bartn-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          32.3375,
-          41.6344
-        ]
-      },
-      "properties": {
-        "id": "prov-bartn-01",
-        "name": "Bartın İl Afet Toplanma Sahası ve Parkı",
-        "city": "Bartın",
-        "district": "Merkez",
-        "capacity": 22000,
-        "areaSqM": 61600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-ardahan-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          42.7022,
-          41.1105
-        ]
-      },
-      "properties": {
-        "id": "prov-ardahan-01",
-        "name": "Ardahan İl Afet Toplanma Sahası ve Parkı",
-        "city": "Ardahan",
-        "district": "Merkez",
-        "capacity": 18000,
-        "areaSqM": 50400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-idr-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          44.045,
-          39.9196
-        ]
-      },
-      "properties": {
-        "id": "prov-idr-01",
-        "name": "Iğdır İl Afet Toplanma Sahası ve Parkı",
-        "city": "Iğdır",
-        "district": "Merkez",
-        "capacity": 22000,
-        "areaSqM": 61600,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-yalova-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          29.2769,
-          40.65
-        ]
-      },
-      "properties": {
-        "id": "prov-yalova-01",
-        "name": "Yalova İl Afet Toplanma Sahası ve Parkı",
-        "city": "Yalova",
-        "district": "Merkez",
-        "capacity": 38000,
-        "areaSqM": 106400,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-karabk-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          32.6277,
-          41.2061
-        ]
-      },
-      "properties": {
-        "id": "prov-karabk-01",
-        "name": "Karabük İl Afet Toplanma Sahası ve Parkı",
-        "city": "Karabük",
-        "district": "Merkez",
-        "capacity": 26000,
-        "areaSqM": 72800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-kilis-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.115,
-          36.7184
-        ]
-      },
-      "properties": {
-        "id": "prov-kilis-01",
-        "name": "Kilis İl Afet Toplanma Sahası ve Parkı",
-        "city": "Kilis",
-        "district": "Merkez",
-        "capacity": 24000,
-        "areaSqM": 67200,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-osmaniye-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          36.2464,
-          37.0742
-        ]
-      },
-      "properties": {
-        "id": "prov-osmaniye-01",
-        "name": "Osmaniye İl Afet Toplanma Sahası ve Parkı",
-        "city": "Osmaniye",
-        "district": "Merkez",
-        "capacity": 36000,
-        "areaSqM": 100800,
-        "hasWater": true,
-        "hasElectricity": true,
-        "hasTentArea": true,
-        "hasGenerator": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "prov-dzce-01",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          31.1625,
-          40.8438
-        ]
-      },
-      "properties": {
-        "id": "prov-dzce-01",
-        "name": "Düzce İl Afet Toplanma Sahası ve Parkı",
-        "city": "Düzce",
-        "district": "Merkez",
-        "capacity": 38000,
-        "areaSqM": 106400,
         "hasWater": true,
         "hasElectricity": true,
         "hasTentArea": true,

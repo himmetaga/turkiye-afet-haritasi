@@ -3,58 +3,198 @@
   "features": [
     {
       "type": "Feature",
-      "id": "med-ist-01",
-      "geometry": { "type": "Point", "coordinates": [29.0335, 40.9932] },
+      "id": "hosp-ist-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0195,
+          40.9998
+        ]
+      },
       "properties": {
-        "id": "med-ist-01",
+        "id": "hosp-ist-01",
         "name": "Haydarpaşa Numune Eğitim ve Araştırma Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Kadıköy",
-        "typeText": "Acil Eğitim & Araştırma Hastanesi",
+        "typeText": "1. Basamak Acil Travma & Şehir Hastanesi",
         "emergencyBeds": 750,
         "hasTraumaCenter": true,
-        "helipad": true
+        "helipad": true,
+        "coordinates": [
+          29.0195,
+          40.9998
+        ]
       }
     },
     {
       "type": "Feature",
-      "id": "med-ist-02",
-      "geometry": { "type": "Point", "coordinates": [28.9390, 41.0150] },
+      "id": "hosp-ist-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.022,
+          41.006
+        ]
+      },
       "properties": {
-        "id": "med-ist-02",
+        "id": "hosp-ist-02",
+        "name": "Sultan 2. Abdülhamid Han E.A. Hastanesi (GATA)",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Askeri Standart Travma & Yanık Merkezi",
+        "emergencyBeds": 800,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          29.022,
+          41.006
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-03",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.062,
+          40.988
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-03",
+        "name": "Göztepe Prof. Dr. Süleyman Yalçın Şehir Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Sismik İzolasyonlu Acil Şehir Hastanesi",
+        "emergencyBeds": 900,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          29.062,
+          40.988
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-04",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.939,
+          41.015
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-04",
         "name": "İstanbul Üniversitesi Çapa Tıp Fakültesi Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Fatih",
-        "typeText": "1. Seviye Travma & Üniversite Hastanesi",
-        "emergencyBeds": 1200,
+        "typeText": "Merkezi Üniversite & Travma Hastanesi",
+        "emergencyBeds": 1250,
         "hasTraumaCenter": true,
-        "helipad": false
+        "helipad": false,
+        "coordinates": [
+          28.939,
+          41.015
+        ]
       }
     },
     {
       "type": "Feature",
-      "id": "med-ist-03",
-      "geometry": { "type": "Point", "coordinates": [28.9880, 41.0620] },
+      "id": "hosp-ist-05",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.943,
+          41.005
+        ]
+      },
       "properties": {
-        "id": "med-ist-03",
+        "id": "hosp-ist-05",
+        "name": "Cerrahpaşa Tıp Fakültesi Acil Yerleşkesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Fatih",
+        "typeText": "Acil Afet Müdahale Kliniği",
+        "emergencyBeds": 950,
+        "hasTraumaCenter": true,
+        "helipad": false,
+        "coordinates": [
+          28.943,
+          41.005
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-06",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.978,
+          41.062
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-06",
         "name": "Prof. Dr. Cemil Taşcıoğlu Şehir Hastanesi (Okmeydanı)",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Şişli",
-        "typeText": "Sismik İzolasyonlu Şehir Hastanesi",
+        "typeText": "Sismik Korumalı Şehir Hastanesi",
         "emergencyBeds": 1100,
         "hasTraumaCenter": true,
-        "helipad": true
+        "helipad": true,
+        "coordinates": [
+          28.978,
+          41.062
+        ]
       }
     },
     {
       "type": "Feature",
-      "id": "med-ist-04",
-      "geometry": { "type": "Point", "coordinates": [28.6980, 41.1020] },
+      "id": "hosp-ist-07",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.048,
+          41.135
+        ]
+      },
       "properties": {
-        "id": "med-ist-04",
+        "id": "hosp-ist-07",
+        "name": "Şişli Hamidiye Etfal E.A. Hastanesi (Sarıyer)",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Sarıyer",
+        "typeText": "Bölge Acil Travma Hastanesi",
+        "emergencyBeds": 600,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          29.048,
+          41.135
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-08",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.698,
+          41.102
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-08",
         "name": "Başakşehir Çam ve Sakura Şehir Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
@@ -62,29 +202,439 @@
         "typeText": "2068 Sismik İzolatörlü Afet Ana Hastanesi",
         "emergencyBeds": 2682,
         "hasTraumaCenter": true,
-        "helipad": true
+        "helipad": true,
+        "coordinates": [
+          28.698,
+          41.102
+        ]
       }
     },
     {
       "type": "Feature",
-      "id": "med-ist-05",
-      "geometry": { "type": "Point", "coordinates": [29.1550, 40.9420] },
+      "id": "hosp-ist-09",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.868,
+          40.998
+        ]
+      },
       "properties": {
-        "id": "med-ist-05",
+        "id": "hosp-ist-09",
+        "name": "Bakırköy Dr. Sadi Konuk E.A. Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Bakırköy",
+        "typeText": "Avrupa Yakası Acil Travma Hastanesi",
+        "emergencyBeds": 850,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          28.868,
+          40.998
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.182,
+          40.912
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-10",
         "name": "Kartal Dr. Lütfi Kırdar Şehir Hastanesi",
         "category": "hospital",
         "city": "İstanbul",
         "district": "Kartal",
-        "typeText": "Anadolu Yakası Sismik İzolasyonlu Şehir Hastanesi",
+        "typeText": "Anadolu Yakası Sismik İzolatörlü Şehir Hastanesi",
+        "emergencyBeds": 1150,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          29.182,
+          40.912
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ist-11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.105,
+          41.028
+        ]
+      },
+      "properties": {
+        "id": "hosp-ist-11",
+        "name": "Ümraniye Eğitim ve Araştırma Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Ümraniye",
+        "typeText": "Acil Yoğun Bakım ve Cerrahi Merkezi",
+        "emergencyBeds": 700,
+        "hasTraumaCenter": true,
+        "helipad": false,
+        "coordinates": [
+          29.105,
+          41.028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ank-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.765,
+          39.892
+        ]
+      },
+      "properties": {
+        "id": "hosp-ank-01",
+        "name": "Ankara Bilkent Şehir Hastanesi",
+        "category": "hospital",
+        "city": "Ankara",
+        "district": "Çankaya",
+        "typeText": "Ulusal Afet & Travma Koordinasyon Hastanesi",
+        "emergencyBeds": 3711,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          32.765,
+          39.892
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-ank-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.862,
+          39.932
+        ]
+      },
+      "properties": {
+        "id": "hosp-ank-02",
+        "name": "Hacettepe Üniversitesi Tıp Fakültesi Hastanesi",
+        "category": "hospital",
+        "city": "Ankara",
+        "district": "Altındağ",
+        "typeText": "Merkezi Üniversite Hastanesi",
         "emergencyBeds": 1100,
         "hasTraumaCenter": true,
-        "helipad": true
+        "helipad": false,
+        "coordinates": [
+          32.862,
+          39.932
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-izm-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.205,
+          38.455
+        ]
+      },
+      "properties": {
+        "id": "hosp-izm-01",
+        "name": "Ege Üniversitesi Tıp Fakültesi Hastanesi",
+        "category": "hospital",
+        "city": "İzmir",
+        "district": "Bornova",
+        "typeText": "Bölge Afet ve Travma Merkezi",
+        "emergencyBeds": 1800,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          27.205,
+          38.455
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hosp-izm-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.168,
+          38.472
+        ]
+      },
+      "properties": {
+        "id": "hosp-izm-02",
+        "name": "İzmir Şehir Hastanesi (Bayraklı)",
+        "category": "hospital",
+        "city": "İzmir",
+        "district": "Bayraklı",
+        "typeText": "Sismik İzolasyonlu Bölge Hastanesi",
+        "emergencyBeds": 2060,
+        "hasTraumaCenter": true,
+        "helipad": true,
+        "coordinates": [
+          27.168,
+          38.472
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-kdk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.027,
+          40.9915
+        ]
+      },
+      "properties": {
+        "id": "pharm-kdk-01",
+        "name": "Kadıköy Rıhtım 24 Saat Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Kesintisiz 24/7 Acil İlaç Temini",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.027,
+          40.9915
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-kdk-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0285,
+          40.985
+        ]
+      },
+      "properties": {
+        "id": "pharm-kdk-02",
+        "name": "Moda Caddesi Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Acil İlaç & İlk Yardım Tedariği",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.0285,
+          40.985
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-kdk-03",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.049,
+          40.979
+        ]
+      },
+      "properties": {
+        "id": "pharm-kdk-03",
+        "name": "Bağdat Caddesi Feneryolu Acil Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "24 Saat Açık Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.049,
+          40.979
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-bsk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.006,
+          41.043
+        ]
+      },
+      "properties": {
+        "id": "pharm-bsk-01",
+        "name": "Beşiktaş Çarşı Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Beşiktaş",
+        "typeText": "Kesintisiz 24/7 Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.006,
+          41.043
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-bsk-02",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.026,
+          41.049
+        ]
+      },
+      "properties": {
+        "id": "pharm-bsk-02",
+        "name": "Ortaköy Meydan Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Beşiktaş",
+        "typeText": "Acil İlaç İstasyonu",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.026,
+          41.049
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-ssl-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.988,
+          41.054
+        ]
+      },
+      "properties": {
+        "id": "pharm-ssl-01",
+        "name": "Osmanbey Halaskargazi 24 Saat Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Şişli",
+        "typeText": "24 Saat Kesintisiz Nöbetçi Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          28.988,
+          41.054
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-byo-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.981,
+          41.035
+        ]
+      },
+      "properties": {
+        "id": "pharm-byo-01",
+        "name": "Taksim İstiklal Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Beyoğlu",
+        "typeText": "Merkezi Acil İlaç Tedarik",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          28.981,
+          41.035
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-fth-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.937,
+          41.0145
+        ]
+      },
+      "properties": {
+        "id": "pharm-fth-01",
+        "name": "Çapa Tıp Karşısı Nöbetçi Eczane",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Fatih",
+        "typeText": "24/7 Hayati İlaç Tedarik",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          28.937,
+          41.0145
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-usk-01",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0165,
+          41.0265
+        ]
+      },
+      "properties": {
+        "id": "pharm-usk-01",
+        "name": "Üsküdar İskele Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "typeText": "24 Saat Nöbetçi Eczane",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false,
+        "coordinates": [
+          29.0165,
+          41.0265
+        ]
       }
     },
     {
       "type": "Feature",
       "id": "kz-ist-01",
-      "geometry": { "type": "Point", "coordinates": [29.0410, 41.0180] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.041,
+          41.018
+        ]
+      },
       "properties": {
         "id": "kz-ist-01",
         "name": "Türk Kızılay Kuzey Marmara Bölge Kan Merkezi",
@@ -94,13 +644,23 @@
         "typeText": "Bölgesel Kan & Lojistik Afet Üssü",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
-        "helipad": false
+        "helipad": false,
+        "coordinates": [
+          29.041,
+          41.018
+        ]
       }
     },
     {
       "type": "Feature",
       "id": "kz-ist-02",
-      "geometry": { "type": "Point", "coordinates": [28.8780, 41.0020] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.878,
+          41.002
+        ]
+      },
       "properties": {
         "id": "kz-ist-02",
         "name": "Türk Kızılay Çapa Kan Bağış Merkezi",
@@ -110,71 +670,37 @@
         "typeText": "Merkezi Kan Bankası",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
-        "helipad": false
+        "helipad": false,
+        "coordinates": [
+          28.878,
+          41.002
+        ]
       }
     },
     {
       "type": "Feature",
-      "id": "pharm-ist-01",
-      "geometry": { "type": "Point", "coordinates": [29.0290, 40.9905] },
+      "id": "kz-ist-03",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.026,
+          40.99
+        ]
+      },
       "properties": {
-        "id": "pharm-ist-01",
-        "name": "Kadıköy Rıhtım 24 Saat Nöbetçi Eczanesi",
-        "category": "pharmacy",
+        "id": "kz-ist-03",
+        "name": "Türk Kızılay Kadıköy Kan Alma Birimi",
+        "category": "blood_center",
         "city": "İstanbul",
         "district": "Kadıköy",
-        "typeText": "Kesintisiz 24/7 Acil İlaç Tedarik",
+        "typeText": "Acil Kan Tedarik Birimi",
         "emergencyBeds": 0,
         "hasTraumaCenter": false,
-        "helipad": false
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "pharm-ist-02",
-      "geometry": { "type": "Point", "coordinates": [29.0060, 41.0430] },
-      "properties": {
-        "id": "pharm-ist-02",
-        "name": "Beşiktaş Çarşı Nöbetçi Acil Eczane",
-        "category": "pharmacy",
-        "city": "İstanbul",
-        "district": "Beşiktaş",
-        "typeText": "Kesintisiz 24/7 Acil İlaç Tedarik",
-        "emergencyBeds": 0,
-        "hasTraumaCenter": false,
-        "helipad": false
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "med-ank-01",
-      "geometry": { "type": "Point", "coordinates": [32.7650, 39.8920] },
-      "properties": {
-        "id": "med-ank-01",
-        "name": "Ankara Bilkent Şehir Hastanesi",
-        "category": "hospital",
-        "city": "Ankara",
-        "district": "Çankaya",
-        "typeText": "Ulusal Afet & Travma Koordinasyon Hastanesi",
-        "emergencyBeds": 3711,
-        "hasTraumaCenter": true,
-        "helipad": true
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "med-izm-01",
-      "geometry": { "type": "Point", "coordinates": [27.2050, 38.4550] },
-      "properties": {
-        "id": "med-izm-01",
-        "name": "Ege Üniversitesi Tıp Fakültesi Hastanesi",
-        "category": "hospital",
-        "city": "İzmir",
-        "district": "Bornova",
-        "typeText": "Bölge Afet ve Travma Merkezi",
-        "emergencyBeds": 1800,
-        "hasTraumaCenter": true,
-        "helipad": true
+        "helipad": false,
+        "coordinates": [
+          29.026,
+          40.99
+        ]
       }
     }
   ]

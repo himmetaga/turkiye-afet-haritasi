@@ -1,15 +1,15 @@
-import { AssemblyPoint } from '../types';
+import { AssemblyPoint, EmergencyFacility } from '../types';
 import { Icons } from './icons';
 
 export interface PointDetailCallbacks {
-  onRoute: (point: AssemblyPoint) => void;
+  onRoute: (point: AssemblyPoint | EmergencyFacility) => void;
   onClose: () => void;
 }
 
 export class PointDetailHUD {
   private container: HTMLElement;
   private callbacks: PointDetailCallbacks;
-  private currentPoint: AssemblyPoint | null = null;
+  private currentPoint: AssemblyPoint | EmergencyFacility | null = null;
 
   constructor(parent: HTMLElement, callbacks: PointDetailCallbacks) {
     this.callbacks = callbacks;
@@ -19,24 +19,38 @@ export class PointDetailHUD {
     parent.appendChild(this.container);
   }
 
-  public show(point: AssemblyPoint): void {
+  public show(point: AssemblyPoint | EmergencyFacility): void {
     this.currentPoint = point;
     this.container.classList.remove('hidden');
 
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${point.coordinates[1]},${point.coordinates[0]}`;
+    const category = (point as any).category || 'assembly';
+
+    let badgeText = '🛡️ Onaylı Afet Toplanma Sahası';
+    let badgeColor = 'text-emerald-400';
+    if (category === 'hospital') {
+      badgeText = '🏥 Acil Travma & Şehir Hastanesi';
+      badgeColor = 'text-cyan-400';
+    } else if (category === 'pharmacy') {
+      badgeText = '💊 24 Saat Açık Nöbetçi Eczane';
+      badgeColor = 'text-amber-400';
+    } else if (category === 'blood_center') {
+      badgeText = '🩸 Türk Kızılay Kan Bankası';
+      badgeColor = 'text-rose-400';
+    }
 
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-4 shadow-2xl backdrop-blur-xl">
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
-            <span class="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 uppercase tracking-wider mb-0.5">
-              ${Icons.shield('w-3 h-3')} Onaylı Afet Toplanma Sahası
+            <span class="inline-flex items-center gap-1 text-[11px] font-mono ${badgeColor} uppercase tracking-wider mb-0.5">
+              ${badgeText}
             </span>
             <h3 class="text-sm font-semibold text-white leading-snug">
               ${point.name}
             </h3>
             <p class="text-xs text-gray-400 mt-0.5">
-              ${point.district}, ${point.city}
+              ${point.district}, ${point.city} ${(point as any).typeText ? `• ${(point as any).typeText}` : ''}
             </p>
           </div>
           <button id="btn-close-detail" class="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition-colors">
@@ -46,33 +60,21 @@ export class PointDetailHUD {
 
         <div class="grid grid-cols-2 gap-2 my-3 text-xs">
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">Kapasite</span>
+            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : 'Kapasite'}</span>
             <span class="text-xs font-semibold text-white font-mono">
-              ${point.capacity ? point.capacity.toLocaleString() : 'Belirtilmedi'} kişi
+              ${
+                (point as any).emergencyBeds
+                  ? `${(point as any).emergencyBeds} yatak`
+                  : (point as any).capacity
+                  ? `${(point as any).capacity.toLocaleString()} kişi`
+                  : 'Aktif Hizmet'
+              }
             </span>
           </div>
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">Fiziki Alan</span>
-            <span class="text-xs font-semibold text-white font-mono">
-              ${point.areaSqM ? `${point.areaSqM.toLocaleString()} m²` : 'Açık Saha'}
-            </span>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1.5 mb-3 text-xs">
-          <div class="text-[11px] font-medium text-gray-400 mb-1">Mevcut Altyapı Olanakları</div>
-          <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-            <span class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 ${point.hasWater ? 'text-cyan-400' : 'text-gray-500 opacity-50'}">
-              ${Icons.water('w-3.5 h-3.5')} Temiz Su
-            </span>
-            <span class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 ${point.hasElectricity ? 'text-amber-400' : 'text-gray-500 opacity-50'}">
-              ${Icons.bolt('w-3.5 h-3.5')} Şebeke/Enerji
-            </span>
-            <span class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 ${point.hasTentArea ? 'text-emerald-400' : 'text-gray-500 opacity-50'}">
-              ${Icons.tent('w-3.5 h-3.5')} Çadır Kurulum Alanı
-            </span>
-            <span class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 ${point.hasGenerator ? 'text-indigo-400' : 'text-gray-500 opacity-50'}">
-              ${Icons.generator('w-3.5 h-3.5')} Jeneratör Desteği
+            <span class="text-[10px] text-gray-400 block">Durum</span>
+            <span class="text-xs font-semibold text-emerald-400 font-mono">
+              ${category === 'pharmacy' ? '24/7 Açık' : category === 'hospital' ? 'Acil Servis Aktif' : 'Açık Saha'}
             </span>
           </div>
         </div>
