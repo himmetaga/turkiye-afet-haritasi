@@ -17,6 +17,16 @@ export interface HeaderHUDCallbacks {
   onToggleCrisis: () => void;
 }
 
+export interface SearchResultItem {
+  id: string;
+  name: string;
+  category: 'assembly' | 'hospital' | 'pharmacy';
+  district: string;
+  city: string;
+  distanceKm?: number;
+  raw: any;
+}
+
 export class HeaderHUD {
   private container: HTMLElement;
   private isOnline = navigator.onLine;
@@ -84,6 +94,76 @@ export class HeaderHUD {
       provinces.map((p) => `<option value="${p}">${p}</option>`).join('');
   }
 
+  public renderSearchResults(
+    results: SearchResultItem[],
+    onSelect: (item: any) => void
+  ): void {
+    const dropdown = this.container.querySelector('#search-results-dropdown') as HTMLElement;
+    if (!dropdown) return;
+
+    if (results.length === 0) {
+      dropdown.innerHTML = `
+        <div class="px-3 py-2 text-[11px] text-gray-400 text-center font-medium">
+          Eşleşen toplanma alanı veya hastane bulunamadı.
+        </div>
+      `;
+      dropdown.classList.remove('hidden');
+      return;
+    }
+
+    dropdown.innerHTML = results
+      .map((item) => {
+        const icon =
+          item.category === 'hospital'
+            ? '🏥'
+            : item.category === 'pharmacy'
+            ? '💊'
+            : '🟢';
+
+        const distBadge =
+          item.distanceKm !== undefined
+            ? `<span class="text-[10px] font-mono font-bold text-emerald-400 shrink-0">${item.distanceKm.toFixed(1)} km</span>`
+            : '';
+
+        return `
+          <div
+            data-id="${item.id}"
+            class="search-result-item flex items-center justify-between gap-2 px-2.5 py-1.5 hover:bg-white/10 active:bg-white/15 rounded-lg cursor-pointer transition-colors"
+          >
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-sm shrink-0">${icon}</span>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-white truncate">${item.name}</div>
+                <div class="text-[10px] text-gray-400 truncate">${item.district}, ${item.city}</div>
+              </div>
+            </div>
+            ${distBadge}
+          </div>
+        `;
+      })
+      .join('');
+
+    dropdown.classList.remove('hidden');
+
+    dropdown.querySelectorAll('.search-result-item').forEach((el) => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-id');
+        const match = results.find((r) => r.id === id);
+        if (match) {
+          const searchInput = this.container.querySelector('#search-input') as HTMLInputElement;
+          if (searchInput) searchInput.value = match.name;
+          dropdown.classList.add('hidden');
+          onSelect(match.raw);
+        }
+      });
+    });
+  }
+
+  public clearSearchResults(): void {
+    const dropdown = this.container.querySelector('#search-results-dropdown') as HTMLElement;
+    if (dropdown) dropdown.classList.add('hidden');
+  }
+
   private render(): void {
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all">
@@ -124,6 +204,8 @@ export class HeaderHUD {
               placeholder="Toplanma alanı, hastane veya ilçe ara..."
               class="w-full pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 bg-white/5 rounded-xl outline-none focus:bg-white/10 transition-colors"
             />
+            <!-- Search Results Floating Dropdown -->
+            <div id="search-results-dropdown" class="absolute top-full left-0 right-0 mt-1.5 max-h-64 overflow-y-auto bg-obsidian-950/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-2xl z-50 hidden p-1"></div>
           </div>
 
           <button
@@ -276,6 +358,19 @@ export class HeaderHUD {
     const crisisBtn = this.container.querySelector('#btn-open-crisis') as HTMLButtonElement;
     crisisBtn?.addEventListener('click', () => {
       this.callbacks.onToggleCrisis();
+    });
+
+    document.addEventListener('click', (e) => {
+      const dropdown = this.container.querySelector('#search-results-dropdown') as HTMLElement;
+      if (dropdown && !this.container.contains(e.target as Node)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.clearSearchResults();
+      }
     });
   }
 }

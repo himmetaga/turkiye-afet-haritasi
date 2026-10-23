@@ -2,8 +2,8 @@ import './index.css';
 import { MapEngine } from './map/mapEngine';
 import { AssemblyPoint, Earthquake, FaultLine, EmergencyFacility, ObstaclePoint } from './types';
 import { fetchLiveEarthquakes } from './services/earthquakeService';
-import { findNearestAssemblyPoints, findNearestFaultLine } from './utils/geoMath';
-import { HeaderHUD } from './ui/HeaderHUD';
+import { findNearestAssemblyPoints, findNearestFaultLine, haversineDistanceMeters } from './utils/geoMath';
+import { HeaderHUD, SearchResultItem } from './ui/HeaderHUD';
 import { NearestPointsHUD } from './ui/NearestPointsHUD';
 import { PointDetailHUD } from './ui/PointDetailHUD';
 import { EmergencySOSModal } from './ui/EmergencySOSModal';
@@ -425,36 +425,64 @@ class DisasterAtlasApp {
     this.seismicFeedHUD.show(this.earthquakes);
   }
 
-  private handleSearch(query: string): void {
-    const q = query.trim().toLowerCase();
-    if (!q) {
+  private handleSearch(input: string): void {
+    const query = input.trim().toLowerCase();
+    if (query.length < 2) {
+      this.headerHUD.clearSearchResults();
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
       this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
       return;
     }
 
-    const filteredAssembly = this.assemblyPoints.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.district.toLowerCase().includes(q) ||
-        p.city.toLowerCase().includes(q)
-    );
-
-    const filteredFacilities = this.facilities.filter(
-      (f) =>
-        f.name.toLowerCase().includes(q) ||
-        f.district.toLowerCase().includes(q) ||
-        f.city.toLowerCase().includes(q)
-    );
-
-    this.mapEngine.setAssemblyPoints(filteredAssembly);
-    this.mapEngine.setEmergencyFacilities(filteredFacilities, this.onlyDutyPharmacies);
-
-    if (filteredAssembly.length > 0) {
-      this.mapEngine.flyTo(filteredAssembly[0].coordinates, 14, 45, 0);
-    } else if (filteredFacilities.length > 0) {
-      this.mapEngine.flyTo(filteredFacilities[0].coordinates, 14, 45, 0);
+    const matchedAssembly: SearchResultItem[] = [];
+    for (const p of this.assemblyPoints) {
+      if (
+        p.name.toLowerCase().includes(query) ||
+        p.district.toLowerCase().includes(query) ||
+        p.city.toLowerCase().includes(query)
+      ) {
+        const distKm = haversineDistanceMeters(this.userCoords, p.coordinates) / 1000;
+        matchedAssembly.push({
+          id: p.id,
+          name: p.name,
+          category: 'assembly',
+          district: p.district,
+          city: p.city,
+          distanceKm: distKm,
+          raw: p
+        });
+        if (matchedAssembly.length >= 15) break;
+      }
     }
+
+    const matchedFacilities: SearchResultItem[] = [];
+    for (const f of this.facilities) {
+      if (
+        f.name.toLowerCase().includes(query) ||
+        f.district.toLowerCase().includes(query) ||
+        f.city.toLowerCase().includes(query)
+      ) {
+        const distKm = haversineDistanceMeters(this.userCoords, f.coordinates) / 1000;
+        matchedFacilities.push({
+          id: f.id,
+          name: f.name,
+          category: f.category === 'hospital' ? 'hospital' : 'pharmacy',
+          district: f.district,
+          city: f.city,
+          distanceKm: distKm,
+          raw: f
+        });
+        if (matchedFacilities.length >= 10) break;
+      }
+    }
+
+    const combined = [...matchedAssembly, ...matchedFacilities]
+      .sort((a, b) => (a.distanceKm || 9999) - (b.distanceKm || 9999))
+      .slice(0, 8);
+
+    this.headerHUD.renderSearchResults(combined, (selected) => {
+      this.focusPoint(selected);
+    });
   }
 
   private handleProvinceSelect(province: string): void {
