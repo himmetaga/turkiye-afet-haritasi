@@ -1,0 +1,167 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "kaf-marmara-main",
+      "properties": {
+        "name": "Kuzey Anadolu Fayı (Marmara Ana Kolu)",
+        "zone": "KAF",
+        "slipRateMmYear": 24,
+        "riskLevel": "high",
+        "description": "Saros Körfezi - Gaziköy - Marmara Denizi Çukurlukları - İzmit Körfezi hattı"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [26.15, 40.55],
+          [26.85, 40.68],
+          [27.45, 40.82],
+          [28.15, 40.86],
+          [28.85, 40.83],
+          [29.12, 40.78],
+          [29.55, 40.73],
+          [29.98, 40.75],
+          [30.65, 40.73]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kaf-bolu-amasya",
+      "properties": {
+        "name": "Kuzey Anadolu Fayı (Bolu - Tokat - Erzincan Kolu)",
+        "zone": "KAF",
+        "slipRateMmYear": 22,
+        "riskLevel": "high",
+        "description": "Düzce - Bolu - Ilgaz - Amasya - Niksar - Erbaa - Erzincan segmenti"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [30.65, 40.73],
+          [31.20, 40.75],
+          [31.65, 40.75],
+          [32.85, 40.95],
+          [33.95, 41.05],
+          [35.30, 40.90],
+          [36.95, 40.35],
+          [38.50, 39.95],
+          [39.50, 39.75],
+          [40.40, 39.35]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kaf-guney-kol",
+      "properties": {
+        "name": "Kuzey Anadolu Fayı (Güney Kol - Geyve/İznik/Gemlik)",
+        "zone": "KAF",
+        "slipRateMmYear": 10,
+        "riskLevel": "high",
+        "description": "Pamukova - Geyve - İznik Gölü - Gemlik Körfezi - Bandırma hattı"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [30.50, 40.50],
+          [29.80, 40.45],
+          [29.35, 40.42],
+          [28.95, 40.38],
+          [28.45, 40.35],
+          [27.95, 40.25]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "daf-hatay-maras",
+      "properties": {
+        "name": "Doğu Anadolu Fayı (Hatay - K.Maraş - Adıyaman Segmenti)",
+        "zone": "DAF",
+        "slipRateMmYear": 14,
+        "riskLevel": "high",
+        "description": "Samandağ - Antakya - Kırıkhan - Türkoğlu - Pazarcık - Gölbaşı"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [35.95, 36.08],
+          [36.18, 36.25],
+          [36.35, 36.65],
+          [36.75, 37.15],
+          [37.05, 37.45],
+          [37.65, 37.78],
+          [38.25, 38.05]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "daf-elazig-bingol",
+      "properties": {
+        "name": "Doğu Anadolu Fayı (Malatya - Elazığ - Bingöl Segmenti)",
+        "zone": "DAF",
+        "slipRateMmYear": 12,
+        "riskLevel": "high",
+        "description": "Sivrice - Hazar Gölü - Palu - Bingöl Karlıova KAF Birleşim Noktası"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [38.25, 38.05],
+          [38.85, 38.35],
+          [39.25, 38.48],
+          [39.75, 38.65],
+          [40.25, 38.85],
+          [40.75, 39.15],
+          [41.05, 39.30]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bafs-gediz-izmir",
+      "properties": {
+        "name": "Batı Anadolu Fay Sistemi (Gediz & İzmir Graben Fayı)",
+        "zone": "BAFS",
+        "slipRateMmYear": 18,
+        "riskLevel": "high",
+        "description": "Çeşme - Urla - Seferihisar - İzmir Körfezi - Turgutlu - Salihli - Alaşehir"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [26.35, 38.30],
+          [26.85, 38.32],
+          [27.15, 38.45],
+          [27.55, 38.52],
+          [28.15, 38.50],
+          [28.75, 38.40]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bafs-buyuk-menderes",
+      "properties": {
+        "name": "Büyük Menderes Grabeni Fay Zonu",
+        "zone": "BAFS",
+        "slipRateMmYear": 15,
+        "riskLevel": "high",
+        "description": "Söke - Germencik - Aydın - Nazilli - Kuyucak - Pamukkale - Denizli"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [27.40, 37.75],
+          [27.85, 37.85],
+          [28.35, 37.92],
+          [28.85, 37.95],
+          [29.10, 37.80]
+        ]
+      }
+    }
+  ]
+}

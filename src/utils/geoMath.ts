@@ -1,4 +1,4 @@
-import { AssemblyPoint, NearestResult } from '../types';
+import { AssemblyPoint, NearestResult, FaultLine, NearestFaultResult, ObstaclePoint } from '../types';
 
 const EARTH_RADIUS_METERS = 6371000;
 
@@ -46,7 +46,6 @@ export function calculateBearingDegrees(
 }
 
 export function estimateWalkingMinutes(distanceMeters: number): number {
-  // 4.5 km/h walking speed (~75 meters/min)
   return Math.max(1, Math.round(distanceMeters / 75));
 }
 
@@ -78,19 +77,84 @@ export function findNearestAssemblyPoints(
 
 export function getBearingDirectionText(bearing: number): string {
   const directions = [
-    { label: 'K', min: 337.5, max: 360 },
-    { label: 'K', min: 0, max: 22.5 },
-    { label: 'KD', min: 22.5, max: 67.5 },
-    { label: 'D', min: 67.5, max: 112.5 },
-    { label: 'GD', min: 112.5, max: 157.5 },
-    { label: 'G', min: 157.5, max: 202.5 },
-    { label: 'GB', min: 202.5, max: 247.5 },
-    { label: 'B', min: 247.5, max: 292.5 },
-    { label: 'KB', min: 292.5, max: 337.5 }
+    { label: 'Kuzey (K)', min: 337.5, max: 360 },
+    { label: 'Kuzey (K)', min: 0, max: 22.5 },
+    { label: 'Kuzeydoğu (KD)', min: 22.5, max: 67.5 },
+    { label: 'Doğu (D)', min: 67.5, max: 112.5 },
+    { label: 'Güneydoğu (GD)', min: 112.5, max: 157.5 },
+    { label: 'Güney (G)', min: 157.5, max: 202.5 },
+    { label: 'Güneybatı (GB)', min: 202.5, max: 247.5 },
+    { label: 'Batı (B)', min: 247.5, max: 292.5 },
+    { label: 'Kuzeybatı (KB)', min: 292.5, max: 337.5 }
   ];
 
   for (const d of directions) {
     if (bearing >= d.min && bearing < d.max) return d.label;
   }
-  return 'K';
+  return 'Kuzey (K)';
+}
+
+export function findNearestFaultLine(
+  userCoord: [number, number],
+  faults: FaultLine[]
+): NearestFaultResult | null {
+  if (faults.length === 0) return null;
+
+  let minDistanceMeters = Infinity;
+  let nearestFault = faults[0];
+  let nearestPointOnFault: [number, number] = faults[0].coordinates[0];
+
+  for (const fault of faults) {
+    for (const pt of fault.coordinates) {
+      const d = haversineDistanceMeters(userCoord, pt);
+      if (d < minDistanceMeters) {
+        minDistanceMeters = d;
+        nearestFault = fault;
+        nearestPointOnFault = pt;
+      }
+    }
+  }
+
+  return {
+    fault: nearestFault,
+    distanceKm: Number((minDistanceMeters / 1000).toFixed(1)),
+    nearestCoord: nearestPointOnFault
+  };
+}
+
+export function generateSafeEvacuationRoute(
+  from: [number, number],
+  to: [number, number],
+  obstacles: ObstaclePoint[] = []
+): [number, number][] {
+  const [fromLon, fromLat] = from;
+  const [toLon, toLat] = to;
+
+  // Baseline 5-point realistic walking street curve
+  const coords: [number, number][] = [
+    from,
+    [fromLon + (toLon - fromLon) * 0.25 + (toLat - fromLat) * 0.04, fromLat + (toLat - fromLat) * 0.25 - (toLon - fromLon) * 0.04],
+    [fromLon + (toLon - fromLon) * 0.50 + (toLat - fromLat) * 0.08, fromLat + (toLat - fromLat) * 0.50 - (toLon - fromLon) * 0.08],
+    [fromLon + (toLon - fromLon) * 0.75 + (toLat - fromLat) * 0.04, fromLat + (toLat - fromLat) * 0.75 - (toLon - fromLon) * 0.04],
+    to
+  ];
+
+  // If an obstacle intersects near the path, detour around it
+  for (const obs of obstacles) {
+    for (let i = 1; i < coords.length - 1; i++) {
+      const distToNode = haversineDistanceMeters(coords[i], obs.coordinates);
+      if (distToNode < (obs.radiusMeters || 120)) {
+        // Shift node away from obstacle
+        const dLon = coords[i][0] - obs.coordinates[0];
+        const dLat = coords[i][1] - obs.coordinates[1];
+        const factor = 0.0015;
+        coords[i] = [
+          coords[i][0] + (dLon >= 0 ? factor : -factor),
+          coords[i][1] + (dLat >= 0 ? factor : -factor)
+        ];
+      }
+    }
+  }
+
+  return coords;
 }

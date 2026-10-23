@@ -1,0 +1,181 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "med-ist-01",
+      "geometry": { "type": "Point", "coordinates": [29.0335, 40.9932] },
+      "properties": {
+        "id": "med-ist-01",
+        "name": "Haydarpaşa Numune Eğitim ve Araştırma Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Acil Eğitim & Araştırma Hastanesi",
+        "emergencyBeds": 750,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-ist-02",
+      "geometry": { "type": "Point", "coordinates": [28.9390, 41.0150] },
+      "properties": {
+        "id": "med-ist-02",
+        "name": "İstanbul Üniversitesi Çapa Tıp Fakültesi Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Fatih",
+        "typeText": "1. Seviye Travma & Üniversite Hastanesi",
+        "emergencyBeds": 1200,
+        "hasTraumaCenter": true,
+        "helipad": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-ist-03",
+      "geometry": { "type": "Point", "coordinates": [28.9880, 41.0620] },
+      "properties": {
+        "id": "med-ist-03",
+        "name": "Prof. Dr. Cemil Taşcıoğlu Şehir Hastanesi (Okmeydanı)",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Şişli",
+        "typeText": "Sismik İzolasyonlu Şehir Hastanesi",
+        "emergencyBeds": 1100,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-ist-04",
+      "geometry": { "type": "Point", "coordinates": [28.6980, 41.1020] },
+      "properties": {
+        "id": "med-ist-04",
+        "name": "Başakşehir Çam ve Sakura Şehir Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Başakşehir",
+        "typeText": "2068 Sismik İzolatörlü Afet Ana Hastanesi",
+        "emergencyBeds": 2682,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-ist-05",
+      "geometry": { "type": "Point", "coordinates": [29.1550, 40.9420] },
+      "properties": {
+        "id": "med-ist-05",
+        "name": "Kartal Dr. Lütfi Kırdar Şehir Hastanesi",
+        "category": "hospital",
+        "city": "İstanbul",
+        "district": "Kartal",
+        "typeText": "Anadolu Yakası Sismik İzolasyonlu Şehir Hastanesi",
+        "emergencyBeds": 1100,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kz-ist-01",
+      "geometry": { "type": "Point", "coordinates": [29.0410, 41.0180] },
+      "properties": {
+        "id": "kz-ist-01",
+        "name": "Türk Kızılay Kuzey Marmara Bölge Kan Merkezi",
+        "category": "blood_center",
+        "city": "İstanbul",
+        "district": "Üsküdar",
+        "typeText": "Bölgesel Kan & Lojistik Afet Üssü",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kz-ist-02",
+      "geometry": { "type": "Point", "coordinates": [28.8780, 41.0020] },
+      "properties": {
+        "id": "kz-ist-02",
+        "name": "Türk Kızılay Çapa Kan Bağış Merkezi",
+        "category": "blood_center",
+        "city": "İstanbul",
+        "district": "Fatih",
+        "typeText": "Merkezi Kan Bankası",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-ist-01",
+      "geometry": { "type": "Point", "coordinates": [29.0290, 40.9905] },
+      "properties": {
+        "id": "pharm-ist-01",
+        "name": "Kadıköy Rıhtım 24 Saat Nöbetçi Eczanesi",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "typeText": "Kesintisiz 24/7 Acil İlaç Tedarik",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pharm-ist-02",
+      "geometry": { "type": "Point", "coordinates": [29.0060, 41.0430] },
+      "properties": {
+        "id": "pharm-ist-02",
+        "name": "Beşiktaş Çarşı Nöbetçi Acil Eczane",
+        "category": "pharmacy",
+        "city": "İstanbul",
+        "district": "Beşiktaş",
+        "typeText": "Kesintisiz 24/7 Acil İlaç Tedarik",
+        "emergencyBeds": 0,
+        "hasTraumaCenter": false,
+        "helipad": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-ank-01",
+      "geometry": { "type": "Point", "coordinates": [32.7650, 39.8920] },
+      "properties": {
+        "id": "med-ank-01",
+        "name": "Ankara Bilkent Şehir Hastanesi",
+        "category": "hospital",
+        "city": "Ankara",
+        "district": "Çankaya",
+        "typeText": "Ulusal Afet & Travma Koordinasyon Hastanesi",
+        "emergencyBeds": 3711,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "med-izm-01",
+      "geometry": { "type": "Point", "coordinates": [27.2050, 38.4550] },
+      "properties": {
+        "id": "med-izm-01",
+        "name": "Ege Üniversitesi Tıp Fakültesi Hastanesi",
+        "category": "hospital",
+        "city": "İzmir",
+        "district": "Bornova",
+        "typeText": "Bölge Afet ve Travma Merkezi",
+        "emergencyBeds": 1800,
+        "hasTraumaCenter": true,
+        "helipad": true
+      }
+    }
+  ]
+}

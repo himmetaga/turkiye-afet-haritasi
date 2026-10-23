@@ -1,8 +1,8 @@
 import './index.css';
 import { MapEngine } from './map/mapEngine';
-import { AssemblyPoint, Earthquake, NearestResult } from './types';
+import { AssemblyPoint, Earthquake, FaultLine, EmergencyFacility, ObstaclePoint } from './types';
 import { fetchLiveEarthquakes } from './services/earthquakeService';
-import { findNearestAssemblyPoints } from './utils/geoMath';
+import { findNearestAssemblyPoints, findNearestFaultLine } from './utils/geoMath';
 import { HeaderHUD } from './ui/HeaderHUD';
 import { NearestPointsHUD } from './ui/NearestPointsHUD';
 import { PointDetailHUD } from './ui/PointDetailHUD';
@@ -10,18 +10,27 @@ import { EmergencySOSModal } from './ui/EmergencySOSModal';
 import { OfflineSyncHUD } from './ui/OfflineSyncHUD';
 import { SeismicFeedHUD } from './ui/SeismicFeedHUD';
 import { OfflineNotificationToast } from './ui/OfflineNotificationToast';
+import { EmergencyBagHUD } from './ui/EmergencyBagHUD';
+import { FamilySafetyHUD } from './ui/FamilySafetyHUD';
+import { LayerControlHUD } from './ui/LayerControlHUD';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
   private assemblyPoints: AssemblyPoint[] = [];
   private earthquakes: Earthquake[] = [];
-  private userCoords: [number, number] | null = null;
+  private faultLines: FaultLine[] = [];
+  private facilities: EmergencyFacility[] = [];
+  private obstacles: ObstaclePoint[] = [];
+  private userCoords: [number, number] = [29.0345, 40.9858]; // Default Kadıköy/İstanbul
   private selectedPoint: AssemblyPoint | null = null;
 
   private headerHUD!: HeaderHUD;
   private nearestHUD!: NearestPointsHUD;
   private detailHUD!: PointDetailHUD;
   private sosModal!: EmergencySOSModal;
+  private bagHUD!: EmergencyBagHUD;
+  private familyHUD!: FamilySafetyHUD;
+  private layerHUD!: LayerControlHUD;
   private offlineSyncHUD!: OfflineSyncHUD;
   private seismicFeedHUD!: SeismicFeedHUD;
   private notificationToast!: OfflineNotificationToast;
@@ -36,12 +45,15 @@ class DisasterAtlasApp {
 
     this.notificationToast = new OfflineNotificationToast(appEl);
 
-    // Initialize HUDs
+    // 1. Initialize UI Modals & Drawers
     this.headerHUD = new HeaderHUD(appEl, {
       onSearchChange: (q) => this.handleSearch(q),
       onLocateMe: () => this.requestUserLocation(true),
       onToggleSeismic: () => this.toggleSeismicDrawer(),
       onToggleSOS: () => this.openSOSModal(),
+      onToggleBag: () => this.bagHUD.show(),
+      onToggleFamily: () => this.openFamilyModal(),
+      onToggleLayers: () => this.layerHUD.toggle(),
       onSelectProvince: (prov) => this.handleProvinceSelect(prov)
     });
 
@@ -53,14 +65,20 @@ class DisasterAtlasApp {
       onRoute: (point) => this.routeToPoint(point),
       onClose: () => {
         this.selectedPoint = null;
-        this.mapEngine.clearRoute();
+        this.clearActiveRoute();
       }
     });
 
     this.sosModal = new EmergencySOSModal(appEl);
+    this.bagHUD = new EmergencyBagHUD(appEl);
+    this.familyHUD = new FamilySafetyHUD(appEl);
+
+    this.layerHUD = new LayerControlHUD(appEl, (layerKey, visible) => {
+      this.handleLayerToggle(layerKey, visible);
+    });
 
     this.offlineSyncHUD = new OfflineSyncHUD(appEl, () => {
-      return this.userCoords || [29.0275, 40.9885];
+      return this.userCoords;
     });
 
     this.seismicFeedHUD = new SeismicFeedHUD(appEl, {
@@ -68,12 +86,20 @@ class DisasterAtlasApp {
       onClose: () => {}
     });
 
-    // Start 3D WebGL Map
+    // 2. Start 3D WebGL Map
     await this.mapEngine.init(mapContainer);
 
-    // Map Event Hooks
+    // 3. Map Event Listeners
     this.mapEngine.onAssemblyPointClick((point) => {
       this.focusPoint(point);
+    });
+
+    this.mapEngine.onFacilityClick((fac) => {
+      this.focusFacility(fac);
+    });
+
+    this.mapEngine.onFaultLineClick((fault) => {
+      this.focusFault(fault);
     });
 
     this.mapEngine.onEarthquakeClick((eq) => {
@@ -84,16 +110,22 @@ class DisasterAtlasApp {
       this.setUserLocationManual(coords);
     });
 
-    // Load Data
+    // 4. Load Datasets in Parallel
     await Promise.all([
       this.loadAssemblyData(),
+      this.loadFaultLinesData(),
+      this.loadFacilitiesData(),
       this.loadEarthquakeData()
     ]);
 
-    // Initial Geolocation Probe
+    // 5. Place user marker & immediate calculations
+    this.mapEngine.setUserLocation(this.userCoords, 0);
+    this.updateUserContextCalculations('Kadıköy / İstanbul (Örnek Konum)');
+
+    // 6. Request real GPS location if permission granted
     this.requestUserLocation(false);
 
-    // PWA Service Worker Registration
+    // 7. PWA Service Worker
     this.registerPWA();
   }
 
@@ -119,7 +151,7 @@ class DisasterAtlasApp {
 
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
 
-      // Load summary provinces
+      // Summary provinces for dropdown
       try {
         const sumRes = await fetch('/data/summary.json');
         if (sumRes.ok) {
@@ -129,9 +161,52 @@ class DisasterAtlasApp {
           }
         }
       } catch {}
-    } catch {
-      // Offline fallback handling
-    }
+
+      // Re-trigger nearest calculation now that assembly data is ready
+      this.updateUserContextCalculations();
+    } catch {}
+  }
+
+  private async loadFaultLinesData(): Promise<void> {
+    try {
+      const res = await fetch('/data/fault-lines.geojson');
+      if (res.ok) {
+        const geojson = await res.json();
+        this.faultLines = geojson.features.map((f: any) => ({
+          id: f.id || f.properties.name,
+          name: f.properties.name,
+          zone: f.properties.zone,
+          slipRateMmYear: Number(f.properties.slipRateMmYear || 0),
+          riskLevel: f.properties.riskLevel || 'high',
+          description: f.properties.description || '',
+          coordinates: f.geometry.coordinates as [number, number][]
+        }));
+        this.mapEngine.setFaultLines(this.faultLines);
+        this.updateFaultProximity();
+      }
+    } catch {}
+  }
+
+  private async loadFacilitiesData(): Promise<void> {
+    try {
+      const res = await fetch('/data/emergency-facilities.geojson');
+      if (res.ok) {
+        const geojson = await res.json();
+        this.facilities = geojson.features.map((f: any) => ({
+          id: f.id || f.properties.id,
+          name: f.properties.name,
+          category: f.properties.category,
+          city: f.properties.city,
+          district: f.properties.district,
+          typeText: f.properties.typeText,
+          emergencyBeds: Number(f.properties.emergencyBeds || 0),
+          hasTraumaCenter: Boolean(f.properties.hasTraumaCenter),
+          helipad: Boolean(f.properties.helipad),
+          coordinates: f.geometry.coordinates as [number, number]
+        }));
+        this.mapEngine.setEmergencyFacilities(this.facilities);
+      }
+    } catch {}
   }
 
   private async loadEarthquakeData(): Promise<void> {
@@ -147,10 +222,7 @@ class DisasterAtlasApp {
   }
 
   private requestUserLocation(flyToUser = true): void {
-    if (!('geolocation' in navigator)) {
-      this.fallbackToDefaultLocation();
-      return;
-    }
+    if (!('geolocation' in navigator)) return;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -159,40 +231,40 @@ class DisasterAtlasApp {
         this.mapEngine.setUserLocation(coords, pos.coords.heading || 0);
 
         if (flyToUser) {
-          this.mapEngine.flyTo(coords, 15, 50, -10);
+          this.mapEngine.flyTo(coords, 15.5, 52, -15);
         }
 
-        this.calculateAndShowNearest(coords, 'Konumunuza En Yakın 3 Toplanma Alanı');
+        this.updateUserContextCalculations('Konumunuza En Yakın 3 Toplanma Alanı');
       },
-      () => {
-        this.fallbackToDefaultLocation();
-      },
+      () => {},
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
     );
-  }
-
-  private fallbackToDefaultLocation(): void {
-    // Default to Kadıköy/İstanbul center for realistic preview
-    const defaultCoords: [number, number] = [29.0345, 40.9858];
-    this.userCoords = defaultCoords;
-    this.mapEngine.setUserLocation(defaultCoords, 0);
-    this.calculateAndShowNearest(defaultCoords, 'Kadıköy / İstanbul (Örnek Konum)');
   }
 
   private setUserLocationManual(coords: [number, number]): void {
     this.userCoords = coords;
     this.mapEngine.setUserLocation(coords, 0);
-    this.calculateAndShowNearest(coords, 'Seçilen Noktaya En Yakın 3 Alan');
+    this.updateUserContextCalculations('Seçilen Noktaya En Yakın 3 Alan');
   }
 
-  private calculateAndShowNearest(coords: [number, number], label: string): void {
-    if (this.assemblyPoints.length === 0) return;
-    const nearest = findNearestAssemblyPoints(coords, this.assemblyPoints, 3);
-    this.nearestHUD.updatePoints(nearest, label);
+  private updateUserContextCalculations(label?: string): void {
+    if (this.assemblyPoints.length > 0) {
+      const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 3);
+      this.nearestHUD.updatePoints(nearest, label);
 
-    if (nearest.length > 0) {
-      const topPoint = nearest[0].point;
-      this.mapEngine.drawRoute(coords, topPoint.coordinates);
+      if (nearest.length > 0) {
+        const topPoint = nearest[0].point;
+        this.mapEngine.drawRoute(this.userCoords, topPoint.coordinates, this.obstacles);
+      }
+    }
+
+    this.updateFaultProximity();
+  }
+
+  private updateFaultProximity(): void {
+    if (this.faultLines.length > 0) {
+      const nearestFault = findNearestFaultLine(this.userCoords, this.faultLines);
+      this.headerHUD.updateNearestFault(nearestFault);
     }
   }
 
@@ -200,21 +272,49 @@ class DisasterAtlasApp {
     this.selectedPoint = point;
     this.mapEngine.flyTo(point.coordinates, 16.5, 60, -25);
     this.detailHUD.show(point);
+    this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
+  }
 
-    if (this.userCoords) {
-      this.mapEngine.drawRoute(this.userCoords, point.coordinates);
-    }
+  private focusFacility(fac: EmergencyFacility): void {
+    this.mapEngine.flyTo(fac.coordinates, 16, 55, -15);
+    const pointLike: AssemblyPoint = {
+      id: fac.id,
+      name: `[${fac.category.toUpperCase()}] ${fac.name}`,
+      city: fac.city,
+      district: fac.district,
+      coordinates: fac.coordinates,
+      capacity: fac.emergencyBeds,
+      areaSqM: 0,
+      hasWater: true,
+      hasElectricity: true,
+      hasTentArea: false,
+      hasGenerator: true
+    };
+    this.detailHUD.show(pointLike);
+    this.mapEngine.drawRoute(this.userCoords, fac.coordinates, this.obstacles);
+  }
+
+  private focusFault(fault: FaultLine): void {
+    const center = fault.coordinates[Math.floor(fault.coordinates.length / 2)];
+    this.mapEngine.flyTo(center, 10, 45, 0);
   }
 
   private routeToPoint(point: AssemblyPoint): void {
-    if (this.userCoords) {
-      this.mapEngine.drawRoute(this.userCoords, point.coordinates);
-      this.mapEngine.flyTo(point.coordinates, 16, 55, -20);
+    this.mapEngine.drawRoute(this.userCoords, point.coordinates, this.obstacles);
+    this.mapEngine.flyTo(point.coordinates, 16, 55, -20);
+  }
+
+  private clearActiveRoute(): void {
+    if (this.assemblyPoints.length > 0) {
+      const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+      if (nearest.length > 0) {
+        this.mapEngine.drawRoute(this.userCoords, nearest[0].point.coordinates, this.obstacles);
+      }
     }
   }
 
   private focusEarthquake(eq: Earthquake): void {
-    this.mapEngine.flyTo(eq.coordinates, 12.5, 60, 0);
+    this.mapEngine.flyTo(eq.coordinates, 12, 60, 0);
     this.seismicFeedHUD.show(this.earthquakes);
   }
 
@@ -235,10 +335,8 @@ class DisasterAtlasApp {
     this.mapEngine.setAssemblyPoints(matched);
     if (matched.length > 0) {
       this.mapEngine.flyTo(matched[0].coordinates, 14.5, 52, -15);
-      if (this.userCoords) {
-        const nearest = findNearestAssemblyPoints(this.userCoords, matched, 3);
-        this.nearestHUD.updatePoints(nearest, `"${query}" Arama Sonuçları`);
-      }
+      const nearest = findNearestAssemblyPoints(this.userCoords, matched, 3);
+      this.nearestHUD.updatePoints(nearest, `"${query}" Arama Sonuçları`);
     }
   }
 
@@ -255,10 +353,24 @@ class DisasterAtlasApp {
     if (filtered.length > 0) {
       const first = filtered[0];
       this.mapEngine.flyTo(first.coordinates, 13.5, 55, -15);
-      if (this.userCoords) {
-        const nearest = findNearestAssemblyPoints(this.userCoords, filtered, 3);
-        this.nearestHUD.updatePoints(nearest, `${province} Toplanma Alanları`);
-      }
+      const nearest = findNearestAssemblyPoints(this.userCoords, filtered, 3);
+      this.nearestHUD.updatePoints(nearest, `${province} Toplanma Alanları`);
+    }
+  }
+
+  private handleLayerToggle(layerKey: string, visible: boolean): void {
+    if (layerKey === 'assembly') {
+      this.mapEngine.toggleLayer('assembly-core', visible);
+      this.mapEngine.toggleLayer('assembly-glow', visible);
+      this.mapEngine.toggleLayer('assembly-3d-extrusions', visible);
+    } else if (layerKey === 'faults') {
+      this.mapEngine.toggleLayer('fault-lines-core', visible);
+      this.mapEngine.toggleLayer('fault-lines-glow', visible);
+    } else if (layerKey === 'facilities') {
+      this.mapEngine.toggleLayer('facility-core', visible);
+      this.mapEngine.toggleLayer('facility-glow', visible);
+    } else if (layerKey === 'buildings') {
+      this.mapEngine.toggleLayer('3d-buildings', visible);
     }
   }
 
@@ -268,7 +380,7 @@ class DisasterAtlasApp {
 
   private openSOSModal(): void {
     let nearestPoint: AssemblyPoint | null = null;
-    if (this.userCoords && this.assemblyPoints.length > 0) {
+    if (this.assemblyPoints.length > 0) {
       const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
       if (nearest.length > 0) nearestPoint = nearest[0].point;
     }
@@ -277,6 +389,34 @@ class DisasterAtlasApp {
       userCoords: this.userCoords,
       nearestPoint
     });
+  }
+
+  private openFamilyModal(): void {
+    let nearestPoint: AssemblyPoint | null = null;
+    if (this.assemblyPoints.length > 0) {
+      const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+      if (nearest.length > 0) nearestPoint = nearest[0].point;
+    }
+
+    this.familyHUD.show({
+      userCoords: this.userCoords,
+      nearestPoint,
+      onReportObstacle: () => this.addObstacleAtUserLocation()
+    });
+  }
+
+  private addObstacleAtUserLocation(): void {
+    const obs: ObstaclePoint = {
+      id: `obs-${Date.now()}`,
+      coordinates: [this.userCoords[0] + 0.001, this.userCoords[1] + 0.001],
+      title: 'Enkaz / Kapalı Sokak',
+      radiusMeters: 150,
+      reportedAt: Date.now()
+    };
+    this.obstacles.push(obs);
+    this.mapEngine.setObstacles(this.obstacles);
+    this.updateUserContextCalculations();
+    this.notificationToast.show('⚠️ Enkaz eklendi. Rota alternatif sokaklardan güncellendi.', true);
   }
 
   private registerPWA(): void {
@@ -288,7 +428,6 @@ class DisasterAtlasApp {
   }
 }
 
-// Bootstrap application on DOM ready
 window.addEventListener('DOMContentLoaded', () => {
   const app = new DisasterAtlasApp();
   app.bootstrap().catch(console.error);
