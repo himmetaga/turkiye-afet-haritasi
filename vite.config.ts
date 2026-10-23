@@ -16,6 +16,16 @@ export default defineConfig({
     port: 5173,
     host: true
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'maplibre': ['maplibre-gl']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1200
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
