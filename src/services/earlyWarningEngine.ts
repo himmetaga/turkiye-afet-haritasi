@@ -48,21 +48,6 @@ class EarlyWarningEngine {
     return () => this.listeners.delete(listener);
   }
 
-  public triggerSimulation(epicenter: [number, number], magnitude = 6.4, depthKm = 10, title = 'Marmara Denizi Simülasyon'): void {
-    const simEq: Earthquake = {
-      id: `sim-${Date.now()}`,
-      title: `${title} (M${magnitude})`,
-      mag: magnitude,
-      depth: depthKm,
-      date: new Date().toLocaleTimeString('tr-TR'),
-      timestamp: Date.now(),
-      coordinates: epicenter,
-      location: title
-    };
-
-    this.startWarning(simEq, Date.now());
-  }
-
   public startWarning(eq: Earthquake, originTimeMs = Date.now()): void {
     this.activeEarthquake = eq;
     this.originTimestamp = originTimeMs;

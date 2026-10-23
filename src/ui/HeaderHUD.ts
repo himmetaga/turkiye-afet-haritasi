@@ -15,7 +15,6 @@ export interface HeaderHUDCallbacks {
   onToggleWhistle: () => void;
   onToggleFelt: () => void;
   onToggleCrisis: () => void;
-  onToggleSaaS: () => void;
 }
 
 export class HeaderHUD {
@@ -97,16 +96,7 @@ export class HeaderHUD {
           </div>
 
           <div class="flex items-center gap-1.5">
-            <button
-              id="btn-open-saas"
-              title="Kurumsal Afet API & Widget Portalı"
-              class="px-2 py-1 rounded-lg text-[10px] font-mono font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1 active:scale-95"
-            >
-              <span>⚡</span>
-              <span class="hidden sm:inline">SaaS / API</span>
-            </button>
-
-            <div id="connection-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+            <div id="connection-badge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
               this.isOnline ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/20 text-amber-300'
             }">
               ${this.isOnline ? Icons.wifi('w-3 h-3') : Icons.wifiOff('w-3 h-3')}
@@ -286,11 +276,6 @@ export class HeaderHUD {
     const crisisBtn = this.container.querySelector('#btn-open-crisis') as HTMLButtonElement;
     crisisBtn?.addEventListener('click', () => {
       this.callbacks.onToggleCrisis();
-    });
-
-    const saasBtn = this.container.querySelector('#btn-open-saas') as HTMLButtonElement;
-    saasBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleSaaS();
     });
   }
 }

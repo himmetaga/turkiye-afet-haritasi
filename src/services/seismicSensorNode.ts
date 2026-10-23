@@ -44,7 +44,6 @@ class SeismicSensorNode {
   private sampleCount = 0;
   private sampleRate = 0;
   private rateInterval: number | null = null;
-  private simInterval: number | null = null;
 
   constructor() {
     this.handleDeviceMotion = this.handleDeviceMotion.bind(this);
@@ -81,10 +80,6 @@ class SeismicSensorNode {
       clearInterval(this.rateInterval);
       this.rateInterval = null;
     }
-    if (this.simInterval) {
-      clearInterval(this.simInterval);
-      this.simInterval = null;
-    }
     this.isListening = false;
   }
 
@@ -97,33 +92,7 @@ class SeismicSensorNode {
     return () => this.listeners.delete(listener);
   }
 
-  // Desktop / Test simulation of micro-tremor shake
-  public simulateTremor(intensity = 1.8): void {
-    let t = 0;
-    const startTime = Date.now();
-    const duration = 3000; // 3 seconds
 
-    if (this.simInterval) clearInterval(this.simInterval);
-
-    this.simInterval = window.setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      if (elapsed > duration) {
-        clearInterval(this.simInterval!);
-        this.simInterval = null;
-        return;
-      }
-
-      t += 0.05;
-      const decay = Math.exp(-elapsed / 1200);
-      const amp = intensity * decay;
-
-      const simX = Math.sin(t * 18) * amp + (Math.random() - 0.5) * 0.1;
-      const simY = Math.cos(t * 14) * amp + (Math.random() - 0.5) * 0.1;
-      const simZ = Math.sin(t * 22) * amp * 0.7 + (Math.random() - 0.5) * 0.1;
-
-      this.processSample(simX, simY, simZ);
-    }, 16);
-  }
 
   private handleDeviceMotion(e: DeviceMotionEvent): void {
     const acc = e.acceleration || e.accelerationIncludingGravity;

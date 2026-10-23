@@ -352,39 +352,8 @@ export class MapEngine {
       }
     });
 
-    // 7. Community Felt Reports Layer
-    this.map.addSource('felt-reports', {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [] }
-    });
-
-    this.map.addLayer({
-      id: 'felt-reports-glow',
-      type: 'circle',
-      source: 'felt-reports',
-      paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 8, 14, 20],
-        'circle-color': ['get', 'color'],
-        'circle-opacity': 0.35,
-        'circle-blur': 0.6
-      }
-    });
-
-    this.map.addLayer({
-      id: 'felt-reports-core',
-      type: 'circle',
-      source: 'felt-reports',
-      paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 4, 14, 8],
-        'circle-color': ['get', 'color'],
-        'circle-stroke-width': 1.5,
-        'circle-stroke-color': '#FFFFFF',
-        'circle-opacity': 0.95
-      }
-    });
-
     // Cursor interactions
-    const interactiveLayers = ['assembly-core', 'facility-core', 'fault-lines-core', 'felt-reports-core'];
+    const interactiveLayers = ['assembly-core', 'facility-core', 'fault-lines-core'];
     for (const l of interactiveLayers) {
       this.map.on('mouseenter', l, () => {
         if (this.map) this.map.getCanvas().style.cursor = 'pointer';
@@ -663,16 +632,29 @@ export class MapEngine {
     }
     this.earthquakeMarkers = [];
 
-    earthquakes.forEach((eq) => {
+    earthquakes.forEach((eq, index) => {
+      const isLatest = index === 0;
       const isMajor = eq.mag >= 4.0;
       const el = document.createElement('div');
-      el.className = 'earthquake-seismic-pulse';
-      el.innerHTML = `
-        <div class="seismic-ring ${isMajor ? 'ring-red' : 'ring-amber'}"></div>
-        <div class="seismic-core ${isMajor ? 'core-red' : 'core-amber'}">
-          <span>${eq.mag.toFixed(1)}</span>
-        </div>
-      `;
+
+      if (isLatest) {
+        // En son gerçekleşen deprem: Dikkat çeken dinamik sismik halka
+        el.className = 'earthquake-seismic-pulse';
+        el.innerHTML = `
+          <div class="seismic-ring ${isMajor ? 'ring-red' : 'ring-amber'}"></div>
+          <div class="seismic-core ${isMajor ? 'core-red' : 'core-amber'}">
+            <span>${eq.mag.toFixed(1)}</span>
+          </div>
+        `;
+      } else {
+        // Önceki depremler: Haritada kalabalık yapmayan sakin, sabit gösterge
+        el.className = 'earthquake-marker-static';
+        el.innerHTML = `
+          <div class="seismic-core-static ${isMajor ? 'core-red-static' : 'core-amber-static'}">
+            <span>${eq.mag.toFixed(1)}</span>
+          </div>
+        `;
+      }
 
       el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -895,28 +877,8 @@ export class MapEngine {
     }
   }
 
-  public setFeltReports(reports: FeltReport[]): void {
-    if (!this.map || !this.isLoaded) return;
-    const source = this.map.getSource('felt-reports') as maplibregl.GeoJSONSource;
-    if (!source) return;
-
-    source.setData({
-      type: 'FeatureCollection',
-      features: reports.map((r) => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: r.coordinates },
-        properties: {
-          id: r.id,
-          intensity: r.intensity,
-          roman: r.intensityRoman,
-          label: r.intensityLabel,
-          color: r.intensityColor,
-          city: r.city,
-          district: r.district,
-          comment: r.comment || ''
-        }
-      }))
-    });
+  public setFeltReports(_reports: FeltReport[]): void {
+    // Community reports are excluded from the map canvas to prevent visual clutter
   }
 
   private createCirclePolygon(center: [number, number], radiusKm: number, points = 48): [number, number][] {

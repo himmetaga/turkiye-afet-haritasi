@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/Lisans-MIT-emerald.svg?style=flat-square" alt="License" /></a>
   <img src="https://img.shields.io/badge/PWA-100%25%20Offline%20First-10B981.svg?style=flat-square" alt="PWA Ready" />
   <img src="https://img.shields.io/badge/3D%20Engine-MapLibre%20GL%20WebGL-6366F1.svg?style=flat-square" alt="MapLibre 3D" />
-  <img src="https://img.shields.io/badge/SaaS%20API-v2.4%20Enterprise-06B6D4.svg?style=flat-square" alt="SaaS API" />
+  <img src="https://img.shields.io/badge/AFAD%20Toplanma-27.331%20Nokta-E01E2E.svg?style=flat-square" alt="AFAD Toplanma" />
 </p>
 
 ---
@@ -26,7 +26,7 @@ Geleneksel afet uygulamaları, büyük depremlerde hücresel baz istasyonların�
 
 ---
 
-## ⚡ Temel Yetenekler & Earthquake Network Entegrasyonu
+## ⚡ Temel Yetenekler & Sismik Güvenlik Mimarisi
 
 ### 1. 🚨 Fizik Tabanlı Sismik Erken Uyarı ve Dalga Yayılım Motoru
 - **P-Dalgası (Öncül Sıkışma Dalgası):** $V_p \approx 6.5\text{ km/sn}$ hızla ilerleyen öncül dalganın varış süresi hesaplanır.
@@ -34,37 +34,27 @@ Geleneksel afet uygulamaları, büyük depremlerde hücresel baz istasyonların�
 - **Dinamik 3B WebGL Dalga Halkaları:** Deprem merkez üssünden başlayarak dışa doğru fiziksel hızda genişleyen çift fazlı dalga cephesi harita üzerinde canlı animasyonla gösterilir.
 - **Otomatik Erken Uyarı Sireni:** Web Audio API ile harici ses dosyası gerektirmeden üretilen frekans taramalı acil durum alarmı ve geri sayım sesleri.
 
-### 2. 📈 Akıllı Cihaz İvmeölçer Sensör Düğümü (STA/LTA)
+### 2. 🎯 Tek Odaklı Sismik Gösterge Mimarisi
+- Haritada gerçekleşen tüm geçmiş depremler aynı anda yanıp sönerek haritayı karmaşıklaştırmaz.
+- Yalnızca **en son gerçekleşen deprem** (`earthquakes[0]`) harita üzerinde dinamik sismik şok dalgasıyla (`seismic-ring`) nabız gibi atar; önceki depremler haritada kalabalık yapmayan sakin ve statik göstergelerle sunulur.
+
+### 3. 🔒 Kilitli ve Kesin Konumlandırma (GPS & Network Lock)
+- Kullanıcı konumu yalnızca donanım GPS uydusundan veya doğrulanmış ağ sinyalinden kilitlenir.
+- Harita üzerinde dolaşırken, fayları incelerken veya binalara dokunurken kullanıcının gerçek konumu **asla değişmez ve üzerine yazılamaz**. Kullanıcı daima gerçek konumundan en yakın toplanma alanına olan rotasını görür.
+
+### 4. 📈 Akıllı Cihaz İvmeölçer Sensör Düğümü (STA/LTA)
 - Akıllı telefon ve dizüstü bilgisayarların dahili hareket sensörlerini (`DeviceMotionEvent` / Web Sensor API) kullanarak cihazı mikro bir sismografa dönüştürür.
 - **STA/LTA Algoritması:** Kısa Süreli Ortalama ($STA \approx 0.4\text{ sn}$) ve Uzun Süreli Ortalama ($LTA \approx 8.0\text{ sn}$) enerji oranını ($R = STA / LTA$) gerçek zamanlı hesaplayarak ortam gürültüsünü filtreler ve ani sismik hareketleri tespit eder.
 - **60 FPS Canlı Osiloskop:** Cihaz üzerindeki 3 eksenli $(X, Y, Z)$ ivme vektörlerini canlı dalga formu olarak çizer.
 
-### 3. 📢 2.9 kHz Akustik Rezonans Afet Düdüğü & Optik Kurtarma Flaşörü
+### 5. 📢 2.9 kHz Akustik Rezonans Afet Düdüğü & Optik Kurtarma Flaşörü
 - Arama-kurtarma ekiplerinin betonarme molozların altından en yüksek verimle duyabildiği **2.900 Hz akustik rezonans frekansında** kesintisiz düdük sesi üretir.
 - **Mors Kodu S.O.S (... --- ...):** Uluslararası acil yardım çağrısını döngüsel olarak çalar.
 - **Strobe Flaşör:** Tozlu ve karanlık enkaz ortamlarında kurtarma ekiplerinin optik tespit yapabilmesi için yüksek kontrastlı beyaz-kırmızı ekran flaşörü sağlar.
 
-### 4. 📍 Topluluk Hissedilme Haritası (Modified Mercalli Intensity - MMI)
-- Depremi hisseden bölge sakinleri tek dokunuşla şiddet derecesini (MMI I - X) ve bina tipini bildirir.
-- Bildirilen şiddet verileri canlı harita üzerinde renkli sismik ısı halkaları olarak kümelenir.
-
-### 5. 💬 P2P Kriz Durum Odası & "Güvendeyim" Ağı
+### 6. 💬 P2P Kriz Durum Odası & "Güvendeyim" Ağı
 - Bölge bazlı kriz bilgi paylaşımı ve durum takibi.
 - Tek dokunuşla pil yüzdesi ve GPS koordinatı içeren **"Güvendeyim"** veya **"Acil Yardım Gerekli"** çağrısı oluşturma.
-
-### 6. 🌐 SaaS & Gömülebilir Canlı Afet Widget'ı (Enterprise SDK)
-- Belediyeler, kamu kurumları ve haber portalları için tek satır kodla gömülebilen iframe ve REST/GeoJSON veri servisleri.
-
-```html
-<iframe 
-  src="https://afet.live/widget?city=istanbul&theme=dark" 
-  width="100%" 
-  height="500" 
-  style="border:none; border-radius:16px; overflow:hidden;"
-  allow="geolocation"
-  title="afet.live Canlı Afet ve Toplanma Widget'ı">
-</iframe>
-```
 
 ---
 
@@ -74,8 +64,8 @@ Atlas bünyesindeki hiçbir veri yapay zeka tarafından tahmin edilmemiş veya r
 
 | Kategori | Doğrulanmış Nokta Sayısı | Veri Kaynağı & Hassasiyet |
 | :--- | :--- | :--- |
-| **Afet Toplanma Alanları** | **13.356 Adet** | AFAD Açık Veri Portalı & 16 İl Valiliği (Poligon Ağırlık Merkezi) |
-| **Acil Servis Hastaneleri** | **1.135 Adet** | Sağlık Bakanlığı HealthTurkiye & İl Altyapı Envanteri (Bina Giriş GPS) |
+| **Afet Toplanma Alanları** | **27.331 Adet** | AFAD Açık Veri Portalı & 81 İl Valiliği Envanteri (Poligon Centroid GPS) |
+| **Acil Servis Hastaneleri** | **1.226 Adet** | Sağlık Bakanlığı HealthTurkiye & İl Altyapı Envanteri (Bina Giriş GPS) |
 | **7/24 Nöbetçi Eczaneler** | **514 Adet** | İl Eczacı Odaları Resmi Nöbet Listesi (Kapı Numaralı Kesin GPS) |
 | **Diri Fay Hatları** | **45+ Fay Zonu** | MTA Türkiye Diri Fay Haritası (Marmara, KAF, DAF, BAF) |
 
@@ -88,8 +78,8 @@ Atlas bünyesindeki hiçbir veri yapay zeka tarafından tahmin edilmemiş veya r
 ```mermaid
 flowchart TD
     subgraph DataLayer["Veri ve Sensör Katmanı"]
-        A["AFAD & Valilikler (13.356 Toplanma)"]
-        B["Sağlık Bakanlığı & Odalar (1.649 Tesis)"]
+        A["AFAD & Valilikler (27.331 Toplanma)"]
+        B["Sağlık Bakanlığı & Odalar (1.740 Tesis)"]
         C["Kandilli / USGS Gerçek Zamanlı Deprem Akışı"]
         D["DeviceMotionEvent (Akıllı Telefon İvmeölçeri)"]
     end
@@ -102,12 +92,11 @@ flowchart TD
         I["A* Sokak Bazlı Yürüyüş Rotası Hesaplayıcı"]
     end
 
-    subgraph UserInterface["Kullanıcı Deneyimi & SaaS"]
+    subgraph UserInterface["Kullanıcı Deneyimi"]
         J["afet.live Ana HUD & Vektör Navigasyon"]
         K["Erken Uyarı Sayacı (Çök-Kapan-Tutun)"]
         L["En Yakın 3 Nokta & Pusula Yön Paneli"]
         M["Kriz Durum Odası & Güvendeyim Bildirimi"]
-        N["Gömülebilir Web Widget & REST API"]
     end
 
     DataLayer --> CoreEngines

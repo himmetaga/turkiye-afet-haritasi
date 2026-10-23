@@ -200,26 +200,21 @@ export class SeismographModal {
           </div>
         </div>
 
-        <!-- Action Controls -->
+        <!-- Status Bar -->
         <div class="flex items-center justify-between gap-3 pt-2">
-          <button
-            id="btn-simulate-tremor"
-            class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5"
-          >
-            <span>⚡ Test Sarsıntısı Simüle Et</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-semibold text-emerald-300">Canlı Sismik Dinleme Devrede</span>
+          </div>
 
           <span class="text-[11px] text-gray-400 font-medium">
-            Cihazınızı düz bir zemine koyduğunuzda arka plan izlemesi başlar.
+            Cihazınızı düz bir zemine koyduğunuzda mikrosismik titreşimler analiz edilir.
           </span>
         </div>
       </div>
     `;
 
     this.container.querySelector('#btn-close-seismo')?.addEventListener('click', () => this.hide());
-    this.container.querySelector('#btn-simulate-tremor')?.addEventListener('click', () => {
-      seismicSensorNode.simulateTremor(2.4);
-    });
 
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.hide();

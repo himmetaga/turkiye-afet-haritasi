@@ -129,6 +129,47 @@ body {
   box-shadow: 0 0 14px rgba(245, 158, 11, 0.7);
 }
 
+/* Static Earthquake Markers (Calm non-pulsing for past quakes) */
+.earthquake-marker-static {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seismic-core-static {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  opacity: 0.88;
+}
+
+.seismic-core-static:hover {
+  transform: scale(1.3);
+  opacity: 1;
+  z-index: 10;
+}
+
+.core-red-static {
+  background: #dc2626;
+}
+
+.core-amber-static {
+  background: #d97706;
+}
+
 @keyframes pulseRipple {
   0% {
     width: 20px;

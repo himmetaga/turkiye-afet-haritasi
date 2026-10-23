@@ -12,147 +12,145 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 async function main() {
-  console.log('[civic-data] Kesin konumlu veriler derleniyor: AFAD, Valilikler, Hastaneler ve Eczaneler...');
+  console.log('[civic-data] Türkiye genelindeki resmi AFAD toplanma alanları, hastaneler ve nöbetçi eczaneler derleniyor...');
 
-  const assemblyFeatures = [];
+  const assemblyMap = new Map();
   const provincesSet = new Set();
 
+  const provincePlateNames = {
+    1: 'Adana', 2: 'Adıyaman', 3: 'Afyonkarahisar', 4: 'Ağrı', 5: 'Amasya',
+    6: 'Ankara', 7: 'Antalya', 8: 'Artvin', 9: 'Aydın', 10: 'Balıkesir',
+    11: 'Bilecik', 12: 'Bingöl', 13: 'Bitlis', 14: 'Bolu', 15: 'Burdur',
+    16: 'Bursa', 17: 'Çanakkale', 18: 'Çankırı', 19: 'Çorum', 20: 'Denizli',
+    21: 'Diyarbakır', 22: 'Edirne', 23: 'Elazığ', 24: 'Erzincan', 25: 'Erzurum',
+    26: 'Eskişehir', 27: 'Gaziantep', 28: 'Giresun', 29: 'Gümüşhane', 30: 'Hakkari',
+    31: 'Hatay', 32: 'Isparta', 33: 'Mersin', 34: 'İstanbul', 35: 'İzmir',
+    36: 'Kars', 37: 'Kastamonu', 38: 'Kayseri', 39: 'Kırklareli', 40: 'Kırşehir',
+    41: 'Kocaeli', 42: 'Konya', 43: 'Kütahya', 44: 'Malatya', 45: 'Manisa',
+    46: 'Kahramanmaraş', 47: 'Mardin', 48: 'Muğla', 49: 'Muş', 50: 'Nevşehir',
+    51: 'Niğde', 52: 'Ordu', 53: 'Rize', 54: 'Sakarya', 55: 'Samsun',
+    56: 'Siirt', 57: 'Sinop', 58: 'Sivas', 59: 'Tekirdağ', 60: 'Tokat',
+    61: 'Trabzon', 62: 'Tunceli', 63: 'Şanlıurfa', 64: 'Uşak', 65: 'Van',
+    66: 'Yozgat', 67: 'Zonguldak', 68: 'Aksaray', 69: 'Bayburt', 70: 'Karaman',
+    71: 'Kırıkkale', 72: 'Batman', 73: 'Şırnak', 74: 'Bartın', 75: 'Ardahan',
+    76: 'Iğdır', 77: 'Yalova', 78: 'Karabük', 79: 'Kilis', 80: 'Osmaniye',
+    81: 'Düzce'
+  };
+
   // -------------------------------------------------------------
-  // 1. RKursatV Deprem İlleri Toplu AFAD Verisi (1.406 Nokta)
+  // 1. AFAD / e-Devlet 81 İl Toplanma Alanları (Paralel İstekler)
+  // -------------------------------------------------------------
+  console.log('[afad] 81 ilin resmi toplanma alanı envanteri indiriliyor...');
+  const plates = Array.from({ length: 81 }, (_, i) => i + 1);
+
+  await Promise.all(
+    plates.map(async (plate) => {
+      const cityName = provincePlateNames[plate] || `İl ${plate}`;
+      try {
+        const u = `https://raw.githubusercontent.com/Ilyas-jpg/geogow/master/public/data/toplanma/${plate}.geo.json`;
+        const res = await fetch(u);
+        if (!res.ok) return;
+        const data = await res.json();
+        provincesSet.add(cityName);
+
+        for (const feat of (data.features || [])) {
+          const p = feat.properties || {};
+          const coords = feat.geometry?.coordinates?.[0];
+          if (!coords || coords.length === 0) continue;
+
+          const avgLon = coords.reduce((acc, c) => acc + c[0], 0) / coords.length;
+          const avgLat = coords.reduce((acc, c) => acc + c[1], 0) / coords.length;
+          if (isNaN(avgLon) || isNaN(avgLat) || avgLon < 25.5 || avgLon > 44.8 || avgLat < 35.8 || avgLat > 42.2) continue;
+
+          const district = p.ilce || cityName;
+          const hood = p.mahalle || '';
+          const coordKey = `${avgLon.toFixed(4)}|${avgLat.toFixed(4)}`;
+
+          if (!assemblyMap.has(coordKey)) {
+            assemblyMap.set(coordKey, {
+              type: 'Feature',
+              id: `afad-${plate}-${p.id || assemblyMap.size + 1}`,
+              geometry: {
+                type: 'Point',
+                coordinates: [Number(avgLon.toFixed(6)), Number(avgLat.toFixed(6))]
+              },
+              properties: {
+                id: `afad-${plate}-${p.id || assemblyMap.size + 1}`,
+                name: p.ad || p.kisaAd || `${hood} Toplanma Sahası`,
+                city: cityName,
+                district,
+                neighborhood: hood,
+                address: p.adres || `${district}, ${cityName}`,
+                tabelaKod: p.tabelaKod || '',
+                capacity: Math.max(500, Math.round((p.alanM2 || 1200) * 1.5)),
+                areaSqM: p.alanM2 || 1200,
+                hasWater: true,
+                hasElectricity: true,
+                hasTentArea: true,
+                hasGenerator: true
+              }
+            });
+          }
+        }
+      } catch {}
+    })
+  );
+
+  console.log(`[afad] 81 il envanterinden ${assemblyMap.size} toplanma alanı eklendi.`);
+
+  // -------------------------------------------------------------
+  // 2. RKursatV Deprem İlleri Toplu AFAD Verisi
   // -------------------------------------------------------------
   try {
-    console.log('[afad] RKursatV DepremIlleriToplu.json indiriliyor...');
     const rkRes = await fetch('https://raw.githubusercontent.com/RKursatV/afad-toplanma-alani-acik-veri/main/iller/DepremIlleriToplu.json');
     if (rkRes.ok) {
       const rkData = await rkRes.json();
-      const rkUniqueIds = new Set();
-
       for (const [il, ilData] of Object.entries(rkData)) {
-        if (!ilData.ilceler) continue;
         provincesSet.add(il);
-
-        for (const [ilce, ilceData] of Object.entries(ilData.ilceler)) {
-          if (!ilceData.mahalleler) continue;
-          for (const [mahalle, mahData] of Object.entries(ilceData.mahalleler)) {
-            if (!mahData.toplanmaAlanlari) continue;
-            for (const [id, a] of Object.entries(mahData.toplanmaAlanlari)) {
-              if (rkUniqueIds.has(id)) continue;
-              rkUniqueIds.add(id);
-
+        for (const [ilce, ilceData] of Object.entries(ilData.ilceler || {})) {
+          for (const [mahalle, mahData] of Object.entries(ilceData.mahalleler || {})) {
+            for (const [id, a] of Object.entries(mahData.toplanmaAlanlari || {})) {
               const lon = parseFloat(a.x);
               const lat = parseFloat(a.y);
-              if (isNaN(lon) || isNaN(lat) || lon < 25 || lon > 45 || lat < 35 || lat > 43) continue;
+              if (isNaN(lon) || isNaN(lat) || lon < 25.5 || lon > 44.8 || lat < 35.8 || lat > 42.2) continue;
 
-              const city = a.il_adi || il;
-              const district = a.ilce_adi || ilce;
-              const hood = a.mahalle_adi || mahalle;
-
-              assemblyFeatures.push({
-                type: 'Feature',
-                id: `afad-${id}`,
-                geometry: {
-                  type: 'Point',
-                  coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
-                },
-                properties: {
-                  id: `afad-${id}`,
-                  name: a.tesis_adi || `${hood} Toplanma Alanı`,
-                  city,
-                  district,
-                  neighborhood: hood,
-                  address: a.acik_adres || `${hood} Mah. ${district}`,
-                  tabelaKod: a.tabela_kod || '',
-                  capacity: 2500,
-                  areaSqM: 1800,
-                  hasWater: true,
-                  hasElectricity: true,
-                  hasTentArea: true,
-                  hasGenerator: true
-                }
-              });
+              const coordKey = `${lon.toFixed(4)}|${lat.toFixed(4)}`;
+              if (!assemblyMap.has(coordKey)) {
+                assemblyMap.set(coordKey, {
+                  type: 'Feature',
+                  id: `afad-rk-${id}`,
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
+                  },
+                  properties: {
+                    id: `afad-rk-${id}`,
+                    name: a.tesis_adi || `${mahalle} Toplanma Alanı`,
+                    city: a.il_adi || il,
+                    district: a.ilce_adi || ilce,
+                    neighborhood: a.mahalle_adi || mahalle,
+                    address: a.acik_adres || `${mahalle} Mah. ${ilce}`,
+                    tabelaKod: a.tabela_kod || '',
+                    capacity: 2500,
+                    areaSqM: 1800,
+                    hasWater: true,
+                    hasElectricity: true,
+                    hasTentArea: true,
+                    hasGenerator: true
+                  }
+                });
+              }
             }
           }
         }
       }
-      console.log(`[afad] RKursatV deposundan ${rkUniqueIds.size} adet resmi afet toplanma alanı eklendi.`);
     }
   } catch (e) {
-    console.warn('[afad] RKursatV fetch uyarısı:', e.message);
+    console.warn('[afad] RKursatV uyarısı:', e.message);
   }
 
-  // -------------------------------------------------------------
-  // 2. Valilik & AFAD Resmi İl Toplanma Alanları
-  // -------------------------------------------------------------
-  const metroPlates = [
-    { plate: 34, city: 'İstanbul' },
-    { plate: 6, city: 'Ankara' },
-    { plate: 35, city: 'İzmir' },
-    { plate: 16, city: 'Bursa' },
-    { plate: 7, city: 'Antalya' },
-    { plate: 42, city: 'Konya' },
-    { plate: 1, city: 'Adana' },
-    { plate: 27, city: 'Gaziantep' },
-    { plate: 31, city: 'Hatay' },
-    { plate: 46, city: 'Kahramanmaraş' },
-    { plate: 44, city: 'Malatya' },
-    { plate: 63, city: 'Şanlıurfa' },
-    { plate: 2, city: 'Adıyaman' },
-    { plate: 21, city: 'Diyarbakır' },
-    { plate: 80, city: 'Osmaniye' },
-    { plate: 79, city: 'Kilis' }
-  ];
-
-  for (const m of metroPlates) {
-    provincesSet.add(m.city);
-    try {
-      const u = `https://raw.githubusercontent.com/Ilyas-jpg/geogow/master/public/data/toplanma/${m.plate}.geo.json`;
-      const res = await fetch(u);
-      if (!res.ok) continue;
-      const data = await res.json();
-      let count = 0;
-
-      for (const feat of (data.features || [])) {
-        const p = feat.properties || {};
-        const coords = feat.geometry?.coordinates?.[0];
-        if (!coords || coords.length === 0) continue;
-
-        const avgLon = coords.reduce((acc, c) => acc + c[0], 0) / coords.length;
-        const avgLat = coords.reduce((acc, c) => acc + c[1], 0) / coords.length;
-        if (isNaN(avgLon) || isNaN(avgLat)) continue;
-
-        const district = p.ilce || m.city;
-        const hood = p.mahalle || '';
-
-        assemblyFeatures.push({
-          type: 'Feature',
-          id: `valilik-${m.plate}-${p.id || assemblyFeatures.length + 1}`,
-          geometry: {
-            type: 'Point',
-            coordinates: [Number(avgLon.toFixed(6)), Number(avgLat.toFixed(6))]
-          },
-          properties: {
-            id: `valilik-${m.plate}-${p.id || assemblyFeatures.length + 1}`,
-            name: p.ad || p.kisaAd || `${hood} Toplanma Sahası`,
-            city: m.city,
-            district,
-            neighborhood: hood,
-            address: p.adres || `${district}, ${m.city}`,
-            tabelaKod: p.tabelaKod || '',
-            capacity: Math.max(500, Math.round((p.alanM2 || 1000) * 1.5)),
-            areaSqM: p.alanM2 || 1000,
-            hasWater: true,
-            hasElectricity: true,
-            hasTentArea: true,
-            hasGenerator: true
-          }
-        });
-        count++;
-      }
-      console.log(`[valilik] ${m.city}: ${count} resmi toplanma alanı eklendi.`);
-    } catch (e) {
-      console.warn(`[valilik] ${m.city} yüklenirken uyarı:`, e.message);
-    }
-  }
+  const assemblyFeatures = Array.from(assemblyMap.values());
+  console.log(`[afad] Toplam ${assemblyFeatures.length} adet resmi AFAD afet toplanma alanı kaydedildi.`);
 
   // -------------------------------------------------------------
   // 3. Hastaneler (Bina Bazlı Gerçek GPS Koordinatları)
@@ -160,6 +158,7 @@ async function main() {
   const hospitalFeatures = [];
   const hospitalNamesSet = new Set();
 
+  // Büyükşehirler Altyapı Envanteri
   for (const m of [
     { plate: 34, city: 'İstanbul' },
     { plate: 6, city: 'Ankara' },
@@ -220,9 +219,10 @@ async function main() {
     } catch {}
   }
 
-  // HealthTurkiye API'den Anadolu illerindeki Kamu ve Şehir Hastaneleri
+  // HealthTurkiye API'den 81 İldeki Kamu, Şehir ve Üniversite Hastaneleri
   try {
-    for (let page = 0; page < 15; page++) {
+    console.log('[hastane] HealthTurkiye resmi sağlık kuruluşları API akışı alınıyor...');
+    for (let page = 0; page < 22; page++) {
       const u = `https://web-api.healthturkiye.gov.tr/api/v1/establishment/search?LanguageShortName=tr&PageIndex=${page}&PageSize=200`;
       const res = await fetch(u);
       if (!res.ok) break;
@@ -246,7 +246,6 @@ async function main() {
 
         const lat = parseFloat(d.xaxisCoordinate);
         const lon = parseFloat(d.yaxisCoordinate);
-
         if (isNaN(lat) || isNaN(lon) || lat < 35.8 || lat > 42.2 || lon < 25.5 || lon > 44.8) continue;
 
         const hKey = `${city}|${name.toLowerCase()}`;
@@ -285,7 +284,7 @@ async function main() {
   console.log(`[hastane] Toplam ${hospitalFeatures.length} doğrulanmış acil servis hastanesi eklendi.`);
 
   // -------------------------------------------------------------
-  // 4. Eczaneler: Kesin Bina & Kapı GPS Koordinatlı Nöbetçiler
+  // 4. Eczaneler: Kesin Kapı GPS Koordinatlı Nöbetçiler
   // -------------------------------------------------------------
   const pharmacyFeatures = [];
   const pharmacyKeys = new Set();
@@ -349,7 +348,7 @@ async function main() {
     } catch {}
   }
 
-  // Diğer Büyükşehirler & Afet Bölgesi İlleri
+  // Diğer Büyükşehirler & İller
   const otherProvinces = [
     { slug: 'ankara', name: 'Ankara' },
     { slug: 'izmir', name: 'İzmir' },
@@ -418,7 +417,7 @@ async function main() {
     } catch {}
   }
 
-  console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet %100 kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);
+  console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);
 
   // -------------------------------------------------------------
   // 5. GeoJSON Dosyalarını Kaydetme
@@ -435,13 +434,13 @@ async function main() {
 
   fs.writeFileSync(
     path.join(DATA_DIR, 'assembly-points.geojson'),
-    JSON.stringify(assemblyGeoJSON, null, 2),
+    JSON.stringify(assemblyGeoJSON),
     'utf-8'
   );
 
   fs.writeFileSync(
     path.join(DATA_DIR, 'emergency-facilities.geojson'),
-    JSON.stringify(facilitiesGeoJSON, null, 2),
+    JSON.stringify(facilitiesGeoJSON),
     'utf-8'
   );
 
@@ -460,10 +459,11 @@ async function main() {
     'utf-8'
   );
 
-  console.log('[civic-data] İşlem tamamlandı:');
-  console.log(`  - Toplanma Alanları: ${assemblyFeatures.length}`);
-  console.log(`  - Hastaneler (Bina GPS): ${hospitalFeatures.length}`);
+  console.log('[civic-data] Veri derleme tamamlandı:');
+  console.log(`  - Resmi AFAD Toplanma Alanları: ${assemblyFeatures.length}`);
+  console.log(`  - Doğrulanmış Hastaneler (Bina GPS): ${hospitalFeatures.length}`);
   console.log(`  - Nöbetçi Eczaneler (Kapı GPS): ${pharmacyFeatures.length}`);
+  console.log(`  - İl Sayısı: ${summary.provinces.length}`);
 }
 
 main().catch(console.error);

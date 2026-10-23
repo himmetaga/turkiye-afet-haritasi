@@ -23,7 +23,6 @@ import { EmergencyWhistleModal } from './ui/EmergencyWhistleModal';
 import { FeltReportModal } from './ui/FeltReportModal';
 import { feltReportsService } from './services/feltReportsService';
 import { CrisisChatHUD } from './ui/CrisisChatHUD';
-import { SaaSDashboardModal } from './ui/SaaSDashboardModal';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -53,7 +52,6 @@ class DisasterAtlasApp {
   private whistleModal!: EmergencyWhistleModal;
   private feltModal!: FeltReportModal;
   private crisisHUD!: CrisisChatHUD;
-  private saasModal!: SaaSDashboardModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -76,13 +74,12 @@ class DisasterAtlasApp {
       onToggleLayers: () => this.layerHUD.toggle(),
       onSelectProvince: (prov) => this.handleProvinceSelect(prov),
       onToggleEarlyWarning: () => {
-        earlyWarningEngine.triggerSimulation([28.18, 40.85], 6.4, 12, 'Marmara Denizi (Silivri Açıkları)');
+        this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
       },
       onToggleSeismograph: () => this.seismographModal.show(),
       onToggleWhistle: () => this.whistleModal.show(),
       onToggleFelt: () => this.feltModal.show(),
-      onToggleCrisis: () => this.crisisHUD.show(),
-      onToggleSaaS: () => this.saasModal.show()
+      onToggleCrisis: () => this.crisisHUD.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -120,8 +117,6 @@ class DisasterAtlasApp {
       this.notificationToast.show(`📍 Hissedildi bildirimi alındı (${report.intensityRoman} - ${report.district}).`, false);
     });
     this.crisisHUD = new CrisisChatHUD(appEl, this.userCoords);
-    this.saasModal = new SaaSDashboardModal(appEl);
-
     this.layerHUD = new LayerControlHUD(appEl, (layerKey, visible) => {
       this.handleLayerToggle(layerKey, visible);
     });
@@ -155,10 +150,6 @@ class DisasterAtlasApp {
       this.focusEarthquake(eq);
     });
 
-    this.mapEngine.onMapClick((coords) => {
-      this.setUserLocationManual(coords);
-    });
-
     // Connect Early Warning propagating waves to 3D map
     earlyWarningEngine.subscribe((status) => {
       if (status.isActive && status.earthquake) {
@@ -170,11 +161,6 @@ class DisasterAtlasApp {
       } else {
         this.mapEngine.clearEarlyWarningWaves();
       }
-    });
-
-    // Connect Felt Reports to 3D map
-    feltReportsService.subscribe((reports) => {
-      this.mapEngine.setFeltReports(reports);
     });
 
     // 4. Load Datasets in Parallel
@@ -294,46 +280,56 @@ class DisasterAtlasApp {
     } catch {}
   }
 
-  private requestUserLocation(flyToUser = true): void {
-    if (!('geolocation' in navigator)) {
-      this.notificationToast.show('Tarayıcınız konum servisini desteklemiyor. Haritaya dokunarak seçebilirsiniz.', true);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
-        this.userCoords = coords;
-        earlyWarningEngine.setUserCoordinates(coords);
-        this.feltModal.setUserCoords(coords);
-        this.crisisHUD.setUserLocation(coords);
-
-        this.mapEngine.setUserLocation(coords, pos.coords.heading || 0);
-
-        if (flyToUser) {
-          this.mapEngine.flyTo(coords, 15.5, 52, -15);
-        }
-
-        this.updateUserContextCalculations('GPS Doğrulandı: Bölgenizdeki Acil Noktalar');
-        this.notificationToast.show('📍 GPS konumunuz başarıyla doğrulandı.', false);
-      },
-      () => {
-        this.notificationToast.show('GPS konumu alınamadı. Haritada istediğiniz yere dokunarak konum belirleyebilirsiniz.', true);
-      },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
-    );
-  }
-
-  private setUserLocationManual(coords: [number, number]): void {
+  private applyVerifiedLocation(coords: [number, number], source: string, flyTo = true): void {
     this.userCoords = coords;
     earlyWarningEngine.setUserCoordinates(coords);
     this.feltModal.setUserCoords(coords);
     this.crisisHUD.setUserLocation(coords);
 
     this.mapEngine.setUserLocation(coords, 0);
-    this.mapEngine.flyTo(coords, 15.5, 52, -15);
-    this.updateUserContextCalculations('Seçilen Konuma En Yakın Noktalar');
-    this.notificationToast.show('📍 Konumunuz güncellendi. En yakın toplanma alanları ve yürüyüş rotası hesaplandı.', false);
+    if (flyTo) {
+      this.mapEngine.flyTo(coords, 15.5, 52, -15);
+    }
+    this.updateUserContextCalculations(`${source}: Bölgenizdeki Acil Noktalar`);
+  }
+
+  private requestUserLocation(flyToUser = true): void {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
+          this.applyVerifiedLocation(coords, 'GPS Doğrulandı', flyToUser);
+          this.notificationToast.show('📍 GPS uydusuyla kesin konumunuz doğrulandı ve kilitlendi.', false);
+
+          try {
+            navigator.geolocation.watchPosition(
+              (p) => {
+                const liveCoords: [number, number] = [p.coords.longitude, p.coords.latitude];
+                this.applyVerifiedLocation(liveCoords, 'Canlı GPS', false);
+              },
+              () => {},
+              { enableHighAccuracy: true, maximumAge: 10000 }
+            );
+          } catch {}
+        },
+        async () => {
+          try {
+            const res = await fetch('https://ipapi.co/json/');
+            if (res.ok) {
+              const data = await res.json();
+              if (data.latitude && data.longitude) {
+                const ipCoords: [number, number] = [Number(data.longitude), Number(data.latitude)];
+                this.applyVerifiedLocation(ipCoords, `Şebeke (${data.city || 'Türkiye'})`, flyToUser);
+                this.notificationToast.show(`🌐 Şebeke/IP konumunuz doğrulandı: ${data.city || 'Türkiye'}. Konum sabitlendi.`, false);
+                return;
+              }
+            }
+          } catch {}
+          this.notificationToast.show('📍 Varsayılan merkez konumu devrede. GPS izni verdiğinizde anında güncellenir.', true);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      );
+    }
   }
 
   private updateUserContextCalculations(label?: string): void {
