@@ -220,8 +220,9 @@ export class MapEngine {
       id: 'assembly-glow',
       type: 'circle',
       source: 'assembly-points',
+      minzoom: 8.5,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 8, 14, 18, 18, 28],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 14, 18, 18, 28],
         'circle-color': '#10B981',
         'circle-blur': 0.65,
         'circle-opacity': 0.6
@@ -232,8 +233,9 @@ export class MapEngine {
       id: 'assembly-core',
       type: 'circle',
       source: 'assembly-points',
+      minzoom: 8.5,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4.5, 14, 8.5, 18, 12],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8.5, 4, 14, 8.5, 18, 12],
         'circle-color': '#10B981',
         'circle-stroke-width': 2,
         'circle-stroke-color': '#FFFFFF',
