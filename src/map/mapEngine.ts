@@ -480,7 +480,7 @@ export class MapEngine {
     if (pillarSource) {
       pillarSource.setData({
         type: 'FeatureCollection',
-        features: points.map((p) => {
+        features: points.slice(0, 2000).map((p) => {
           const [lon, lat] = p.coordinates;
           const d = 0.00035;
           const polygon = [

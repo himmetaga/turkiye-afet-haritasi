@@ -54,7 +54,21 @@ export function findNearestAssemblyPoints(
   points: AssemblyPoint[],
   limit = 3
 ): NearestResult[] {
-  const list: NearestResult[] = points.map((p) => {
+  if (!points || points.length === 0) return [];
+
+  const [uLon, uLat] = userCoord;
+  const cosLat = Math.cos((uLat * Math.PI) / 180);
+
+  const candidates = points
+    .map((p) => {
+      const dLon = (p.coordinates[0] - uLon) * cosLat;
+      const dLat = p.coordinates[1] - uLat;
+      return { p, sqDist: dLon * dLon + dLat * dLat };
+    })
+    .sort((a, b) => a.sqDist - b.sqDist)
+    .slice(0, Math.max(limit * 2, 10));
+
+  const list: NearestResult[] = candidates.slice(0, limit).map(({ p }) => {
     const dist = haversineDistanceMeters(userCoord, p.coordinates);
     const bearing = calculateBearingDegrees(userCoord, p.coordinates);
     const walking = estimateWalkingMinutes(dist);
@@ -71,8 +85,7 @@ export function findNearestAssemblyPoints(
     };
   });
 
-  list.sort((a, b) => a.distanceMeters - b.distanceMeters);
-  return list.slice(0, limit);
+  return list;
 }
 
 export function getBearingDirectionText(bearing: number): string {
