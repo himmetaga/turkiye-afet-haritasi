@@ -56,6 +56,11 @@ Geleneksel afet uygulamaları, büyük depremlerde hücresel baz istasyonların�
 - Bölge bazlı kriz bilgi paylaşımı ve durum takibi.
 - Tek dokunuşla pil yüzdesi ve GPS koordinatı içeren **"Güvendeyim"** veya **"Acil Yardım Gerekli"** çağrısı oluşturma.
 
+### 7. 🔍 Anlık Akıllı Arama & Tek Dokunuşla Rota Odaklanması
+- Arama çubuğuna yazılan ilk 2 harften itibaren 27.331 toplanma alanı ve 1.740 sağlık kuruluşu taranır.
+- Kullanıcının kilitli GPS konumuna olan gerçek mesafelerine göre sıralanarak açılır öneri panelinde sunulur.
+- İlgili toplanma alanına veya hastaneye dokunulduğunda harita otomatik olarak odaklanır ve canlı sokak yürüyüş rotasını çizer.
+
 ---
 
 ## 🗺️ %100 Doğrulanmış Coğrafi Bilgi (GIS) Veri Seti
