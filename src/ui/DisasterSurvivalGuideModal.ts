@@ -1,6 +1,6 @@
 import { Icons } from './icons';
 
-export type GuideCategory = 'indoor' | 'rubble' | 'outdoor' | 'secondary' | 'firstaid';
+export type GuideCategory = 'indoor' | 'rubble' | 'outdoor' | 'secondary' | 'firstaid' | 'sanitation';
 
 interface GuideSection {
   id: GuideCategory;
@@ -157,6 +157,37 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
       {
         title: 'Turnikeye Zaman Kaydı',
         desc: 'Turnike uygulandığında turnikenin üzerine veya yaralının alnına uygulandığı saati (Örn: T: 15:40) silinmez kalemle yazın. 120 dakikayı aşan turnikeler doku kangrenine yol açar.'
+      }
+    ]
+  },
+  sanitation: {
+    id: 'sanitation',
+    title: 'Temiz Su & Salgın Hastalık Önleme',
+    badge: 'Halk Sağlığı & Su',
+    icon: '💧',
+    summary: 'Deprem ve sel sonrası en büyük tehdit şebekenin kirlenmesiyle yayılan kolera, dizanteri, tifo, hepatit ve uyuz salgınlarıdır.',
+    dos: [
+      'Temizliğinden emin olmadığınız suları tüketmeden önce en az 1-3 dakika fokurdayarak kaynatın.',
+      'Kaynatma imkanı yoksa SU KLORLAMA FORMÜLÜ uygulayın: 1 litre berrak suya 3 damla, bulanık suya 5-6 damla kokusuz saf çamaşır suyu (sodyum hipoklorit %5) damlatıp karıştırın ve 30 dakika bekleyin (hafif klor kokusu mikropların öldüğünü gösterir).',
+      'Tuvalet ihtiyacını su kaynaklarından, çadırlardan ve gıda alanlarından en az 30-50 metre uzakta açılan çukurlara giderin ve üzerini toprak ve kireç ile örtün.',
+      'Bebek maması hazırlarken mutlaka kapalı ambalajlı veya kaynatılmış soğutulmuş su kullanın.',
+      'Toplu yaşam alanlarında uyuz ve bit salgınını engellemek için kıyafet ve yatakları güneşte havalandırın, kişisel havlu ve battaniye paylaşmayın.'
+    ],
+    donts: [
+      'Bulanık, renkli veya kokulu şebeke sularını kaynatmadan ya da klorlamadan ASLA içmeyin veya diş fırçalamayın.',
+      'Sel veya enkaz suyuna temas etmiş gıda ve ambalajları tüketmeyin.',
+      'Açıkta dışkılama yapmayın (sinekler ve kemirgenler aracılığıyla tüm çadır kente dizanteri ve kolera yayılır).',
+      'Ezilme (Crush) sendromu yaşayan kazazedeye damar yolu desteği olmaksızın kontrolsüz kova dolusu su içirmeyin.'
+    ],
+    criticalRules: [
+      {
+        title: 'Acil Su Dezenfeksiyon Formülü (Klorlama)',
+        desc: '1 Litre berrak su için 3 damla (%5 kokusuz çamaşır suyu) ekleyip çalkalayın. 30 dakika bekledikten sonra hafif klor kokusu alıyorsanız su mikrobiyolojik olarak içilebilir hale gelmiştir. Kokmuyorsa dozu 1 damla daha artırıp 15 dk bekleyin.'
+      },
+      {
+        title: 'Salgın Zinciri: Açık Tuvalet ve Kemirgenler',
+        desc: 'Afet sonrası ölümlerin önemli kısmı ilk günlerde değil, sonraki haftalarda patlak veren su kaynaklı kolera ve tifo salgınlarından kaynaklanır. Dışkı çukurlarına her kullanımdan sonra sönmüş kireç dökmek salgını anında durdurur.',
+        isWarning: true
       }
     ]
   }

@@ -42,28 +42,76 @@ export interface SearchResultItem {
   raw: any;
 }
 
-/** Quick tool tile definitions (rgb triplets feed the `--tool` CSS variable). */
-const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon: (c?: string) => string }[] = [
-  { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
-  { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
-  { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
-  { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi, Yangın ve Zehirli Gaz Radarı (Open-Meteo)', rgb: '245, 158, 11', icon: Icons.wind },
-  { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara/Ege)', rgb: '59, 130, 246', icon: Icons.waves },
-  { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
-  { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
-  { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
-  { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
-  { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
-  { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon },
-  { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
-  { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
-  { id: 'btn-open-drill', label: 'Tatbikat', title: 'Deprem Tatbikatı & Sismik Dalga Simülasyonu', rgb: '239, 68, 68', icon: Icons.waves },
-  { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
-  { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users },
-  { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode },
-  { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.handRaised },
-  { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', icon: Icons.messages },
-  { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack }
+export interface QuickToolItem {
+  id: string;
+  label: string;
+  title: string;
+  rgb: string;
+  icon: (c?: string) => string;
+}
+
+export interface QuickToolCategory {
+  id: string;
+  title: string;
+  badge: string;
+  accentClass: string;
+  tools: QuickToolItem[];
+}
+
+/** Categorized tool definitions grouped by disaster utility */
+const TOOL_CATEGORIES: QuickToolCategory[] = [
+  {
+    id: 'emergency',
+    title: 'Acil Müdahale & S.O.S',
+    badge: 'Kritik Müdahale',
+    accentClass: 'text-rose-400',
+    tools: [
+      { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
+      { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
+      { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', icon: Icons.messages },
+      { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
+      { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon }
+    ]
+  },
+  {
+    id: 'radars',
+    title: 'Erken Uyarı & Çevre Radarları',
+    badge: 'Canlı Sensörler',
+    accentClass: 'text-sky-400',
+    tools: [
+      { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
+      { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi, Yangın ve Zehirli Gaz Radarı (Open-Meteo)', rgb: '245, 158, 11', icon: Icons.wind },
+      { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara/Ege)', rgb: '59, 130, 246', icon: Icons.waves },
+      { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
+      { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
+      { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.handRaised }
+    ]
+  },
+  {
+    id: 'preparedness',
+    title: 'Hazırlık & Aile Güvenliği',
+    badge: 'Önlem & Planlama',
+    accentClass: 'text-amber-400',
+    tools: [
+      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
+      { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack },
+      { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
+      { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
+      { id: 'btn-open-drill', label: 'Tatbikat', title: 'Deprem Tatbikatı & Sismik Dalga Simülasyonu', rgb: '239, 68, 68', icon: Icons.waves },
+      { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode }
+    ]
+  },
+  {
+    id: 'guides',
+    title: 'Bilgilendirme, Rehberler & Afişler',
+    badge: 'Eğitim & Rehber',
+    accentClass: 'text-emerald-400',
+    tools: [
+      { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
+      { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
+      { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users }
+    ]
+  }
 ];
 
 const SEARCH_CATEGORY_STYLE: Record<SearchResultItem['category'], { label: string; cls: string; icon: (c?: string) => string }> = {
@@ -236,14 +284,30 @@ export class HeaderHUD {
   }
 
   private render(): void {
-    const toolTiles = QUICK_TOOLS.map(
-      (t) => `
-        <button id="${t.id}" type="button" class="hud-tool" style="--tool: ${t.rgb}" title="${t.title}" aria-label="${t.title}">
-          <span class="hud-tool-icon">${t.icon('w-4 h-4')}</span>
-          <span>${t.label}</span>
-        </button>
-      `
-    ).join('');
+    const categoriesHtml = TOOL_CATEGORIES.map((cat) => {
+      const tiles = cat.tools
+        .map(
+          (t) => `
+          <button id="${t.id}" type="button" class="hud-tool" style="--tool: ${t.rgb}" title="${t.title}" aria-label="${t.title}">
+            <span class="hud-tool-icon">${t.icon('w-4 h-4')}</span>
+            <span>${t.label}</span>
+          </button>
+        `
+        )
+        .join('');
+
+      return `
+        <div class="flex flex-col gap-1.5 pt-2 border-t border-white/[0.06] first:border-0 first:pt-0">
+          <div class="flex items-center justify-between px-1">
+            <span class="hud-section-label !font-bold ${cat.accentClass}">${cat.title}</span>
+            <span class="text-[9.5px] font-mono text-gray-400 font-semibold px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06]">${cat.tools.length}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1">
+            ${tiles}
+          </div>
+        </div>
+      `;
+    }).join('');
 
     this.container.innerHTML = `
       <div class="hud-header-panel rounded-[20px] p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xl w-full max-w-full overflow-hidden box-border">
@@ -373,13 +437,10 @@ export class HeaderHUD {
             </button>
           </div>
 
-          <!-- Quick tools Matrix -->
+          <!-- Categorized Quick Tools Matrix (Faydaya Göre Gruplandırılmış Menü) -->
           <div class="pt-1">
-            <div class="flex items-center justify-between mb-1.5 px-0.5">
-              <span class="hud-section-label">Acil Durum Araçları</span>
-            </div>
-            <div class="grid grid-cols-4 gap-1">
-              ${toolTiles}
+            <div class="max-h-[min(480px,calc(100vh-210px))] overflow-y-auto overscroll-contain pr-1 space-y-3.5 scrollbar-thin">
+              ${categoriesHtml}
             </div>
           </div>
         </div>
