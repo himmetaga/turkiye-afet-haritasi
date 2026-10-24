@@ -24,7 +24,7 @@ export class NearestPointsHUD {
     this.onSelectPoint = onSelectPoint;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all';
+      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
     parent.appendChild(this.container);
   }
 
@@ -67,7 +67,7 @@ export class NearestPointsHUD {
       const topDir = topResult ? getBearingDirectionText(topResult.bearingDegrees) : '';
 
       this.container.innerHTML = `
-        <div class="hud-glass rounded-2xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all border border-white/10">
+        <div class="hud-glass rounded-2xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all border border-white/10 w-full max-w-full overflow-hidden box-border">
           <div id="btn-drag-handle" class="w-10 h-1 bg-white/25 hover:bg-white/40 rounded-full mx-auto mb-1.5 cursor-pointer transition-colors" title="Yukarı kaydır veya tıkla"></div>
           <div class="flex items-center justify-between gap-2">
             <div id="btn-peek-expand" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">

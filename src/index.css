@@ -159,21 +159,23 @@ button.hud-control:active {
   white-space: nowrap;
 }
 
-/* Primary emergency action */
+/* Primary emergency action — Whistle / SOS focal point */
 .hud-emergency-btn {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #e11d48 0%, #be123c 55%, #9f1239 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 10px 24px -8px rgba(225, 29, 72, 0.65);
+    0 1px 0 rgba(255, 255, 255, 0.3) inset,
+    0 8px 24px -4px rgba(225, 29, 72, 0.65);
+  animation: emergencyPulse 3s ease-in-out infinite;
   transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 .hud-emergency-btn:hover {
   filter: brightness(1.08);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.25) inset,
-    0 14px 30px -8px rgba(225, 29, 72, 0.8);
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 14px 32px -4px rgba(225, 29, 72, 0.85);
 }
 .hud-emergency-btn:active {
   transform: scale(0.98);
@@ -186,13 +188,27 @@ button.hud-control:active {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
   transform: translateX(-100%);
-  animation: emergencySheen 4.5s ease-in-out infinite;
+  animation: emergencySheen 3.6s ease-in-out infinite;
   pointer-events: none;
 }
+@keyframes emergencyPulse {
+  0%, 100% {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.3) inset,
+      0 8px 20px -4px rgba(225, 29, 72, 0.6),
+      0 0 0 0 rgba(244, 63, 94, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.4) inset,
+      0 12px 28px -4px rgba(225, 29, 72, 0.8),
+      0 0 0 5px rgba(244, 63, 94, 0);
+  }
+}
 @keyframes emergencySheen {
-  0%, 70% { transform: translateX(-100%); }
+  0%, 65% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
 
@@ -207,6 +223,7 @@ button.hud-control:active {
 @media (prefers-reduced-motion: reduce) {
   .hud-header-panel,
   .hud-search-dropdown,
+  .hud-emergency-btn,
   .hud-emergency-btn::after {
     animation: none;
   }
@@ -215,7 +232,14 @@ button.hud-control:active {
 /* MapLibre Canvas overrides */
 .maplibregl-ctrl-bottom-right {
   bottom: 24px !important;
-  right: 24px !important;
+  right: 20px !important;
+}
+
+@media (max-width: 639px) {
+  .maplibregl-ctrl-bottom-right {
+    bottom: 135px !important;
+    right: 12px !important;
+  }
 }
 
 .maplibregl-ctrl-group {

@@ -69,13 +69,15 @@ export class HeaderHUD {
   private callbacks: HeaderHUDCallbacks;
   private seismicCount = 0;
   private nearestFault: NearestFaultResult | null = null;
-  private isMobileToolsOpen = false;
+  private isMenuOpen = false;
+  private provinces: string[] = [];
+  private selectedProvince = '';
 
   constructor(parent: HTMLElement, callbacks: HeaderHUDCallbacks) {
     this.callbacks = callbacks;
     this.container = document.createElement('header');
     this.container.className =
-      'absolute top-3 sm:top-4 left-3 right-3 sm:right-auto sm:left-4 sm:w-[400px] z-20 flex flex-col gap-2 pointer-events-auto';
+      'absolute top-3 sm:top-4 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-20 flex flex-col gap-2 pointer-events-auto transition-all box-border';
     parent.appendChild(this.container);
 
     window.addEventListener('online', () => this.setOnlineState(true));
@@ -122,11 +124,21 @@ export class HeaderHUD {
   }
 
   public populateProvinces(provinces: string[]): void {
-    const select = this.container.querySelector('#province-select') as HTMLSelectElement;
+    this.provinces = provinces;
+    this.syncProvinceSelect();
+  }
+
+  private syncProvinceSelect(): void {
+    const select = this.container.querySelector('#province-select') as HTMLSelectElement | null;
     if (!select) return;
     select.innerHTML =
       '<option value="">Türkiye Geneli (Tüm İller)</option>' +
-      provinces.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+      this.provinces
+        .map(
+          (p) =>
+            `<option value="${escapeHtml(p)}" ${p === this.selectedProvince ? 'selected' : ''}>${escapeHtml(p)}</option>`
+        )
+        .join('');
   }
 
   public renderSearchResults(
@@ -239,31 +251,67 @@ export class HeaderHUD {
     ).join('');
 
     this.container.innerHTML = `
-      <div class="hud-header-panel rounded-[20px] p-2.5 sm:p-3.5 flex flex-col gap-2 sm:gap-2.5 shadow-2xl">
-        <!-- 1. Brand & live status + Mobile Tools Toggle -->
-        <div class="flex items-center justify-between gap-2">
+      <div class="hud-header-panel rounded-[20px] p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xl w-full max-w-full overflow-hidden box-border">
+        <!-- 1. Brand bar & Symmetrical Menu Toggle -->
+        <div class="flex items-center justify-between gap-2 min-w-0 w-full">
           <a href="/" class="flex items-center group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400/60 flex-shrink-0" aria-label="afet.live ana sayfa">
-            <img src="/logo-horizontal.svg" alt="afet.live" class="h-6 sm:h-[30px] w-auto max-w-[130px] sm:max-w-none object-contain group-hover:opacity-90 transition-opacity" />
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-6 sm:h-[28px] w-auto max-w-[110px] sm:max-w-none object-contain group-hover:opacity-90 transition-opacity" />
           </a>
           <div class="flex items-center gap-1.5 flex-shrink-0">
             <div id="connection-badge" class="${this.connectionBadgeClass(this.isOnline)}" role="status" aria-live="polite">
               ${this.connectionBadgeInner(this.isOnline)}
             </div>
             <button
-              id="btn-toggle-mobile-tools"
+              id="btn-toggle-tools-menu"
               type="button"
-              class="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold border border-white/10 transition-colors"
-              title="Hızlı Araçları Aç / Kapat"
+              class="flex items-center gap-1 px-2.5 py-1 rounded-xl text-white text-[11px] font-bold border transition-all ${
+                this.isMenuOpen
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-sm'
+                  : 'bg-white/10 hover:bg-white/15 border-white/10 text-gray-200'
+              }"
+              title="Tüm Menüleri ve Sismik Araçları Aç / Kapat"
+              aria-expanded="${this.isMenuOpen}"
             >
-              <span class="text-amber-400">⚡</span>
-              <span>${this.isMobileToolsOpen ? 'Kapat' : 'Araçlar'}</span>
-              <span class="text-gray-400 text-[9px]">${this.isMobileToolsOpen ? '▲' : '▼'}</span>
+              <span class="${this.isMenuOpen ? 'text-amber-300' : 'text-amber-400'}">⚡</span>
+              <span>${this.isMenuOpen ? 'Kapat' : 'Menü'}</span>
+              <span class="text-[9px] opacity-75">${this.isMenuOpen ? '▲' : '▼'}</span>
             </button>
           </div>
         </div>
 
-        <!-- 2. Search & GPS -->
-        <div class="flex items-center gap-2">
+        <!-- 2. PRIMARY EMERGENCY ACTION: AFET DÜDÜĞÜ & S.O.S (HER ZAMAN ODAKTA & GÖRÜNÜR) -->
+        <button
+          id="btn-open-whistle"
+          type="button"
+          title="Afet Düdüğü & Kurtarma İşareti (2.9 kHz Ses · S.O.S Ekran Flaşı)"
+          aria-label="Afet Düdüğünü Başlat"
+          class="hud-emergency-btn flex items-center justify-between gap-2 w-full max-w-full px-2.5 py-2 sm:py-2.5 rounded-xl text-white cursor-pointer select-none min-w-0"
+        >
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/20 text-white flex-shrink-0 shadow-inner">
+              ${Icons.whistle('w-4 h-4 sm:w-5 sm:h-5')}
+            </span>
+            <div class="flex flex-col items-start leading-tight min-w-0 flex-1 text-left">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-[13px] sm:text-[14px] font-black tracking-wide text-white truncate">AFET DÜDÜĞÜ</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/30 text-rose-200 flex-shrink-0">S.O.S</span>
+              </div>
+              <span class="text-[10px] sm:text-[10.5px] text-rose-100/90 truncate font-medium w-full block">2.9 kHz ses · S.O.S flaş</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            <span class="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-black/25 text-rose-50 border border-white/20 shadow-sm">
+              ACİL
+            </span>
+          </div>
+        </button>
+
+        <!-- 3. Search & GPS -->
+        <div class="flex items-center gap-2 min-w-0 w-full">
           <div class="relative flex-1 min-w-0">
             <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text min-w-0 w-full">
               <span class="text-gray-400 flex-shrink-0">${Icons.search('w-4 h-4')}</span>
@@ -273,7 +321,7 @@ export class HeaderHUD {
                 autocomplete="off"
                 spellcheck="false"
                 aria-label="Toplanma alanı, hastane veya ilçe ara"
-                placeholder="Toplanma alanı, hastane, ilçe ara…"
+                placeholder="Toplanma alanı, ilçe ara…"
                 class="flex-1 min-w-0 w-full bg-transparent text-[12px] sm:text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
               />
               <kbd id="search-kbd-hint" class="hud-kbd hidden sm:inline-block flex-shrink-0">/</kbd>
@@ -298,23 +346,23 @@ export class HeaderHUD {
             type="button"
             title="Konumuma Git ve En Yakın Noktaları Hesapla"
             aria-label="Konumuma git"
-            class="hud-control flex items-center justify-center gap-1.5 px-2.5 !bg-emerald-500/15 !border-emerald-500/25 hover:!bg-emerald-500/25 text-emerald-300 flex-shrink-0"
+            class="hud-control flex items-center justify-center gap-1.5 px-2.5 sm:px-3 !bg-emerald-500/15 !border-emerald-500/25 hover:!bg-emerald-500/25 text-emerald-300 flex-shrink-0"
           >
             ${Icons.crosshair('w-4 h-4')}
             <span class="hidden sm:inline text-[11.5px] font-semibold">Konumum</span>
           </button>
         </div>
 
-        <!-- Collapsible Section on Mobile, Always Visible on Desktop -->
-        <div id="hud-mobile-collapsible" class="${this.isMobileToolsOpen ? 'flex' : 'hidden'} sm:flex flex-col gap-2 sm:gap-2.5 transition-all">
-          <!-- 3. Fault proximity (filled after data load) -->
+        <!-- 4. Collapsible Menus & Tools (Sonradan Açılan Menüler) -->
+        <div id="hud-tools-collapsible" class="${this.isMenuOpen ? 'flex' : 'hidden'} flex-col gap-2 sm:gap-2.5 pt-1.5 border-t border-white/[0.08] transition-all">
+          <!-- Fault proximity -->
           <div
             id="fault-proximity-badge"
-            class="${this.nearestFault ? 'flex' : 'hidden'} items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl bg-rose-500/[0.07] border border-rose-500/15"
+            class="${this.nearestFault ? 'flex' : 'hidden'} items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl bg-rose-500/[0.08] border border-rose-500/20"
             title="En yakın diri fay hattı mesafesi"
           ></div>
 
-          <!-- 4. Province filter, layers, live quake feed -->
+          <!-- Province filter, layers, live quake feed -->
           <div class="flex items-center gap-2">
             <div class="relative flex-1 min-w-0">
               <select
@@ -322,7 +370,7 @@ export class HeaderHUD {
                 aria-label="İl filtresi"
                 class="hud-control w-full pl-2.5 pr-8 text-[12px] text-gray-200 cursor-pointer appearance-none outline-none"
               >
-                <option value="">İl Seçiniz...</option>
+                <option value="">Türkiye Geneli (Tüm İller)</option>
               </select>
               <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-gray-500">
                 ${Icons.chevronDown('w-3.5 h-3.5')}
@@ -352,35 +400,24 @@ export class HeaderHUD {
             </button>
           </div>
 
-          <!-- 5. Quick tools Matrix -->
-          <div class="pt-2 border-t border-white/[0.06]">
+          <!-- Quick tools Matrix (11 Modül) -->
+          <div class="pt-1">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <span class="hud-section-label">Acil Durum & Sismik Araçlar</span>
+              <span class="text-[10px] text-gray-400 font-mono">11 Modül</span>
+            </div>
             <div class="grid grid-cols-4 gap-1">
               ${toolTiles}
             </div>
           </div>
-
-          <!-- 6. Primary emergency action -->
-          <button
-            id="btn-open-whistle"
-            type="button"
-            title="Afet Düdüğü & Kurtarma İşareti"
-            class="hud-emergency-btn flex items-center justify-between gap-3 w-full pl-2 pr-3 py-2 rounded-xl text-white"
-          >
-            <span class="flex items-center gap-2.5 min-w-0">
-              <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/15 flex-shrink-0">
-                ${Icons.whistle('w-[18px] h-[18px]')}
-              </span>
-              <span class="flex flex-col items-start leading-tight min-w-0">
-                <span class="text-[13px] font-bold tracking-wide">Afet Düdüğü</span>
-                <span class="text-[10.5px] text-rose-100/80 truncate">2.9 kHz ses · S.O.S ışık sinyali</span>
-              </span>
-            </span>
-            <span class="text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded-md bg-black/20 text-rose-50 flex-shrink-0">Acil</span>
-          </button>
         </div>
       </div>
     `;
 
+    this.syncProvinceSelect();
+    if (this.nearestFault) {
+      this.updateNearestFault(this.nearestFault);
+    }
     this.bindEvents();
   }
 
@@ -450,7 +487,8 @@ export class HeaderHUD {
     });
 
     q<HTMLSelectElement>('#province-select')?.addEventListener('change', (e) => {
-      this.callbacks.onSelectProvince((e.target as HTMLSelectElement).value);
+      this.selectedProvince = (e.target as HTMLSelectElement).value;
+      this.callbacks.onSelectProvince(this.selectedProvince);
     });
 
     const clickMap: Record<string, () => void> = {
@@ -474,8 +512,8 @@ export class HeaderHUD {
       q<HTMLButtonElement>(`#${id}`)?.addEventListener('click', handler);
     }
 
-    q<HTMLButtonElement>('#btn-toggle-mobile-tools')?.addEventListener('click', () => {
-      this.isMobileToolsOpen = !this.isMobileToolsOpen;
+    q<HTMLButtonElement>('#btn-toggle-tools-menu')?.addEventListener('click', () => {
+      this.isMenuOpen = !this.isMenuOpen;
       this.render();
     });
 

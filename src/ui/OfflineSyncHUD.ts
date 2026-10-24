@@ -12,7 +12,7 @@ export class OfflineSyncHUD {
     this.centerCoordsGetter = centerCoordsGetter;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-[82px] sm:bottom-6 right-3 sm:right-4 z-20 flex flex-col items-end gap-2 pointer-events-auto';
+      'absolute bottom-[78px] sm:bottom-6 right-3 sm:right-4 z-20 flex flex-col items-end gap-2 pointer-events-auto transition-all';
     parent.appendChild(this.container);
 
     this.render();
@@ -25,11 +25,11 @@ export class OfflineSyncHUD {
       <div class="relative group">
         <button
           id="btn-sync-offline"
-          class="relative overflow-hidden flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl ${
+          class="relative overflow-hidden flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl ${
             isReady
               ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-              : 'bg-obsidian-950/80 text-gray-200 hover:bg-obsidian-950 border border-white/10'
-          } text-xs font-medium shadow-2xl backdrop-blur-xl transition-all cursor-pointer select-none"
+              : 'bg-obsidian-950/85 text-gray-200 hover:bg-obsidian-950 border border-white/10'
+          } text-xs font-medium shadow-2xl backdrop-blur-xl transition-all cursor-pointer select-none active:scale-95"
         >
           <!-- SVG Circular or Linear Progress Fill -->
           <div
