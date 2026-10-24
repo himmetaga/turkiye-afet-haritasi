@@ -15,7 +15,7 @@ export class PointDetailHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute top-4 right-4 z-20 flex flex-col gap-2 max-w-[calc(100vw-32px)] sm:max-w-sm pointer-events-auto transition-all hidden';
+      'absolute bottom-3 sm:bottom-auto sm:top-4 left-3 right-3 sm:left-auto sm:right-4 z-40 flex flex-col gap-2 sm:w-auto sm:max-w-sm pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
@@ -149,8 +149,31 @@ export class PointDetailHUD {
             <span class="text-xs">🗺️</span>
           </a>
         </div>
+
+        <!-- Community Crowdsourced Verification Button (GitHub) -->
+        <div class="mt-2.5 pt-2 border-t border-white/5">
+          <a
+            id="btn-verify-point-github"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-gray-300 hover:text-white text-[11px] font-medium border border-white/5 transition-colors"
+            title="Bu toplanma alanı veya hastaneyi yerinde doğrulayın / GitHub'a bildirin"
+          >
+            <span class="text-gray-400">${Icons.github('w-3.5 h-3.5')}</span>
+            <span>📍 Bu Noktayı Doğrula / Hata Bildir (GitHub)</span>
+          </a>
+        </div>
       </div>
     `;
+
+    const githubVerifyBtn = this.container.querySelector('#btn-verify-point-github') as HTMLAnchorElement | null;
+    if (githubVerifyBtn && this.currentPoint) {
+      const p = this.currentPoint;
+      const title = `[Doğrulama]: ${p.name} (${p.city || ''}/${p.district || ''})`;
+      const issueUrl = `https://github.com/himmetaga/turkiye-afet-haritasi/issues/new?template=verify-point.yml&title=${encodeURIComponent(title)}&point_name=${encodeURIComponent(p.name)}&point_id=${encodeURIComponent(p.id)}&location=${encodeURIComponent(`${p.city || ''} / ${p.district || ''}`)}&coordinates=${encodeURIComponent(`${p.coordinates[1].toFixed(5)}, ${p.coordinates[0].toFixed(5)}`)}`;
+      githubVerifyBtn.href = issueUrl;
+    }
 
     const sharePointBtn = this.container.querySelector('#btn-share-point') as HTMLButtonElement | null;
     sharePointBtn?.addEventListener('click', async () => {

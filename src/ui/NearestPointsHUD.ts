@@ -17,14 +17,14 @@ export class NearestPointsHUD {
   private onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void;
   private currentData: NearestHUDData = { assembly: [], hospitals: [], pharmacies: [] };
   private activeCategory: HUDCategory = 'assembly';
-  private isCollapsed = false;
-  private contextTitle = 'Konumunuza En Yakın Güvenlik & Sağlık Noktaları';
+  private isCollapsed = typeof window !== 'undefined' && window.innerWidth < 640;
+  private contextTitle = 'Bölgenizdeki Acil Güvenlik & Sağlık Noktaları';
 
   constructor(parent: HTMLElement, onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void) {
     this.onSelectPoint = onSelectPoint;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-6 left-4 z-20 flex flex-col gap-2 max-w-[calc(100vw-32px)] sm:max-w-md pointer-events-auto transition-all';
+      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all';
     parent.appendChild(this.container);
   }
 
@@ -41,6 +41,7 @@ export class NearestPointsHUD {
 
   private render(): void {
     const list = this.currentData[this.activeCategory] || [];
+    const topResult = this.getActiveTopResult();
     const isClosedHours = isAfterClosingHours();
 
     const categoryBadges: { key: HUDCategory; label: string; icon: string; count: number }[] = [
@@ -49,80 +50,160 @@ export class NearestPointsHUD {
       { key: 'pharmacies', label: 'Eczaneler', icon: '💊', count: this.currentData.pharmacies.length }
     ];
 
+    const dotColor =
+      this.activeCategory === 'assembly'
+        ? 'bg-emerald-400'
+        : this.activeCategory === 'hospitals'
+        ? 'bg-cyan-400'
+        : 'bg-amber-400';
+
+    // 1. Mobile Compact Peek State (Minimizes screen clutter while keeping #1 point accessible)
+    if (this.isCollapsed) {
+      const topDistText = topResult
+        ? topResult.distanceMeters > 1000
+          ? `${(topResult.distanceMeters / 1000).toFixed(1)} km`
+          : `${topResult.distanceMeters} m`
+        : '';
+      const topDir = topResult ? getBearingDirectionText(topResult.bearingDegrees) : '';
+
+      this.container.innerHTML = `
+        <div class="hud-glass rounded-2xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all border border-white/10">
+          <div id="btn-drag-handle" class="w-10 h-1 bg-white/25 hover:bg-white/40 rounded-full mx-auto mb-1.5 cursor-pointer transition-colors" title="Yukarı kaydır veya tıkla"></div>
+          <div class="flex items-center justify-between gap-2">
+            <div id="btn-peek-expand" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+              <span class="w-2.5 h-2.5 rounded-full ${dotColor} animate-pulse flex-shrink-0"></span>
+              <div class="min-w-0 leading-tight">
+                <div class="text-xs font-bold text-white truncate">
+                  ${topResult ? `#1 ${topResult.point.name}` : this.contextTitle}
+                </div>
+                <div class="text-[11px] text-emerald-400 font-mono font-medium truncate mt-0.5">
+                  ${topResult ? `${topDistText} • ${topDir} • ~${topResult.walkingMinutes} dk yürüyüş` : 'Güvenlik Noktaları'}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              ${
+                topResult
+                  ? `
+                <button
+                  id="btn-peek-route"
+                  class="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-bold text-[11px] shadow-glow-emerald transition-colors"
+                >
+                  Rota Çiz
+                </button>
+              `
+                  : ''
+              }
+              <button
+                id="btn-collapse-toggle"
+                class="p-1 px-2.5 py-1.5 text-gray-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/15 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                title="Tüm Listeyi Genişlet"
+              >
+                <span>Tümü (${list.length})</span>
+                <span class="text-xs text-emerald-400">▲</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const dragHandle = this.container.querySelector('#btn-drag-handle');
+      const peekExpand = this.container.querySelector('#btn-peek-expand');
+      const collapseToggle = this.container.querySelector('#btn-collapse-toggle');
+      const expandHandler = () => {
+        this.isCollapsed = false;
+        this.render();
+      };
+
+      dragHandle?.addEventListener('click', expandHandler);
+      peekExpand?.addEventListener('click', expandHandler);
+      collapseToggle?.addEventListener('click', expandHandler);
+
+      const peekRoute = this.container.querySelector('#btn-peek-route');
+      peekRoute?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (topResult) {
+          this.onSelectPoint(topResult.point as any);
+        }
+      });
+
+      return;
+    }
+
+    // 2. Fully Expanded Bottom Sheet / Drawer View
     let categoryHeaderBanner = '';
     if (this.activeCategory === 'pharmacies') {
       if (isClosedHours) {
         categoryHeaderBanner = `
           <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300 flex items-center justify-between">
-            <span class="flex items-center gap-1.5 font-medium">
+            <span class="flex items-center gap-1.5 font-medium truncate">
               <span class="animate-pulse">🌙</span>
-              <span>19:00 sonrası: Yalnızca nöbetçi eczaneler listeleniyor</span>
+              <span>19:00 sonrası: Yalnızca 7/24 nöbetçi eczaneler</span>
             </span>
-            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">7/24 Açık</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 flex-shrink-0">Nöbetçi</span>
           </div>
         `;
       } else {
         categoryHeaderBanner = `
           <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex items-center justify-between">
-            <span class="flex items-center gap-1.5 font-medium">
+            <span class="flex items-center gap-1.5 font-medium truncate">
               <span>💊</span>
-              <span>Mesai saatleri: Gündüz ve nöbetçi eczaneler (Kapanış: 19:00)</span>
+              <span>Gündüz ve nöbetçi eczaneler (Kapanış: 19:00)</span>
             </span>
-            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200">Açık</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 flex-shrink-0">Açık</span>
           </div>
         `;
       }
     } else if (this.activeCategory === 'hospitals') {
       categoryHeaderBanner = `
         <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-[11px] text-cyan-300 flex items-center justify-between">
-          <span class="flex items-center gap-1.5 font-medium">
+          <span class="flex items-center gap-1.5 font-medium truncate">
             <span>🏥</span>
-            <span>Sağlık Bakanlığı tescilli acil servis ve travma merkezleri</span>
+            <span>Sağlık Bakanlığı tescilli 7/24 acil servis hastaneleri</span>
           </span>
-          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200">7/24 Açık</span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200 flex-shrink-0">7/24</span>
         </div>
       `;
     } else if (this.activeCategory === 'assembly') {
       categoryHeaderBanner = `
         <div class="mb-2 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex items-center justify-between">
-          <span class="flex items-center gap-1.5 font-medium">
+          <span class="flex items-center gap-1.5 font-medium truncate">
             <span>🛡️</span>
-            <span>Valilik & AFAD onaylı afet acil toplanma sahaları</span>
+            <span>Valilik & AFAD onaylı resmi acil toplanma sahaları</span>
           </span>
-          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200">Tescilli</span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 flex-shrink-0">AFAD</span>
         </div>
       `;
     }
 
     this.container.innerHTML = `
-      <div class="hud-glass rounded-2xl p-3.5 shadow-2xl backdrop-blur-xl transition-all">
+      <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all border border-white/10 max-h-[80vh] flex flex-col">
+        <!-- Touch Drag Handle for Mobile Sheet -->
+        <div id="btn-drag-handle" class="w-10 h-1 bg-white/25 hover:bg-white/40 rounded-full mx-auto mb-2 cursor-pointer transition-colors" title="Aşağı küçült"></div>
+
         <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/5">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-2 h-2 rounded-full ${
-              this.activeCategory === 'assembly'
-                ? 'bg-emerald-400'
-                : this.activeCategory === 'hospitals'
-                ? 'bg-cyan-400'
-                : 'bg-amber-400'
-            } animate-pulse flex-shrink-0"></span>
+            <span class="w-2 h-2 rounded-full ${dotColor} animate-pulse flex-shrink-0"></span>
             <span class="text-xs font-bold tracking-wider text-white uppercase truncate">
               ${this.contextTitle}
             </span>
           </div>
 
-          <div class="flex items-center gap-1 flex-shrink-0">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
             <button id="btn-voice-guide" title="Sesli Pusula Rehberi" class="p-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[10px] font-semibold flex items-center gap-1 px-2 transition-colors">
               <span>🔊</span>
-              <span>Sesli Yön</span>
+              <span class="hidden sm:inline">Sesli Yön</span>
             </button>
-            <button id="btn-collapse-nearest" class="p-1 text-gray-400 hover:text-white rounded-lg bg-white/5 text-[10px]">
-              ${this.isCollapsed ? '▲' : '▼'}
+            <button id="btn-collapse-toggle" class="p-1 text-gray-300 hover:text-white rounded-lg bg-white/10 text-[11px] font-bold px-2 flex items-center gap-0.5 transition-colors">
+              <span>Küçült</span>
+              <span class="text-xs">▼</span>
             </button>
           </div>
         </div>
 
-        <!-- Kategori Sekmeleri -->
-        <div class="flex items-center gap-1.5 mb-2.5">
+        <!-- Category Tabs -->
+        <div class="flex items-center gap-1.5 mb-2">
           ${categoryBadges
             .map(
               (cat) => `
@@ -139,7 +220,7 @@ export class NearestPointsHUD {
               }"
             >
               <span>${cat.icon}</span>
-              <span>${cat.label}</span>
+              <span class="truncate">${cat.label}</span>
               <span class="text-[10px] opacity-75 font-mono">(${cat.count})</span>
             </button>
           `
@@ -149,8 +230,8 @@ export class NearestPointsHUD {
 
         ${categoryHeaderBanner}
 
-        <!-- En Yakın Noktalar Listesi -->
-        <div id="nearest-items-list" class="flex flex-col gap-2 ${this.isCollapsed ? 'hidden' : ''}">
+        <!-- Scrollable Nearest Points List -->
+        <div id="nearest-items-list" class="flex flex-col gap-2 overflow-y-auto max-h-[46vh] sm:max-h-[380px] pr-0.5">
           ${
             list.length === 0
               ? `<div class="p-4 text-center text-xs text-gray-400 bg-white/5 rounded-xl">
@@ -197,7 +278,13 @@ export class NearestPointsHUD {
                             </div>
                             <p class="text-[11px] text-gray-400 mt-0.5 truncate">
                               ${p.district}, ${p.city} ${
-                                neighborhood ? `• ${neighborhood}` : (p as any).typeText ? `• ${(p as any).typeText}` : p.capacity ? `• Kapasite: ${p.capacity.toLocaleString()}` : ''
+                                neighborhood
+                                  ? `• ${neighborhood}`
+                                  : (p as any).typeText
+                                  ? `• ${(p as any).typeText}`
+                                  : p.capacity
+                                  ? `• Kapasite: ${p.capacity.toLocaleString()}`
+                                  : ''
                               }
                             </p>
                             ${
@@ -207,7 +294,7 @@ export class NearestPointsHUD {
                             }
                           </div>
 
-                          <!-- Pusula ve Mesafe Rozeti -->
+                          <!-- Compass & Distance Badge -->
                           <div class="text-right flex flex-col items-end flex-shrink-0">
                             <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg ${tagColor} text-xs font-bold font-mono">
                               <span>${distText}</span>
@@ -307,15 +394,15 @@ export class NearestPointsHUD {
     });
 
     // Collapse toggle
-    const collapseBtn = this.container.querySelector('#btn-collapse-nearest');
-    collapseBtn?.addEventListener('click', () => {
-      this.isCollapsed = !this.isCollapsed;
-      const listEl = this.container.querySelector('#nearest-items-list');
-      if (listEl) {
-        listEl.classList.toggle('hidden', this.isCollapsed);
-      }
-      if (collapseBtn) collapseBtn.textContent = this.isCollapsed ? '▲' : '▼';
-    });
+    const collapseBtn = this.container.querySelector('#btn-collapse-toggle');
+    const dragHandle = this.container.querySelector('#btn-drag-handle');
+    const collapseHandler = () => {
+      this.isCollapsed = true;
+      this.render();
+    };
+
+    collapseBtn?.addEventListener('click', collapseHandler);
+    dragHandle?.addEventListener('click', collapseHandler);
 
     // Voice guide
     const voiceBtn = this.container.querySelector('#btn-voice-guide');

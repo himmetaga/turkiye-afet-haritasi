@@ -7,7 +7,18 @@ export interface ParsedDeepLink {
   city?: string;
   district?: string;
   pointId?: string;
-  mod?: 'gece-nobeti' | 'bina-risk' | 'qr' | 'duduk' | 'sismograf' | 'erken-uyari' | 'kriz' | 'canta';
+  mod?:
+    | 'gece-nobeti'
+    | 'bina-risk'
+    | 'qr'
+    | 'duduk'
+    | 'sismograf'
+    | 'erken-uyari'
+    | 'kriz'
+    | 'canta'
+    | 'tatbikat'
+    | 'afis'
+    | 'kart';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -45,7 +56,10 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'sismograf',
       'erken-uyari',
       'kriz',
-      'canta'
+      'canta',
+      'tatbikat',
+      'afis',
+      'kart'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

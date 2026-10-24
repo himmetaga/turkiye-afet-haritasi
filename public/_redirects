@@ -16,6 +16,11 @@ https://www.afet.live/* https://afet.live/:splat 301!
 /guvendeyim /?mod=qr           302
 /duduk     /?mod=duduk         302
 /sismograf /?mod=sismograf     302
+/tatbikat  /?mod=tatbikat      302
+/afis      /?mod=afis          302
+/poster    /?mod=afis          302
+/kart      /?mod=kart          302
+/aile      /?mod=kart          302
 
 # SPA / PWA derin bağlantı desteği:
 # Cloudflare Pages, kökte 404.html bulunmadığında eşleşmeyen tüm yolları

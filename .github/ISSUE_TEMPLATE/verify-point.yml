@@ -1,0 +1,72 @@
+name: "📍 Afet Noktası Doğrulama veya Güncelleme Bildirimi"
+description: "Haritadaki bir toplanma alanı, hastane veya nöbetçi eczaneyi doğrulayın, kapalı/yanlış olduğunu bildirin ya da yeni alan önerin."
+title: "[Doğrulama]: "
+labels: ["veri-dogrulama", "topluluk-katkisi"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **afet.live** açık kaynak harita verisini doğrulayarak hayat kurtarmaya katkı sağladığınız için teşekkürler!
+        Lütfen haritada gördüğünüz toplanma alanı, hastane veya eczaneyle ilgili durumu aşağıdaki formu doldurarak bildirin.
+  - type: dropdown
+    id: point_type
+    attributes:
+      label: Nokta Türü
+      description: Doğrulamak istediğiniz tesis veya alan türünü seçin.
+      options:
+        - "AFAD Resmi Afet Toplanma Alanı"
+        - "Doğrulanmış Acil Servis Hastanesi"
+        - "Nöbetçi / Acil Eczane"
+        - "Türk Kızılay Kan Bağış Merkezi"
+        - "Yeni / Eksik Nokta Önerisi"
+    validations:
+      required: true
+  - type: input
+    id: point_name
+    attributes:
+      label: Nokta Adı / Tesis Adı
+      description: Haritada yazan isim (Örn: Yoğurtçu Parkı Toplanma Alanı veya Kadıköy Devlet Hastanesi).
+      placeholder: "Örn: Menekşe Parkı Afet Toplanma Sahası"
+    validations:
+      required: true
+  - type: input
+    id: point_id
+    attributes:
+      label: Nokta ID'si (Varsa)
+      description: afet.live nokta detay kartında belirtilen benzersiz kod.
+      placeholder: "Örn: ap-ist-kad-042"
+  - type: input
+    id: location
+    attributes:
+      label: İl / İlçe / Mahalle
+      placeholder: "Örn: İstanbul / Kadıköy / Caferağa Mah."
+    validations:
+      required: true
+  - type: input
+    id: coordinates
+    attributes:
+      label: GPS Koordinatları (Enlem, Boylam)
+      description: Haritadaki nokta veya telefon GPS koordinatı.
+      placeholder: "Örn: 40.98527, 29.03367"
+  - type: dropdown
+    id: status_report
+    attributes:
+      label: Bildirilen Durum / Tespit
+      description: Alanda yaptığınız gözlem veya değişiklik gerekçesi.
+      options:
+        - "✅ Bizzat Doğrulandı (Tabela, aydınlatma, su ve açık alan mevcut)"
+        - "⚠️ Yanlış Konum / Koordinat Kayması (Düzeltme koordinatları aşağıda)"
+        - "⛔ Kapalı / İnşaat Alanına Dönüşmüş / Erişilemez"
+        - "🏗️ Yıkılmış / Taşınmış Hastane veya Eczane"
+        - "➕ Haritada Bulunmayan Yeni Resmi Toplanma Alanı"
+        - "Diğer Açıklama"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Açıklama ve Ek Bilgiler
+      description: Gözlemleriniz, güncel tabela fotoğraf bağlantıları veya resmi belediye duyuru linki.
+      placeholder: "Toplanma alanı girişindeki tabela yenilenmiş, jeneratör ve acil su vanası aktif durumda..."
+    validations:
+      required: false

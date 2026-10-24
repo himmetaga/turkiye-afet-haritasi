@@ -40,6 +40,10 @@
   Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
   Access-Control-Allow-Origin: *
 
+/embed.js
+  Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
+  Access-Control-Allow-Origin: *
+
 # ---------------------------------------------------------------------------
 # 4) Vite tarafından içerik-hash'li derlenmiş varlıklar — asla değişmez.
 # ---------------------------------------------------------------------------

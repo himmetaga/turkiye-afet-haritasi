@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "turkiye-afet-haritasi",
-  "compatibility_date": "2025-01-01",
+  "name": "afet-live",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist"
+  },
   "pages_build_output_dir": "dist"
 }

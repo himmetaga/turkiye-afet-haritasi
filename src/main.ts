@@ -26,6 +26,9 @@ import { CrisisChatHUD } from './ui/CrisisChatHUD';
 import { NightWatchHUD } from './ui/NightWatchHUD';
 import { BuildingRiskModal } from './ui/BuildingRiskModal';
 import { OfflineQRPackModal } from './ui/OfflineQRPackModal';
+import { DrillSimulator } from './simulation/DrillSimulator';
+import { ApartmentPosterGenerator } from './ui/ApartmentPosterGenerator';
+import { SocialShareCard } from './ui/SocialShareCard';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
 class DisasterAtlasApp {
@@ -60,6 +63,9 @@ class DisasterAtlasApp {
   private nightWatchHUD!: NightWatchHUD;
   private buildingRiskModal!: BuildingRiskModal;
   private qrPackModal!: OfflineQRPackModal;
+  private drillSimulator!: DrillSimulator;
+  private apartmentPoster!: ApartmentPosterGenerator;
+  private familyCard!: SocialShareCard;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -87,6 +93,9 @@ class DisasterAtlasApp {
       onToggleNightWatch: () => this.nightWatchHUD.show(),
       onToggleSeismograph: () => this.seismographModal.show(),
       onToggleBuildingRisk: () => this.buildingRiskModal.show(),
+      onToggleDrill: () => this.drillSimulator.show(),
+      onToggleApartmentPoster: () => this.apartmentPoster.show(),
+      onToggleFamilyCard: () => this.familyCard.show(),
       onToggleWhistle: () => this.whistleModal.show(),
       onToggleFelt: () => this.feltModal.show(),
       onToggleCrisis: () => this.crisisHUD.show(),
@@ -127,6 +136,9 @@ class DisasterAtlasApp {
       onNavigateToPoint: (point) => this.focusPoint(point)
     });
     this.qrPackModal = new OfflineQRPackModal(appEl, this.userCoords);
+    this.drillSimulator = new DrillSimulator(appEl, this.mapEngine, this.userCoords, this.assemblyPoints);
+    this.apartmentPoster = new ApartmentPosterGenerator(appEl, this.userCoords, this.assemblyPoints, this.facilities);
+    this.familyCard = new SocialShareCard(appEl, this.userCoords, this.assemblyPoints, this.facilities);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -384,6 +396,15 @@ class DisasterAtlasApp {
             this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
           }
           break;
+        case 'tatbikat':
+          this.drillSimulator.show();
+          break;
+        case 'afis':
+          this.apartmentPoster.show();
+          break;
+        case 'kart':
+          this.familyCard.show();
+          break;
       }
     }
   }
@@ -457,6 +478,17 @@ class DisasterAtlasApp {
     // Default route to #1 nearest assembly point
     if (assemblyResults.length > 0) {
       this.mapEngine.drawRoute(this.userCoords, assemblyResults[0].point.coordinates, this.obstacles);
+    }
+
+    if (this.drillSimulator) {
+      this.drillSimulator.setUserCoords(this.userCoords);
+      this.drillSimulator.setAssemblyPoints(this.assemblyPoints);
+    }
+    if (this.apartmentPoster) {
+      this.apartmentPoster.setData(this.userCoords, this.assemblyPoints, this.facilities);
+    }
+    if (this.familyCard) {
+      this.familyCard.setData(this.userCoords, this.assemblyPoints, this.facilities);
     }
   }
 

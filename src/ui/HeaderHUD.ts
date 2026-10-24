@@ -18,6 +18,9 @@ export interface HeaderHUDCallbacks {
   onToggleNightWatch: () => void;
   onToggleBuildingRisk: () => void;
   onToggleQRPack: () => void;
+  onToggleDrill: () => void;
+  onToggleApartmentPoster: () => void;
+  onToggleFamilyCard: () => void;
 }
 
 export interface SearchResultItem {
@@ -36,9 +39,12 @@ const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon
   { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon },
   { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
   { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
+  { id: 'btn-open-drill', label: 'Tatbikat', title: 'Deprem Tatbikatı & Sismik Dalga Simülasyonu', rgb: '239, 68, 68', icon: Icons.waves },
+  { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
+  { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users },
+  { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode },
   { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.handRaised },
   { id: 'btn-open-crisis', label: 'Kriz Odası', title: 'Kriz Durum Koordinasyon Odası & Güvendeyim Bildirimi', rgb: '34, 211, 238', icon: Icons.messages },
-  { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode },
   { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack }
 ];
 
@@ -63,12 +69,13 @@ export class HeaderHUD {
   private callbacks: HeaderHUDCallbacks;
   private seismicCount = 0;
   private nearestFault: NearestFaultResult | null = null;
+  private isMobileToolsOpen = false;
 
   constructor(parent: HTMLElement, callbacks: HeaderHUDCallbacks) {
     this.callbacks = callbacks;
     this.container = document.createElement('header');
     this.container.className =
-      'absolute top-4 left-4 z-20 flex flex-col gap-2.5 pointer-events-auto w-[calc(100vw-32px)] sm:w-[400px]';
+      'absolute top-3 sm:top-4 left-3 right-3 sm:right-auto sm:left-4 sm:w-[400px] z-20 flex flex-col gap-2 pointer-events-auto';
     parent.appendChild(this.container);
 
     window.addEventListener('online', () => this.setOnlineState(true));
@@ -232,21 +239,33 @@ export class HeaderHUD {
     ).join('');
 
     this.container.innerHTML = `
-      <div class="hud-header-panel rounded-[20px] p-3 sm:p-3.5 flex flex-col gap-2.5">
-        <!-- 1. Brand & live status -->
+      <div class="hud-header-panel rounded-[20px] p-2.5 sm:p-3.5 flex flex-col gap-2 sm:gap-2.5 shadow-2xl">
+        <!-- 1. Brand & live status + Mobile Tools Toggle -->
         <div class="flex items-center justify-between gap-2">
-          <a href="/" class="flex items-center group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400/60" aria-label="afet.live ana sayfa">
-            <img src="/logo-horizontal.svg" alt="afet.live" class="h-7 sm:h-[30px] w-auto object-contain group-hover:opacity-90 transition-opacity" />
+          <a href="/" class="flex items-center group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400/60 flex-shrink-0" aria-label="afet.live ana sayfa">
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-6 sm:h-[30px] w-auto max-w-[130px] sm:max-w-none object-contain group-hover:opacity-90 transition-opacity" />
           </a>
-          <div id="connection-badge" class="${this.connectionBadgeClass(this.isOnline)}" role="status" aria-live="polite">
-            ${this.connectionBadgeInner(this.isOnline)}
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <div id="connection-badge" class="${this.connectionBadgeClass(this.isOnline)}" role="status" aria-live="polite">
+              ${this.connectionBadgeInner(this.isOnline)}
+            </div>
+            <button
+              id="btn-toggle-mobile-tools"
+              type="button"
+              class="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold border border-white/10 transition-colors"
+              title="Hızlı Araçları Aç / Kapat"
+            >
+              <span class="text-amber-400">⚡</span>
+              <span>${this.isMobileToolsOpen ? 'Kapat' : 'Araçlar'}</span>
+              <span class="text-gray-400 text-[9px]">${this.isMobileToolsOpen ? '▲' : '▼'}</span>
+            </button>
           </div>
         </div>
 
         <!-- 2. Search & GPS -->
         <div class="flex items-center gap-2">
           <div class="relative flex-1 min-w-0">
-            <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text">
+            <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text min-w-0 w-full">
               <span class="text-gray-400 flex-shrink-0">${Icons.search('w-4 h-4')}</span>
               <input
                 id="search-input"
@@ -255,7 +274,7 @@ export class HeaderHUD {
                 spellcheck="false"
                 aria-label="Toplanma alanı, hastane veya ilçe ara"
                 placeholder="Toplanma alanı, hastane, ilçe ara…"
-                class="flex-1 min-w-0 bg-transparent text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
+                class="flex-1 min-w-0 w-full bg-transparent text-[12px] sm:text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
               />
               <kbd id="search-kbd-hint" class="hud-kbd hidden sm:inline-block flex-shrink-0">/</kbd>
               <button
@@ -286,76 +305,79 @@ export class HeaderHUD {
           </button>
         </div>
 
-        <!-- 3. Fault proximity (filled after data load) -->
-        <div
-          id="fault-proximity-badge"
-          class="hidden items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl bg-rose-500/[0.07] border border-rose-500/15"
-          title="En yakın diri fay hattı mesafesi"
-        ></div>
+        <!-- Collapsible Section on Mobile, Always Visible on Desktop -->
+        <div id="hud-mobile-collapsible" class="${this.isMobileToolsOpen ? 'flex' : 'hidden'} sm:flex flex-col gap-2 sm:gap-2.5 transition-all">
+          <!-- 3. Fault proximity (filled after data load) -->
+          <div
+            id="fault-proximity-badge"
+            class="${this.nearestFault ? 'flex' : 'hidden'} items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl bg-rose-500/[0.07] border border-rose-500/15"
+            title="En yakın diri fay hattı mesafesi"
+          ></div>
 
-        <!-- 4. Province filter, layers, live quake feed -->
-        <div class="flex items-center gap-2">
-          <div class="relative flex-1 min-w-0">
-            <select
-              id="province-select"
-              aria-label="İl filtresi"
-              class="hud-control w-full pl-2.5 pr-8 text-[12px] text-gray-200 cursor-pointer appearance-none outline-none"
+          <!-- 4. Province filter, layers, live quake feed -->
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1 min-w-0">
+              <select
+                id="province-select"
+                aria-label="İl filtresi"
+                class="hud-control w-full pl-2.5 pr-8 text-[12px] text-gray-200 cursor-pointer appearance-none outline-none"
+              >
+                <option value="">İl Seçiniz...</option>
+              </select>
+              <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-gray-500">
+                ${Icons.chevronDown('w-3.5 h-3.5')}
+              </span>
+            </div>
+
+            <button
+              id="btn-toggle-layers"
+              type="button"
+              title="Harita Katmanları"
+              aria-label="Harita katmanları"
+              class="hud-control grid place-items-center w-[34px] text-gray-300 hover:text-white flex-shrink-0"
             >
-              <option value="">İl Seçiniz...</option>
-            </select>
-            <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-gray-500">
-              ${Icons.chevronDown('w-3.5 h-3.5')}
-            </span>
+              ${Icons.layers('w-4 h-4')}
+            </button>
+
+            <button
+              id="btn-toggle-seismic"
+              type="button"
+              title="Canlı Deprem Akışı"
+              aria-label="Canlı deprem akışı"
+              class="hud-control flex items-center gap-1.5 px-2.5 !bg-amber-500/10 !border-amber-500/20 hover:!bg-amber-500/20 text-amber-300 flex-shrink-0"
+            >
+              ${Icons.seismic('w-4 h-4')}
+              <span id="seismic-badge-count" class="font-mono text-[12px] font-bold tabular-nums">${this.seismicCount}</span>
+              <span class="hidden sm:inline text-[11px] font-medium text-amber-300/80">deprem</span>
+            </button>
           </div>
 
-          <button
-            id="btn-toggle-layers"
-            type="button"
-            title="Harita Katmanları"
-            aria-label="Harita katmanları"
-            class="hud-control grid place-items-center w-[34px] text-gray-300 hover:text-white flex-shrink-0"
-          >
-            ${Icons.layers('w-4 h-4')}
-          </button>
-
-          <button
-            id="btn-toggle-seismic"
-            type="button"
-            title="Canlı Deprem Akışı"
-            aria-label="Canlı deprem akışı"
-            class="hud-control flex items-center gap-1.5 px-2.5 !bg-amber-500/10 !border-amber-500/20 hover:!bg-amber-500/20 text-amber-300 flex-shrink-0"
-          >
-            ${Icons.seismic('w-4 h-4')}
-            <span id="seismic-badge-count" class="font-mono text-[12px] font-bold tabular-nums">${this.seismicCount}</span>
-            <span class="hidden sm:inline text-[11px] font-medium text-amber-300/80">deprem</span>
-          </button>
-        </div>
-
-        <!-- 5. Quick tools (4x2 Matrix) -->
-        <div class="pt-2.5 border-t border-white/[0.06]">
-          <div class="grid grid-cols-4 gap-1">
-            ${toolTiles}
+          <!-- 5. Quick tools Matrix -->
+          <div class="pt-2 border-t border-white/[0.06]">
+            <div class="grid grid-cols-4 gap-1">
+              ${toolTiles}
+            </div>
           </div>
-        </div>
 
-        <!-- 6. Primary emergency action -->
-        <button
-          id="btn-open-whistle"
-          type="button"
-          title="Afet Düdüğü & Kurtarma İşareti"
-          class="hud-emergency-btn flex items-center justify-between gap-3 w-full pl-2 pr-3 py-2 rounded-xl text-white"
-        >
-          <span class="flex items-center gap-2.5 min-w-0">
-            <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/15 flex-shrink-0">
-              ${Icons.whistle('w-[18px] h-[18px]')}
+          <!-- 6. Primary emergency action -->
+          <button
+            id="btn-open-whistle"
+            type="button"
+            title="Afet Düdüğü & Kurtarma İşareti"
+            class="hud-emergency-btn flex items-center justify-between gap-3 w-full pl-2 pr-3 py-2 rounded-xl text-white"
+          >
+            <span class="flex items-center gap-2.5 min-w-0">
+              <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/15 flex-shrink-0">
+                ${Icons.whistle('w-[18px] h-[18px]')}
+              </span>
+              <span class="flex flex-col items-start leading-tight min-w-0">
+                <span class="text-[13px] font-bold tracking-wide">Afet Düdüğü</span>
+                <span class="text-[10.5px] text-rose-100/80 truncate">2.9 kHz ses · S.O.S ışık sinyali</span>
+              </span>
             </span>
-            <span class="flex flex-col items-start leading-tight min-w-0">
-              <span class="text-[13px] font-bold tracking-wide">Afet Düdüğü</span>
-              <span class="text-[10.5px] text-rose-100/80 truncate">2.9 kHz ses · S.O.S ışık sinyali</span>
-            </span>
-          </span>
-          <span class="text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded-md bg-black/20 text-rose-50 flex-shrink-0">Acil</span>
-        </button>
+            <span class="text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded-md bg-black/20 text-rose-50 flex-shrink-0">Acil</span>
+          </button>
+        </div>
       </div>
     `;
 
@@ -440,6 +462,9 @@ export class HeaderHUD {
       'btn-open-night-watch': () => this.callbacks.onToggleNightWatch(),
       'btn-open-seismograph': () => this.callbacks.onToggleSeismograph(),
       'btn-open-building-risk': () => this.callbacks.onToggleBuildingRisk(),
+      'btn-open-drill': () => this.callbacks.onToggleDrill(),
+      'btn-open-apartment-poster': () => this.callbacks.onToggleApartmentPoster(),
+      'btn-open-family-card': () => this.callbacks.onToggleFamilyCard(),
       'btn-open-felt': () => this.callbacks.onToggleFelt(),
       'btn-open-crisis': () => this.callbacks.onToggleCrisis(),
       'btn-open-qr-pack': () => this.callbacks.onToggleQRPack(),
@@ -448,6 +473,11 @@ export class HeaderHUD {
     for (const [id, handler] of Object.entries(clickMap)) {
       q<HTMLButtonElement>(`#${id}`)?.addEventListener('click', handler);
     }
+
+    q<HTMLButtonElement>('#btn-toggle-mobile-tools')?.addEventListener('click', () => {
+      this.isMobileToolsOpen = !this.isMobileToolsOpen;
+      this.render();
+    });
 
     document.addEventListener('click', (e) => {
       const dropdown = q<HTMLElement>('#search-results-dropdown');

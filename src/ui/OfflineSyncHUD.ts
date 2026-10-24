@@ -12,7 +12,7 @@ export class OfflineSyncHUD {
     this.centerCoordsGetter = centerCoordsGetter;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-6 right-4 z-20 flex flex-col items-end gap-2 pointer-events-auto';
+      'absolute bottom-[82px] sm:bottom-6 right-3 sm:right-4 z-20 flex flex-col items-end gap-2 pointer-events-auto';
     parent.appendChild(this.container);
 
     this.render();
@@ -25,10 +25,10 @@ export class OfflineSyncHUD {
       <div class="relative group">
         <button
           id="btn-sync-offline"
-          class="relative overflow-hidden flex items-center gap-2.5 px-4 py-2.5 rounded-2xl ${
+          class="relative overflow-hidden flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl ${
             isReady
-              ? 'bg-emerald-500/15 text-emerald-400'
-              : 'bg-white/10 text-gray-200 hover:bg-white/15'
+              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+              : 'bg-obsidian-950/80 text-gray-200 hover:bg-obsidian-950 border border-white/10'
           } text-xs font-medium shadow-2xl backdrop-blur-xl transition-all cursor-pointer select-none"
         >
           <!-- SVG Circular or Linear Progress Fill -->
@@ -42,10 +42,10 @@ export class OfflineSyncHUD {
           </span>
 
           <div class="relative z-10 text-left">
-            <span class="block font-semibold">
-              ${isReady ? 'Çevrimdışı Koruma Aktif' : 'Bölgeyi Çevrimdışı Kaydet'}
+            <span class="block text-xs font-semibold">
+              ${isReady ? 'Çevrimdışı Aktif' : 'Çevrimdışı Kaydet'}
             </span>
-            <span id="sync-subtext" class="block text-[10px] text-gray-400">
+            <span id="sync-subtext" class="hidden sm:block text-[10px] text-gray-400">
               ${isReady ? 'Karolar & Alanlar Önbellekte' : '0.8 sn basılı tutun'}
             </span>
           </div>
