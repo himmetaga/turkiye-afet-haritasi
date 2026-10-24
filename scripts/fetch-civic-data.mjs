@@ -302,7 +302,7 @@ async function main() {
   console.log('[eczane] İstanbul ilçelerinden kesin GPS konumlu nöbetçi eczaneler çekiliyor...');
   for (const dist of istDistricts) {
     try {
-      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=istanbul&district=${dist}&limit=50`;
+      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=istanbul&district=${dist}&ordering=-date&limit=50`;
       const res = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
@@ -341,6 +341,7 @@ async function main() {
             hasTraumaCenter: false,
             helipad: false,
             isDuty: true,
+            dutyDate: item.date || new Date().toISOString().slice(0, 10),
             closingHour: '7/24 Kesintisiz'
           }
         });
@@ -369,9 +370,53 @@ async function main() {
     { slug: 'kayseri', name: 'Kayseri' }
   ];
 
+  // İzmir Açık Veri Portalı Doğrudan Entegrasyonu
+  try {
+    const izRes = await fetch('https://openapi.izmir.bel.tr/api/ibb/nobetcieczaneler');
+    if (izRes.ok) {
+      const izData = await izRes.json();
+      for (const item of (Array.isArray(izData) ? izData : [])) {
+        const lat = parseFloat(item.LokasyonX);
+        const lon = parseFloat(item.LokasyonY);
+        if (isNaN(lat) || isNaN(lon) || lat < 37.8 || lat > 39.5 || lon < 26.2 || lon > 28.5) continue;
+
+        const pKey = `${(item.Adi || '').toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
+        if (pharmacyKeys.has(pKey)) continue;
+        pharmacyKeys.add(pKey);
+
+        pharmacyFeatures.push({
+          type: 'Feature',
+          id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+          geometry: {
+            type: 'Point',
+            coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
+          },
+          properties: {
+            id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+            name: `${item.Adi || 'Eczane'} (Nöbetçi)`,
+            category: 'pharmacy',
+            city: 'İzmir',
+            district: item.Bolge || 'Merkez',
+            neighborhood: item.BolgeAciklama || '',
+            address: (item.Adres || '').trim(),
+            phone: item.Telefon || '',
+            typeText: '24 Saat Nöbetçi Eczane',
+            emergencyBeds: 0,
+            hasTraumaCenter: false,
+            helipad: false,
+            isDuty: true,
+            dutyDate: item.Tarih ? item.Tarih.slice(0, 10) : new Date().toISOString().slice(0, 10),
+            closingHour: '7/24 Kesintisiz'
+          }
+        });
+      }
+    }
+  } catch {}
+
   for (const prov of otherProvinces) {
+    if (prov.slug === 'izmir') continue; // Zaten resmi açık veri portalından çekildi
     try {
-      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=${prov.slug}&limit=100`;
+      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=${prov.slug}&ordering=-date&limit=100`;
       const res = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
@@ -410,6 +455,7 @@ async function main() {
             hasTraumaCenter: false,
             helipad: false,
             isDuty: true,
+            dutyDate: item.date || new Date().toISOString().slice(0, 10),
             closingHour: '7/24 Kesintisiz'
           }
         });

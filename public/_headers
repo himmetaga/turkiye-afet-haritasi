@@ -32,6 +32,10 @@
 #    summary.json). Tüm .geojson / .json veri dosyaları /data/ altındadır.
 #    1 saat tarayıcı, 1 gün edge, 7 gün stale-while-revalidate.
 # ---------------------------------------------------------------------------
+/data/emergency-facilities.geojson
+  Cache-Control: public, max-age=300, s-maxage=1800, stale-while-revalidate=7200
+  Access-Control-Allow-Origin: *
+
 /data/*
   Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
   Access-Control-Allow-Origin: *

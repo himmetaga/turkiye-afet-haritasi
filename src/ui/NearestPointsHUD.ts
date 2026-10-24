@@ -12,6 +12,18 @@ export interface NearestHUDData {
   pharmacies: NearestResult[];
 }
 
+function formatDutyDate(dateStr?: string): string {
+  if (!dateStr) return 'Bugün';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const day = parseInt(parts[2], 10);
+    const monthIdx = parseInt(parts[1], 10) - 1;
+    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    return `${day} ${months[monthIdx] || ''}`.trim();
+  }
+  return dateStr;
+}
+
 export class NearestPointsHUD {
   private container: HTMLElement;
   private onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void;
@@ -28,7 +40,8 @@ export class NearestPointsHUD {
     parent.appendChild(this.container);
   }
 
-  public expand(): void {
+  public expand(category?: HUDCategory): void {
+    if (category) this.activeCategory = category;
     this.isCollapsed = false;
     this.render();
   }
@@ -51,14 +64,7 @@ export class NearestPointsHUD {
 
   private render(): void {
     const list = this.currentData[this.activeCategory] || [];
-    const topResult = this.getActiveTopResult();
     const isClosedHours = isAfterClosingHours();
-
-    const categoryBadges: { key: HUDCategory; label: string; icon: (c?: string) => string; count: number }[] = [
-      { key: 'assembly', label: 'Toplanma', icon: Icons.shield, count: this.currentData.assembly.length },
-      { key: 'hospitals', label: 'Hastaneler', icon: Icons.hospital, count: this.currentData.hospitals.length },
-      { key: 'pharmacies', label: 'Eczaneler', icon: Icons.pill, count: this.currentData.pharmacies.length }
-    ];
 
     const dotColor =
       this.activeCategory === 'assembly'
@@ -67,25 +73,71 @@ export class NearestPointsHUD {
         ? 'bg-cyan-400'
         : 'bg-amber-400';
 
-    // 1. Default Closed / Minimal Trigger State (keeps map 100% visible, only whistle stands out)
+    // 1. Kapalı / Dock Buton Çubuğu (Sol altta şık 3 parçalı buton seti)
     if (this.isCollapsed) {
       this.container.className =
-        'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex justify-center pointer-events-none transition-all box-border';
+        'absolute bottom-3 sm:bottom-6 left-3 right-auto sm:left-4 z-30 flex items-center pointer-events-auto transition-all box-border';
+
       this.container.innerHTML = `
-        <button
-          id="btn-open-nearest-drawer"
-          type="button"
-          class="pointer-events-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-950/80 hover:bg-obsidian-950/95 border border-white/10 text-gray-300 hover:text-white text-xs font-medium shadow-xl backdrop-blur-md transition-all active:scale-95 cursor-pointer"
-          title="Toplanma Alanları ve Hastaneleri Göster"
-        >
-          <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
-          <span>Toplanma Alanları (${list.length})</span>
-          <span class="text-[10px] text-gray-400">▲</span>
-        </button>
+        <div class="flex items-center p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-1 sm:gap-1.5 transition-all">
+          <!-- Toplanma Butonu -->
+          <button
+            id="btn-collapsed-assembly"
+            type="button"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            title="En Yakın Toplanma Alanları"
+          >
+            ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform')}
+            <span class="text-xs">Toplanma</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">
+              ${this.currentData.assembly.length}
+            </span>
+          </button>
+
+          <!-- Hastaneler Butonu -->
+          <button
+            id="btn-collapsed-hospitals"
+            type="button"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            title="En Yakın Hastaneler"
+          >
+            ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform')}
+            <span class="text-xs">Hastaneler</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold">
+              ${this.currentData.hospitals.length}
+            </span>
+          </button>
+
+          <!-- Eczaneler Butonu -->
+          <button
+            id="btn-collapsed-pharmacies"
+            type="button"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            title="Bugünün Nöbetçi Eczaneleri"
+          >
+            ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform')}
+            <span class="text-xs">Eczaneler</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold">
+              ${this.currentData.pharmacies.length}
+            </span>
+          </button>
+        </div>
       `;
 
-      const openDrawerBtn = this.container.querySelector('#btn-open-nearest-drawer');
-      openDrawerBtn?.addEventListener('click', () => {
+      this.container.querySelector('#btn-collapsed-assembly')?.addEventListener('click', () => {
+        this.activeCategory = 'assembly';
+        this.isCollapsed = false;
+        this.render();
+      });
+
+      this.container.querySelector('#btn-collapsed-hospitals')?.addEventListener('click', () => {
+        this.activeCategory = 'hospitals';
+        this.isCollapsed = false;
+        this.render();
+      });
+
+      this.container.querySelector('#btn-collapsed-pharmacies')?.addEventListener('click', () => {
+        this.activeCategory = 'pharmacies';
         this.isCollapsed = false;
         this.render();
       });
@@ -93,6 +145,7 @@ export class NearestPointsHUD {
       return;
     }
 
+    // 2. Açık Çekmece Durumu
     this.container.className =
       'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
@@ -121,30 +174,61 @@ export class NearestPointsHUD {
           </div>
         </div>
 
-        <!-- Category Tabs -->
-        <div class="flex items-center gap-1.5 mb-2">
-          ${categoryBadges
-            .map(
-              (cat) => `
-            <button
-              data-cat="${cat.key}"
-              class="cat-tab flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold transition-all ${
-                this.activeCategory === cat.key
-                  ? cat.key === 'assembly'
-                    ? 'bg-emerald-500 text-obsidian-950 shadow-glow-emerald'
-                    : cat.key === 'hospitals'
-                    ? 'bg-cyan-500 text-obsidian-950 shadow-lg'
-                    : 'bg-amber-500 text-obsidian-950 shadow-lg'
-                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
-              }"
-            >
-              ${cat.icon('w-3.5 h-3.5')}
-              <span class="truncate">${cat.label}</span>
-              <span class="text-[10px] opacity-75 font-mono">(${cat.count})</span>
-            </button>
-          `
-            )
-            .join('')}
+        <!-- 3 Şık Kategori Butonu (Sekmeler) -->
+        <div class="flex items-center gap-1.5 mb-2.5">
+          <button
+            data-cat="assembly"
+            type="button"
+            class="cat-tab flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer active:scale-95 ${
+              this.activeCategory === 'assembly'
+                ? 'bg-emerald-500/25 border-emerald-400/50 text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                : 'bg-white/5 border-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
+            }"
+          >
+            ${Icons.shield('w-3.5 h-3.5 text-emerald-400')}
+            <span class="truncate">Toplanma</span>
+            <span class="text-[10px] font-mono px-1 rounded ${
+              this.activeCategory === 'assembly' ? 'bg-emerald-500/30 text-emerald-200 font-bold' : 'bg-white/10 text-gray-400'
+            }">
+              ${this.currentData.assembly.length}
+            </span>
+          </button>
+
+          <button
+            data-cat="hospitals"
+            type="button"
+            class="cat-tab flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer active:scale-95 ${
+              this.activeCategory === 'hospitals'
+                ? 'bg-cyan-500/25 border-cyan-400/50 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                : 'bg-white/5 border-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
+            }"
+          >
+            ${Icons.hospital('w-3.5 h-3.5 text-cyan-400')}
+            <span class="truncate">Hastaneler</span>
+            <span class="text-[10px] font-mono px-1 rounded ${
+              this.activeCategory === 'hospitals' ? 'bg-cyan-500/30 text-cyan-200 font-bold' : 'bg-white/10 text-gray-400'
+            }">
+              ${this.currentData.hospitals.length}
+            </span>
+          </button>
+
+          <button
+            data-cat="pharmacies"
+            type="button"
+            class="cat-tab flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer active:scale-95 ${
+              this.activeCategory === 'pharmacies'
+                ? 'bg-amber-500/25 border-amber-400/50 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                : 'bg-white/5 border-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
+            }"
+          >
+            ${Icons.pill('w-3.5 h-3.5 text-amber-400')}
+            <span class="truncate">Eczaneler</span>
+            <span class="text-[10px] font-mono px-1 rounded ${
+              this.activeCategory === 'pharmacies' ? 'bg-amber-500/30 text-amber-200 font-bold' : 'bg-white/10 text-gray-400'
+            }">
+              ${this.currentData.pharmacies.length}
+            </span>
+          </button>
         </div>
 
         <!-- Scrollable Nearest Points List -->
@@ -179,6 +263,7 @@ export class NearestPointsHUD {
                     const phone = (p as any).phone;
                     const address = (p as any).address;
                     const neighborhood = (p as any).neighborhood;
+                    const dutyDate = (p as any).dutyDate;
 
                     return `
                       <div
@@ -194,7 +279,7 @@ export class NearestPointsHUD {
                               </h4>
                             </div>
                             <p class="text-[11px] text-gray-400 mt-0.5 truncate">
-                              ${p.district}, ${p.city} ${
+                              ${p.district ? p.district + ', ' : ''}${p.city} ${
                                 neighborhood
                                   ? `• ${neighborhood}`
                                   : (p as any).typeText
@@ -241,9 +326,12 @@ export class NearestPointsHUD {
                                   </span>
                                 `
                                 : this.activeCategory === 'pharmacies'
-                                ? (p as any).isDuty
-                                  ? '<span class="text-amber-400 font-semibold">24 Saat Nöbetçi</span>'
-                                  : '<span class="text-gray-400">Gündüz (19:00)</span>'
+                                ? `
+                                  <span class="inline-flex items-center gap-1 text-amber-300 font-medium font-mono text-[10px] bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/25">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                    Bugün Nöbetçi ${dutyDate ? `(${formatDutyDate(dutyDate)})` : ''}
+                                  </span>
+                                `
                                 : (p as any).hasTraumaCenter
                                 ? '<span class="text-rose-400 font-semibold">Travma Merkezi</span>'
                                 : (p as any).emergencyBeds
@@ -285,7 +373,12 @@ export class NearestPointsHUD {
       tab.addEventListener('click', () => {
         const cat = tab.getAttribute('data-cat') as HUDCategory;
         if (cat) {
-          this.activeCategory = cat;
+          if (cat === this.activeCategory) {
+            // Already active tab clicked again -> collapse
+            this.isCollapsed = true;
+          } else {
+            this.activeCategory = cat;
+          }
           this.render();
         }
       });

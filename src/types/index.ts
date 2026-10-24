@@ -74,6 +74,7 @@ export interface EmergencyFacility {
   bearingDegrees?: number;
   isDuty?: boolean;
   closingHour?: string; // e.g. "19:00"
+  dutyDate?: string; // e.g. "2026-10-24"
 }
 
 export interface ObstaclePoint {

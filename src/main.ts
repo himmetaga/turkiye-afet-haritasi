@@ -15,6 +15,7 @@ import { FamilySafetyHUD } from './ui/FamilySafetyHUD';
 import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
+import { livePharmacyService } from './services/livePharmacyService';
 
 import { EarlyWarningHUD } from './ui/EarlyWarningHUD';
 import { earlyWarningEngine } from './services/earlyWarningEngine';
@@ -281,7 +282,8 @@ class DisasterAtlasApp {
 
   private async loadFacilitiesData(): Promise<void> {
     try {
-      const res = await fetch('/data/emergency-facilities.geojson');
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const res = await fetch(`/data/emergency-facilities.geojson?v=${todayStr}`);
       if (res.ok) {
         const geojson = await res.json();
         this.facilities = geojson.features.map((f: any) => ({
@@ -295,12 +297,35 @@ class DisasterAtlasApp {
           phone: f.properties.phone,
           isDuty: Boolean(f.properties.isDuty),
           closingHour: f.properties.closingHour,
+          dutyDate: f.properties.dutyDate || todayStr,
           typeText: f.properties.typeText,
           emergencyBeds: Number(f.properties.emergencyBeds || 0),
           hasTraumaCenter: Boolean(f.properties.hasTraumaCenter),
           helipad: Boolean(f.properties.helipad),
           coordinates: f.geometry.coordinates as [number, number]
         }));
+        this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+        this.updateUserContextCalculations();
+      }
+
+      // Canlı nöbetçi eczaneleri hemen çek
+      this.refreshLiveDutyPharmacies();
+    } catch {}
+  }
+
+  private async refreshLiveDutyPharmacies(province?: string): Promise<void> {
+    try {
+      let targetProv = province;
+      if (!targetProv) {
+        const nearby = this.assemblyPoints.length > 0
+          ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1)
+          : [];
+        targetProv = nearby.length > 0 && nearby[0].point.city ? nearby[0].point.city : 'istanbul';
+      }
+
+      const live = await livePharmacyService.fetchDutyPharmacies(targetProv);
+      if (live && live.length > 0) {
+        this.facilities = livePharmacyService.mergeLivePharmacies(this.facilities, live);
         this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
         this.updateUserContextCalculations();
       }
@@ -332,6 +357,7 @@ class DisasterAtlasApp {
       this.mapEngine.flyTo(coords, 15.5, 52, -15);
     }
     this.updateUserContextCalculations(source ? `${source} · En Yakın Noktalar` : 'En Yakın Güvenlik Noktaları');
+    this.refreshLiveDutyPharmacies();
   }
 
   private updateBuildingRiskContext(): void {
@@ -637,6 +663,8 @@ class DisasterAtlasApp {
     } else if (filteredFacilities.length > 0) {
       this.mapEngine.flyTo(filteredFacilities[0].coordinates, 11, 45, -10);
     }
+
+    this.refreshLiveDutyPharmacies(province);
   }
 
   private handleLayerToggle(layerKey: string, visible: boolean): void {
