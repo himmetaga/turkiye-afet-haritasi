@@ -33,6 +33,8 @@ import { SocialShareCard } from './ui/SocialShareCard';
 import { LockScreenICEGenerator } from './ui/LockScreenICEGenerator';
 import { DisasterSurvivalGuideModal } from './ui/DisasterSurvivalGuideModal';
 import { QuickEmergencySMSModal } from './ui/QuickEmergencySMSModal';
+import { FloodRadarModal } from './ui/FloodRadarModal';
+import { EmergencyRadioModal } from './ui/EmergencyRadioModal';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
 class DisasterAtlasApp {
@@ -73,6 +75,8 @@ class DisasterAtlasApp {
   private iceGenerator!: LockScreenICEGenerator;
   private survivalGuide!: DisasterSurvivalGuideModal;
   private emergencySMS!: QuickEmergencySMSModal;
+  private floodRadarModal!: FloodRadarModal;
+  private emergencyRadioModal!: EmergencyRadioModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -139,7 +143,9 @@ class DisasterAtlasApp {
       onToggleQRPack: () => this.qrPackModal.show(),
       onToggleICE: () => this.iceGenerator.show(),
       onToggleGuide: () => this.survivalGuide.show(),
-      onToggleSMS: () => this.emergencySMS.show()
+      onToggleSMS: () => this.emergencySMS.show(),
+      onToggleFloodRadar: () => this.floodRadarModal.show(),
+      onToggleRadio: () => this.emergencyRadioModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -182,6 +188,8 @@ class DisasterAtlasApp {
     this.iceGenerator = new LockScreenICEGenerator(appEl, this.userCoords, this.assemblyPoints);
     this.survivalGuide = new DisasterSurvivalGuideModal(appEl);
     this.emergencySMS = new QuickEmergencySMSModal(appEl, this.userCoords);
+    this.floodRadarModal = new FloodRadarModal(appEl, this.userCoords);
+    this.emergencyRadioModal = new EmergencyRadioModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -473,6 +481,14 @@ class DisasterAtlasApp {
         case 'acil-sms':
           this.emergencySMS.show();
           break;
+        case 'sel':
+        case 'taskin':
+          this.floodRadarModal.show();
+          break;
+        case 'telsiz':
+        case 'radyo':
+          this.emergencyRadioModal.show();
+          break;
         case 'gece-nobeti':
           this.nightWatchHUD.show();
           break;
@@ -600,6 +616,9 @@ class DisasterAtlasApp {
     }
     if (this.familyCard) {
       this.familyCard.setData(this.userCoords, this.assemblyPoints, this.facilities);
+    }
+    if (this.floodRadarModal) {
+      this.floodRadarModal.setUserCoords(this.userCoords);
     }
   }
 

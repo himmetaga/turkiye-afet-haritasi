@@ -24,6 +24,8 @@ export interface HeaderHUDCallbacks {
   onToggleICE: () => void;
   onToggleGuide: () => void;
   onToggleSMS: () => void;
+  onToggleFloodRadar: () => void;
+  onToggleRadio: () => void;
 }
 
 export interface SearchResultItem {
@@ -41,6 +43,8 @@ const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon
   { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
   { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
   { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
+  { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
+  { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
   { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
   { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon },
   { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
@@ -458,6 +462,8 @@ export class HeaderHUD {
       'btn-open-ice': () => this.callbacks.onToggleICE(),
       'btn-open-guide': () => this.callbacks.onToggleGuide(),
       'btn-open-sms': () => this.callbacks.onToggleSMS(),
+      'btn-open-flood-radar': () => this.callbacks.onToggleFloodRadar(),
+      'btn-open-emergency-radio': () => this.callbacks.onToggleRadio(),
       'btn-open-early-warning': () => this.callbacks.onToggleEarlyWarning(),
       'btn-open-night-watch': () => this.callbacks.onToggleNightWatch(),
       'btn-open-seismograph': () => this.callbacks.onToggleSeismograph(),

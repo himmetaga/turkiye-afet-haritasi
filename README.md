@@ -24,6 +24,9 @@ afet.live, Türkiye'de olası bir deprem anında ve sonrasında vatandaşların 
 - **Kalibre Edilebilir Cihaz Sismografı (STA/LTA):** Akıllı telefon ivmeölçerini kullanarak mikrosarsıntıları analiz eden, ayarlanabilir hassasiyet eşiği (Hassas / Normal / Yüksek), gerçek zamanlı ivme ($m/s^2$ ve Gal), Mercalli şiddet skalası ve ekran açık tutma (WakeLock) özellikli sismik sensör paneli.
 - **Toplanma Alanı "Buradayım" Güvenli Bildirimi (Check-in):** Haritada veya listede seçilen toplanma alanına ulaştığınızda, tam konum ve koordinatlarınızı içeren "Güvendeyim" mesajını tek tıkla SMS veya WhatsApp üzerinden yakınlarınıza iletme.
 - **72 Saatlik Afet Çantası & Eksik Paylaşımı:** Çevrimdışı kaydedilen aile hazırlık kontrol listesi, filtreleme (Tümü / Eksikler / Hazır) ve eksik malzemeleri yakınlarınıza mesaj olarak gönderebilme desteği.
+- **Sel & Taşkın Erken Uyarı Radarı (GloFAS):** Bulunulan koordinat için anlık yağış oranı ($mm/saat$), Avrupa Komisyonu GloFAS nehir debisi ($m^3/s$) ve 4 kademeli taşkın risk skorunu analiz eden erken uyarı paneli. 15 cm / 30 cm araç ve insan sürüklenme kuralı, gizli rögar kapakları ve kaçak elektrik tehlike direktiflerini içerir.
+- **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):** Deprem veya sel sonrasında baz istasyonları ve internet çöktüğünde kullanılan PMR 446 lisanssız el telsizi kanalları (Kanal 1 Genel Çağrı, Kanal 8 Arama Kurtarma) ve TRAC 145.500 MHz VHF / 433.500 MHz UHF afet frekansları. Hayati alt ton kapatma (CTCSS: 0) kuralı ve Web Audio telsiz bip / 1750 Hz röle ton testleri.
+- **Türk Kızılay Kan Bağış Merkezleri:** Olası afet ve kitlesel yaralanmalarda kritik kan ihtiyacını karşılamak için bölge kan merkezlerinin adres, telefon ve harita konumları.
 - **Bina Risk Ön Bilgilendirmesi:** Bina yapım yılı, kat sayısı ve diri fay hattına olan mesafeye göre genel durum özeti.
 
 ---
@@ -35,8 +38,11 @@ afet.live üzerinde sunulan veriler resmi ve doğrulanmış açık veri kaynakla
 - **Toplanma Alanları:** AFAD (Afet ve Acil Durum Yönetimi Başkanlığı) ve e-Devlet açık verileri (81 il, 27.000+ toplanma sahası).
 - **Diri Fay Hatları:** MTA (Maden Tetkik ve Arama Genel Müdürlüğü) Türkiye Diri Fay Haritası veritabanı.
 - **Son Depremler:** Kandilli Rasathanesi ve AFAD sismoloji ağları.
-- **Hastaneler:** T.C. Sağlık Bakanlığı doğrulanmış acil servis envanteri.
+- **Hastaneler:** T.C. Sağlık Bakanlığı doğrulanmış acil servis envanteri (HealthTurkiye).
+- **Kan Bağış Merkezleri:** Türk Kızılay Bölge Kan Merkezleri envanteri.
 - **Nöbetçi Eczaneler:** İzmir Büyükşehir Belediyesi Açık Veri Portalı ve EczaneBul API (günlük dinamik nöbetçi listeleri).
+- **Sel & Nehir Debisi:** Open-Meteo & GloFAS (Global Flood Awareness System - Avrupa Komisyonu / ECMWF).
+- **Afet Telsiz Standartları:** TRAC (Türkiye Radyo Amatörleri Cemiyeti) ve BTK PMR 446 telsiz haberleşme protokolleri.
 - **Harita Katmanları:** OpenStreetMap ve OpenFreeMap vektör tabanları.
 
 ---

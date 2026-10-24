@@ -466,6 +466,59 @@ async function main() {
   console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);
 
   // -------------------------------------------------------------
+  // 4b. Türk Kızılay Bölge Kan Merkezleri ve Kan Bağış Noktaları
+  // -------------------------------------------------------------
+  console.log('[kızılay] Türk Kızılay bölge ve afet kan bağış merkezleri derleniyor...');
+  const bloodCenterList = [
+    { name: 'Türk Kızılay Kuzey Marmara Bölge Kan Merkezi', city: 'İstanbul', district: 'Kartal', address: 'Cevizli Mah. Tugay Yolu Cad. No:6 Kartal / İstanbul', phone: '168 / (0216) 458 05 00', lon: 29.1764, lat: 40.9168 },
+    { name: 'Türk Kızılay Avrupa Bölge Kan Merkezi', city: 'İstanbul', district: 'Fatih', address: 'Topkapı Mah. Turgut Özal Millet Cad. No:114 Çapa Fatih / İstanbul', phone: '168 / (0212) 631 00 20', lon: 28.9392, lat: 41.0185 },
+    { name: 'Türk Kızılay Kadıköy Kan Bağış Merkezi', city: 'İstanbul', district: 'Kadıköy', address: 'Rıhtım Cad. İskele Yanı Kadıköy / İstanbul', phone: '168', lon: 29.0235, lat: 40.9912 },
+    { name: 'Türk Kızılay Beşiktaş Kan Bağış Merkezi', city: 'İstanbul', district: 'Beşiktaş', address: 'Sinanpaşa Mah. Beşiktaş Meydanı / İstanbul', phone: '168', lon: 29.0065, lat: 41.0428 },
+    { name: 'Türk Kızılay Bakırköy Kan Bağış Merkezi', city: 'İstanbul', district: 'Bakırköy', address: 'Cevizlik Mah. Özgürlük Meydanı Bakırköy / İstanbul', phone: '168', lon: 28.8728, lat: 40.9782 },
+    { name: 'Türk Kızılay Orta Anadolu Bölge Kan Merkezi', city: 'Ankara', district: 'Çankaya', address: 'Ehlibeyt Mah. 1242. Cad. No:16 Balgat Çankaya / Ankara', phone: '168 / (0312) 287 01 00', lon: 32.8198, lat: 39.8974 },
+    { name: 'Türk Kızılay Karanfil Kan Bağış Merkezi', city: 'Ankara', district: 'Çankaya', address: 'Kızılay Mah. Karanfil Sokak No:1 Çankaya / Ankara', phone: '168', lon: 32.8552, lat: 39.9198 },
+    { name: 'Türk Kızılay Ege Bölge Kan Merkezi', city: 'İzmir', district: 'Bornova', address: 'Kazımdirik Mah. Sanayi Cad. No:18 Bornova / İzmir', phone: '168 / (0232) 461 40 40', lon: 27.1985, lat: 38.4485 },
+    { name: 'Türk Kızılay Konak Kan Bağış Merkezi', city: 'İzmir', district: 'Konak', address: 'Konak Meydanı Saat Kulesi Yanı Konak / İzmir', phone: '168', lon: 27.1287, lat: 38.4189 },
+    { name: 'Türk Kızılay Güney Marmara Bölge Kan Merkezi', city: 'Bursa', district: 'Osmangazi', address: 'Kükürtlü Mah. Çekirge Cad. No:77 Osmangazi / Bursa', phone: '168 / (0224) 234 50 50', lon: 29.0354, lat: 40.1982 },
+    { name: 'Türk Kızılay Güney Anadolu Bölge Kan Merkezi', city: 'Adana', district: 'Seyhan', address: 'Döşeme Mah. Erdal Acet Cad. No:12 Seyhan / Adana', phone: '168 / (0322) 457 80 00', lon: 35.3182, lat: 36.9925 },
+    { name: 'Türk Kızılay Güneydoğu Anadolu Bölge Kan Merkezi', city: 'Gaziantep', district: 'Şehitkamil', address: 'Mücahitler Mah. Ali Fuat Cebesoy Bulv. Şehitkamil / Gaziantep', phone: '168', lon: 37.3712, lat: 37.0725 },
+    { name: 'Türk Kızılay Diyarbakır Bölge Kan Merkezi', city: 'Diyarbakır', district: 'Kayapınar', address: 'Peyas Mah. Şanlıurfa Yolu Üzeri Kayapınar / Diyarbakır', phone: '168', lon: 40.1754, lat: 37.9352 },
+    { name: 'Türk Kızılay Batı Akdeniz Bölge Kan Merkezi', city: 'Antalya', district: 'Muratpaşa', address: 'Varlık Mah. Piri Reis Cad. Muratpaşa / Antalya', phone: '168 / (0242) 249 10 00', lon: 30.6821, lat: 36.8924 },
+    { name: 'Türk Kızılay Orta Karadeniz Bölge Kan Merkezi', city: 'Samsun', district: 'İlkadım', address: 'Karasamsun Mah. Barış Bulvarı İlkadım / Samsun', phone: '168', lon: 36.3154, lat: 41.2825 },
+    { name: 'Türk Kızılay Doğu Karadeniz Bölge Kan Merkezi', city: 'Trabzon', district: 'Ortahisar', address: 'İnönü Mah. Maraş Cad. Ortahisar / Trabzon', phone: '168', lon: 39.7125, lat: 40.9984 },
+    { name: 'Türk Kızılay Doğu Anadolu Bölge Kan Merkezi', city: 'Erzurum', district: 'Yakutiye', address: 'Muratpaşa Mah. Haşıl Efendi Cad. Yakutiye / Erzurum', phone: '168', lon: 41.2721, lat: 39.9082 },
+    { name: 'Türk Kızılay Van Kan Bağış Merkezi', city: 'Van', district: 'İpekyolu', address: 'Cumhuriyet Cad. Soydan Kavşağı İpekyolu / Van', phone: '168', lon: 43.3854, lat: 38.4982 },
+    { name: 'Türk Kızılay İç Anadolu Bölge Kan Merkezi', city: 'Konya', district: 'Selçuklu', address: 'Musalla Bağları Mah. Belh Cad. Selçuklu / Konya', phone: '168', lon: 32.5024, lat: 37.8925 },
+    { name: 'Türk Kızılay Fırat Bölge Kan Merkezi', city: 'Malatya', district: 'Battalgazi', address: 'İnönü Cad. Valilik Civarı Battalgazi / Malatya', phone: '168', lon: 38.3154, lat: 38.3524 },
+    { name: 'Türk Kızılay Hatay Kan Bağış Merkezi', city: 'Hatay', district: 'İskenderun', address: 'Atatürk Bulvarı Sahil İskele Yanı İskenderun / Hatay', phone: '168', lon: 36.1724, lat: 36.5892 },
+    { name: 'Türk Kızılay Kahramanmaraş Kan Bağış Merkezi', city: 'Kahramanmaraş', district: 'Onikişubat', address: 'Haydar Bey Mah. Barbaros Cad. Onikişubat / Kahramanmaraş', phone: '168', lon: 36.8824, lat: 37.5824 }
+  ];
+
+  const bloodCenterFeatures = bloodCenterList.map((bc, idx) => ({
+    type: 'Feature',
+    id: `blood-${idx + 1}`,
+    geometry: {
+      type: 'Point',
+      coordinates: [Number(bc.lon.toFixed(6)), Number(bc.lat.toFixed(6))]
+    },
+    properties: {
+      id: `blood-${idx + 1}`,
+      name: bc.name,
+      category: 'blood_center',
+      city: bc.city,
+      district: bc.district,
+      address: bc.address,
+      phone: bc.phone,
+      typeText: 'Türk Kızılay Kan Bağış Merkezi',
+      emergencyBeds: 0,
+      hasTraumaCenter: false,
+      helipad: false
+    }
+  }));
+
+  console.log(`[kızılay] Toplam ${bloodCenterFeatures.length} adet doğrulanmış Türk Kızılay kan merkezi eklendi.`);
+
+  // -------------------------------------------------------------
   // 5. GeoJSON Dosyalarını Kaydetme
   // -------------------------------------------------------------
   const assemblyGeoJSON = {
@@ -475,7 +528,7 @@ async function main() {
 
   const facilitiesGeoJSON = {
     type: 'FeatureCollection',
-    features: [...hospitalFeatures, ...pharmacyFeatures]
+    features: [...hospitalFeatures, ...pharmacyFeatures, ...bloodCenterFeatures]
   };
 
   fs.writeFileSync(
@@ -495,6 +548,7 @@ async function main() {
     facilitiesCount: facilitiesGeoJSON.features.length,
     hospitalsCount: hospitalFeatures.length,
     pharmaciesCount: pharmacyFeatures.length,
+    bloodCentersCount: bloodCenterFeatures.length,
     provinces: Array.from(provincesSet).sort((a, b) => a.localeCompare(b, 'tr')),
     updatedAt: new Date().toISOString()
   };

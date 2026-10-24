@@ -37,6 +37,18 @@
     <priority>0.90</priority>
   </url>
   <url>
+    <loc>https://afet.live/?mod=sel</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=telsiz</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
     <loc>https://afet.live/?mod=gece-nobeti</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>

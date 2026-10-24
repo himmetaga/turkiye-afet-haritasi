@@ -83,13 +83,15 @@ export class PointDetailHUD {
 
         <div class="grid grid-cols-2 gap-2 my-3 text-xs">
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : category === 'pharmacy' ? 'Hizmet Türü' : 'Kapasite'}</span>
+            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : category === 'pharmacy' ? 'Hizmet Türü' : category === 'blood_center' ? 'Kurum' : 'Kapasite'}</span>
             <span class="text-xs font-semibold text-white font-mono">
               ${
                 fac.emergencyBeds
                   ? `${fac.emergencyBeds} yatak`
                   : category === 'pharmacy'
                   ? fac.isDuty ? '24 Saat Nöbetçi' : 'Gündüz Eczanesi'
+                  : category === 'blood_center'
+                  ? 'Türk Kızılay'
                   : fac.capacity
                   ? `${fac.capacity.toLocaleString()} kişi`
                   : 'Aktif Tesis'

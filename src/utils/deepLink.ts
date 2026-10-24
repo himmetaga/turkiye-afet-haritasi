@@ -24,7 +24,11 @@ export interface ParsedDeepLink {
     | 'rehber'
     | 'ilk-yardim'
     | 'sms'
-    | 'acil-sms';
+    | 'acil-sms'
+    | 'sel'
+    | 'taskin'
+    | 'telsiz'
+    | 'radyo';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -71,7 +75,11 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'rehber',
       'ilk-yardim',
       'sms',
-      'acil-sms'
+      'acil-sms',
+      'sel',
+      'taskin',
+      'telsiz',
+      'radyo'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;
