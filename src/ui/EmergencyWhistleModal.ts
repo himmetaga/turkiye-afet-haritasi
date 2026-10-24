@@ -28,17 +28,46 @@ export class EmergencyWhistleModal {
     this.stopStrobe();
     this.stopTorch();
     soundSynthesizer.stopWhistle();
+    soundSynthesizer.stopGeophoneBeacon();
+    soundSynthesizer.stopDogWhistle();
     this.container.classList.remove('opacity-100', 'pointer-events-auto');
     this.container.classList.add('opacity-0', 'pointer-events-none');
     this.updateButtons();
   }
 
   private toggleContinuousWhistle(): void {
+    soundSynthesizer.stopGeophoneBeacon();
+    soundSynthesizer.stopDogWhistle();
     soundSynthesizer.toggleWhistle();
     this.updateButtons();
   }
 
+  private toggleGeophoneBeacon(): void {
+    soundSynthesizer.stopWhistle();
+    soundSynthesizer.stopDogWhistle();
+    if (soundSynthesizer.isGeophoneRunning()) {
+      soundSynthesizer.stopGeophoneBeacon();
+    } else {
+      soundSynthesizer.startGeophoneBeacon(15);
+    }
+    this.updateButtons();
+  }
+
+  private toggleDogWhistle(): void {
+    soundSynthesizer.stopWhistle();
+    soundSynthesizer.stopGeophoneBeacon();
+    if (soundSynthesizer.isDogWhistleRunning()) {
+      soundSynthesizer.stopDogWhistle();
+    } else {
+      soundSynthesizer.startDogWhistle();
+    }
+    this.updateButtons();
+  }
+
   private playMorseSOS(): void {
+    soundSynthesizer.stopWhistle();
+    soundSynthesizer.stopGeophoneBeacon();
+    soundSynthesizer.stopDogWhistle();
     soundSynthesizer.playMorseSOS(() => {
       this.updateButtons();
     });
@@ -141,17 +170,45 @@ export class EmergencyWhistleModal {
       }
     }
 
+    const geophoneBtn = this.container.querySelector('#btn-geophone-toggle');
+    if (geophoneBtn) {
+      const isGeo = soundSynthesizer.isGeophoneRunning();
+      if (isGeo) {
+        geophoneBtn.className =
+          'py-2.5 px-3 rounded-xl bg-cyan-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1 shadow-glow-cyan animate-pulse';
+        geophoneBtn.textContent = '⏹ Geofon Darbesini Durdur';
+      } else {
+        geophoneBtn.className =
+          'py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
+        geophoneBtn.textContent = '🎯 Geofon Sonar (3.5 kHz)';
+      }
+    }
+
+    const dogBtn = this.container.querySelector('#btn-dog-toggle');
+    if (dogBtn) {
+      const isDog = soundSynthesizer.isDogWhistleRunning();
+      if (isDog) {
+        dogBtn.className =
+          'py-2.5 px-3 rounded-xl bg-amber-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1 shadow-glow-amber animate-pulse';
+        dogBtn.textContent = '⏹ Köpek Düdüğünü Durdur';
+      } else {
+        dogBtn.className =
+          'py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
+        dogBtn.textContent = '🐕 Arama Köpeği (18.5 kHz)';
+      }
+    }
+
     const strobeBtn = this.container.querySelector('#btn-strobe-toggle');
     if (strobeBtn) {
       const isLighting = this.isTorchActive || this.isStrobeActive;
       if (isLighting) {
         strobeBtn.className =
-          'py-3 px-4 rounded-xl bg-amber-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1';
+          'py-2.5 px-3 rounded-xl bg-amber-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1';
         strobeBtn.textContent = '⚡ Flaşörü Kapat';
       } else {
         strobeBtn.className =
-          'py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
-        strobeBtn.textContent = '💡 LED Flaş & Ekran Strobe';
+          'py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
+        strobeBtn.textContent = '💡 LED Flaş & Ekran';
       }
     }
   }
@@ -167,10 +224,10 @@ export class EmergencyWhistleModal {
             </span>
             <div>
               <h3 class="text-base font-bold text-white tracking-wide">
-                Afet Düdüğü & Kurtarma İşareti
+                Afet Düdüğü & Akustik Enkaz Sinyali
               </h3>
               <p class="text-[11px] text-gray-400">
-                2.9 kHz akustik rezonans: Enkaz altında beton blokları delip geçen ses dalgası
+                2.9 - 3.5 kHz beton delici akustik frekans ve K9 ultrasonik çağrısı
               </p>
             </div>
           </div>
@@ -191,36 +248,59 @@ export class EmergencyWhistleModal {
           </button>
         </div>
 
+        <!-- Specialized Rescue Beacons -->
+        <div class="flex items-center gap-2 mb-3">
+          <button
+            id="btn-geophone-toggle"
+            type="button"
+            title="AFAD ve kurtarma ekiplerinin sismik dinleme mikrofonları (geofon) için 15 saniyede bir 3 darbe ve titreşim gönderir (Pil tasarruflu)"
+            class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
+          >
+            🎯 Geofon Sonar (3.5 kHz)
+          </button>
+          <button
+            id="btn-dog-toggle"
+            type="button"
+            title="Arama kurtarma köpeklerinin duyduğu yüksek frekanslı (18.5 kHz) ultrasonik çağrı"
+            class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
+          >
+            🐕 Arama Köpeği (18.5 kHz)
+          </button>
+        </div>
+
         <!-- Mode Buttons -->
-        <div class="flex items-center gap-2.5 mb-4">
+        <div class="flex items-center gap-2 mb-4">
           <button
             id="btn-morse-sos"
             type="button"
-            class="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
+            class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
           >
-            🆘 Mors Kodu S.O.S (... --- ...)
+            🆘 Mors Kodu S.O.S
           </button>
           <button
             id="btn-strobe-toggle"
             type="button"
-            class="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
+            class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
           >
-            💡 LED Flaş & Ekran Strobe
+            💡 LED Flaş & Ekran
           </button>
         </div>
 
         <!-- Rescue Guidance -->
-        <div class="rounded-xl bg-white/5 border border-white/10 p-3 text-[11px] text-gray-300 space-y-1">
-          <p class="font-semibold text-rose-300">⚠️ Enkaz Altında Enerji Tasarrufu:</p>
-          <p>• Düdüğü aralıklarla çalarak cihaz şarjınızı koruyun.</p>
-          <p>• Kurtarma ekiplerinin sesini duyduğunuzda butona aralıksız basın.</p>
-          <p>• Kamera LED flaşı ve ekran strobosu arama kurtarma köpekleri ve termal kameralar için güçlü optik hedef oluşturur.</p>
+        <div class="rounded-xl bg-white/5 border border-white/10 p-3 text-[11px] text-gray-300 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-cyan-300 font-semibold">
+            <span>🔋 Pil Tasarrufu & Hayatta Kalma Modu:</span>
+          </div>
+          <p>• <strong>Geofon Sonar Modu:</strong> Enkaz altındayken pili tüketmemek için her 15 saniyede bir 3 güçlü akustik darbe ve titreşim yayarak sismik cihazların yerinizi saptamasını sağlar.</p>
+          <p>• <strong>Arama Köpeği Modu:</strong> İnsan kulağının yorulmadığı 18.5 kHz frekansıyla K9 canlı arama köpeklerini doğrudan enkaz boşluğunuza çeker.</p>
         </div>
       </div>
     `;
 
     this.container.querySelector('#btn-close-whistle')?.addEventListener('click', () => this.hide());
     this.container.querySelector('#btn-whistle-toggle')?.addEventListener('click', () => this.toggleContinuousWhistle());
+    this.container.querySelector('#btn-geophone-toggle')?.addEventListener('click', () => this.toggleGeophoneBeacon());
+    this.container.querySelector('#btn-dog-toggle')?.addEventListener('click', () => this.toggleDogWhistle());
     this.container.querySelector('#btn-morse-sos')?.addEventListener('click', () => this.playMorseSOS());
     this.container.querySelector('#btn-strobe-toggle')?.addEventListener('click', () => this.toggleLight());
 

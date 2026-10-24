@@ -223,6 +223,121 @@ class SoundSynthesizer {
       }
     } catch {}
   }
+
+  // 5. Geophone Resonant Rubble-Penetrating Beacon (3.5 kHz Acoustic Pulses)
+  // Designed for AFAD / INSARAG seismic listening devices (geophones) with battery conservation.
+  private geophoneInterval: number | null = null;
+  private isGeophoneActive = false;
+
+  public startGeophoneBeacon(intervalSec = 15): void {
+    if (this.isGeophoneActive) return;
+    this.isGeophoneActive = true;
+
+    const fireBurst = () => {
+      try {
+        const ctx = this.getAudioContext();
+        const now = ctx.currentTime;
+        // Fire 3 sharp 100ms resonant clicks at 3500 Hz
+        for (let i = 0; i < 3; i++) {
+          const t = now + i * 0.25;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(3500, t);
+          gain.gain.setValueAtTime(0.85, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.13);
+        }
+
+        // Hardware haptic vibration pulse if supported
+        if ('vibrate' in navigator) {
+          try {
+            navigator.vibrate([120, 100, 120, 100, 250]);
+          } catch {}
+        }
+      } catch {}
+    };
+
+    fireBurst();
+    this.geophoneInterval = window.setInterval(fireBurst, intervalSec * 1000);
+  }
+
+  public stopGeophoneBeacon(): void {
+    if (this.geophoneInterval !== null) {
+      clearInterval(this.geophoneInterval);
+      this.geophoneInterval = null;
+    }
+    this.isGeophoneActive = false;
+  }
+
+  public isGeophoneRunning(): boolean {
+    return this.isGeophoneActive;
+  }
+
+  // 6. K9 SAR Dog Ultrasonic Whistle (18.5 kHz High-Frequency Modulation)
+  // Direct acoustic attractor for Search and Rescue dogs without human auditory fatigue.
+  private dogOsc: OscillatorNode | null = null;
+  private dogGain: GainNode | null = null;
+  private isDogWhistleActive = false;
+
+  public startDogWhistle(): void {
+    if (this.isDogWhistleActive) return;
+    try {
+      const ctx = this.getAudioContext();
+      this.dogOsc = ctx.createOscillator();
+      this.dogGain = ctx.createGain();
+
+      this.dogOsc.type = 'sine';
+      this.dogOsc.frequency.setValueAtTime(18500, ctx.currentTime);
+
+      // 6 Hz micro-frequency warble to attract canine attention
+      const warble = ctx.createOscillator();
+      const warbleGain = ctx.createGain();
+      warble.frequency.setValueAtTime(6, ctx.currentTime);
+      warbleGain.gain.setValueAtTime(400, ctx.currentTime);
+      warble.connect(this.dogOsc.frequency);
+      warble.start();
+
+      this.dogGain.gain.setValueAtTime(0.7, ctx.currentTime);
+      this.dogOsc.connect(this.dogGain);
+      this.dogGain.connect(ctx.destination);
+
+      this.dogOsc.start();
+      this.isDogWhistleActive = true;
+    } catch {}
+  }
+
+  public stopDogWhistle(): void {
+    if (!this.isDogWhistleActive || !this.dogGain || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      this.dogGain.gain.setValueAtTime(this.dogGain.gain.value, now);
+      this.dogGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      setTimeout(() => {
+        if (this.dogOsc) {
+          try {
+            this.dogOsc.stop();
+            this.dogOsc.disconnect();
+          } catch {}
+          this.dogOsc = null;
+        }
+        this.isDogWhistleActive = false;
+      }, 60);
+    } catch {
+      this.isDogWhistleActive = false;
+    }
+  }
+
+  public isDogWhistleRunning(): boolean {
+    return this.isDogWhistleActive;
+  }
 }
 
 export const soundSynthesizer = new SoundSynthesizer();
+

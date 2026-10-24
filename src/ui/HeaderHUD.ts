@@ -26,6 +26,7 @@ export interface HeaderHUDCallbacks {
   onToggleSMS: () => void;
   onToggleFloodRadar: () => void;
   onToggleRadio: () => void;
+  onToggleTriage: () => void;
 }
 
 export interface SearchResultItem {
@@ -42,6 +43,7 @@ export interface SearchResultItem {
 const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon: (c?: string) => string }[] = [
   { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
   { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
+  { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
   { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
   { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
   { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
@@ -320,11 +322,12 @@ export class HeaderHUD {
           </div>
 
           <!-- Fault proximity -->
-          <div
+          <button
+            type="button"
             id="fault-proximity-badge"
-            class="${this.nearestFault ? 'flex' : 'hidden'} items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl bg-rose-500/[0.08] border border-rose-500/20"
-            title="En yakın diri fay hattı mesafesi"
-          ></div>
+            class="${this.nearestFault ? 'flex' : 'hidden'} items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl bg-rose-500/[0.08] hover:bg-rose-500/15 border border-rose-500/20 cursor-pointer active:scale-95 transition-all text-left"
+            title="En yakın diri faya mesafe ve bina risk analizini aç"
+          ></button>
 
           <!-- Province filter, layers, live quake feed -->
           <div class="flex items-center gap-2">
@@ -461,6 +464,7 @@ export class HeaderHUD {
       'btn-open-whistle': () => this.callbacks.onToggleWhistle(),
       'btn-open-ice': () => this.callbacks.onToggleICE(),
       'btn-open-guide': () => this.callbacks.onToggleGuide(),
+      'btn-open-triage': () => this.callbacks.onToggleTriage(),
       'btn-open-sms': () => this.callbacks.onToggleSMS(),
       'btn-open-flood-radar': () => this.callbacks.onToggleFloodRadar(),
       'btn-open-emergency-radio': () => this.callbacks.onToggleRadio(),
@@ -474,7 +478,8 @@ export class HeaderHUD {
       'btn-open-felt': () => this.callbacks.onToggleFelt(),
       'btn-open-crisis': () => this.callbacks.onToggleCrisis(),
       'btn-open-qr-pack': () => this.callbacks.onToggleQRPack(),
-      'btn-toggle-bag': () => this.callbacks.onToggleBag()
+      'btn-toggle-bag': () => this.callbacks.onToggleBag(),
+      'fault-proximity-badge': () => this.callbacks.onToggleBuildingRisk()
     };
     for (const [id, handler] of Object.entries(clickMap)) {
       q<HTMLButtonElement>(`#${id}`)?.addEventListener('click', handler);

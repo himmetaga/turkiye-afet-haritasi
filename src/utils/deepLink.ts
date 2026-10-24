@@ -29,7 +29,9 @@ export interface ParsedDeepLink {
     | 'taskin'
     | 'telsiz'
     | 'radyo'
-    | 'bitchat';
+    | 'bitchat'
+    | 'triyaj'
+    | 'triage';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -81,7 +83,9 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'taskin',
       'telsiz',
       'radyo',
-      'bitchat'
+      'bitchat',
+      'triyaj',
+      'triage'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

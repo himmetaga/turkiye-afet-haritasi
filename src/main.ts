@@ -35,6 +35,8 @@ import { DisasterSurvivalGuideModal } from './ui/DisasterSurvivalGuideModal';
 import { QuickEmergencySMSModal } from './ui/QuickEmergencySMSModal';
 import { FloodRadarModal } from './ui/FloodRadarModal';
 import { EmergencyRadioModal } from './ui/EmergencyRadioModal';
+import { TriageModal } from './ui/TriageModal';
+import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
 class DisasterAtlasApp {
@@ -77,6 +79,7 @@ class DisasterAtlasApp {
   private emergencySMS!: QuickEmergencySMSModal;
   private floodRadarModal!: FloodRadarModal;
   private emergencyRadioModal!: EmergencyRadioModal;
+  private triageModal!: TriageModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -145,7 +148,8 @@ class DisasterAtlasApp {
       onToggleGuide: () => this.survivalGuide.show(),
       onToggleSMS: () => this.emergencySMS.show(),
       onToggleFloodRadar: () => this.floodRadarModal.show(),
-      onToggleRadio: () => this.emergencyRadioModal.show()
+      onToggleRadio: () => this.emergencyRadioModal.show(),
+      onToggleTriage: () => this.triageModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -190,6 +194,12 @@ class DisasterAtlasApp {
     this.emergencySMS = new QuickEmergencySMSModal(appEl, this.userCoords);
     this.floodRadarModal = new FloodRadarModal(appEl, this.userCoords);
     this.emergencyRadioModal = new EmergencyRadioModal(appEl);
+    this.triageModal = new TriageModal(appEl, (text) => {
+      this.crisisHUD.show();
+      bitChatService.broadcastMessage(text, 'sos', {
+        coordinates: this.userCoords
+      });
+    });
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -508,6 +518,10 @@ class DisasterAtlasApp {
         case 'bitchat':
           this.crisisHUD.show();
           break;
+        case 'triyaj':
+        case 'triage':
+          this.triageModal.show();
+          break;
         case 'canta':
           this.bagHUD.show();
           break;
@@ -620,6 +634,9 @@ class DisasterAtlasApp {
     }
     if (this.floodRadarModal) {
       this.floodRadarModal.setUserCoords(this.userCoords);
+    }
+    if (this.triageModal) {
+      this.triageModal.setUserCoords(this.userCoords);
     }
   }
 
