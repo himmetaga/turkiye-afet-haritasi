@@ -237,7 +237,7 @@ button.hud-control:active {
 
 @media (max-width: 639px) {
   .maplibregl-ctrl-bottom-right {
-    bottom: 135px !important;
+    bottom: 50px !important;
     right: 12px !important;
   }
 }

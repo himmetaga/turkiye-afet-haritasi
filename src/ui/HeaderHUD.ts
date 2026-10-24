@@ -310,51 +310,51 @@ export class HeaderHUD {
           </div>
         </button>
 
-        <!-- 3. Search & GPS -->
-        <div class="flex items-center gap-2 min-w-0 w-full">
-          <div class="relative flex-1 min-w-0">
-            <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text min-w-0 w-full">
-              <span class="text-gray-400 flex-shrink-0">${Icons.search('w-4 h-4')}</span>
-              <input
-                id="search-input"
-                type="search"
-                autocomplete="off"
-                spellcheck="false"
-                aria-label="Toplanma alanı, hastane veya ilçe ara"
-                placeholder="Toplanma alanı, ilçe ara…"
-                class="flex-1 min-w-0 w-full bg-transparent text-[12px] sm:text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
-              />
-              <kbd id="search-kbd-hint" class="hud-kbd hidden sm:inline-block flex-shrink-0">/</kbd>
-              <button
-                id="btn-search-clear"
-                type="button"
-                aria-label="Aramayı temizle"
-                class="hidden grid place-items-center w-6 h-6 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
-              >
-                ${Icons.close('w-3.5 h-3.5')}
-              </button>
-            </label>
-            <!-- Search Results Floating Dropdown -->
-            <div
-              id="search-results-dropdown"
-              class="hud-search-dropdown absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto bg-obsidian-950/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl z-50 hidden p-1"
-            ></div>
+        <!-- 3. Collapsible Menus & Tools (Sonradan Açılan Menüler) -->
+        <div id="hud-tools-collapsible" class="${this.isMenuOpen ? 'flex' : 'hidden'} flex-col gap-2 sm:gap-2.5 pt-1.5 border-t border-white/[0.08] transition-all">
+          <!-- Search & GPS -->
+          <div class="flex items-center gap-2 min-w-0 w-full">
+            <div class="relative flex-1 min-w-0">
+              <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text min-w-0 w-full">
+                <span class="text-gray-400 flex-shrink-0">${Icons.search('w-4 h-4')}</span>
+                <input
+                  id="search-input"
+                  type="search"
+                  autocomplete="off"
+                  spellcheck="false"
+                  aria-label="Toplanma alanı, hastane veya ilçe ara"
+                  placeholder="Toplanma alanı, ilçe ara…"
+                  class="flex-1 min-w-0 w-full bg-transparent text-[12px] sm:text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
+                />
+                <kbd id="search-kbd-hint" class="hud-kbd hidden sm:inline-block flex-shrink-0">/</kbd>
+                <button
+                  id="btn-search-clear"
+                  type="button"
+                  aria-label="Aramayı temizle"
+                  class="hidden grid place-items-center w-6 h-6 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
+                >
+                  ${Icons.close('w-3.5 h-3.5')}
+                </button>
+              </label>
+              <!-- Search Results Floating Dropdown -->
+              <div
+                id="search-results-dropdown"
+                class="hud-search-dropdown absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto bg-obsidian-950/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl z-50 hidden p-1"
+              ></div>
+            </div>
+
+            <button
+              id="btn-locate-me"
+              type="button"
+              title="Konumuma Git ve En Yakın Noktaları Hesapla"
+              aria-label="Konumuma git"
+              class="hud-control flex items-center justify-center gap-1.5 px-2.5 sm:px-3 !bg-emerald-500/15 !border-emerald-500/25 hover:!bg-emerald-500/25 text-emerald-300 flex-shrink-0"
+            >
+              ${Icons.crosshair('w-4 h-4')}
+              <span class="hidden sm:inline text-[11.5px] font-semibold">Konumum</span>
+            </button>
           </div>
 
-          <button
-            id="btn-locate-me"
-            type="button"
-            title="Konumuma Git ve En Yakın Noktaları Hesapla"
-            aria-label="Konumuma git"
-            class="hud-control flex items-center justify-center gap-1.5 px-2.5 sm:px-3 !bg-emerald-500/15 !border-emerald-500/25 hover:!bg-emerald-500/25 text-emerald-300 flex-shrink-0"
-          >
-            ${Icons.crosshair('w-4 h-4')}
-            <span class="hidden sm:inline text-[11.5px] font-semibold">Konumum</span>
-          </button>
-        </div>
-
-        <!-- 4. Collapsible Menus & Tools (Sonradan Açılan Menüler) -->
-        <div id="hud-tools-collapsible" class="${this.isMenuOpen ? 'flex' : 'hidden'} flex-col gap-2 sm:gap-2.5 pt-1.5 border-t border-white/[0.08] transition-all">
           <!-- Fault proximity -->
           <div
             id="fault-proximity-badge"

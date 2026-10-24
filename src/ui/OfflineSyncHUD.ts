@@ -12,7 +12,7 @@ export class OfflineSyncHUD {
     this.centerCoordsGetter = centerCoordsGetter;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-[78px] sm:bottom-6 right-3 sm:right-4 z-20 flex flex-col items-end gap-2 pointer-events-auto transition-all';
+      'hidden sm:flex absolute sm:bottom-6 sm:right-4 z-20 flex-col items-end gap-2 pointer-events-auto transition-all';
     parent.appendChild(this.container);
 
     this.render();

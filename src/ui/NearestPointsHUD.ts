@@ -17,7 +17,7 @@ export class NearestPointsHUD {
   private onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void;
   private currentData: NearestHUDData = { assembly: [], hospitals: [], pharmacies: [] };
   private activeCategory: HUDCategory = 'assembly';
-  private isCollapsed = typeof window !== 'undefined' && window.innerWidth < 640;
+  private isCollapsed = true;
   private contextTitle = 'Bölgenizdeki Acil Güvenlik & Sağlık Noktaları';
 
   constructor(parent: HTMLElement, onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void) {
@@ -26,6 +26,16 @@ export class NearestPointsHUD {
     this.container.className =
       'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
     parent.appendChild(this.container);
+  }
+
+  public expand(): void {
+    this.isCollapsed = false;
+    this.render();
+  }
+
+  public collapse(): void {
+    this.isCollapsed = true;
+    this.render();
   }
 
   public updateAll(data: NearestHUDData, title?: string): void {
@@ -57,79 +67,34 @@ export class NearestPointsHUD {
         ? 'bg-cyan-400'
         : 'bg-amber-400';
 
-    // 1. Mobile Compact Peek State (Minimizes screen clutter while keeping #1 point accessible)
+    // 1. Default Closed / Minimal Trigger State (keeps map 100% visible, only whistle stands out)
     if (this.isCollapsed) {
-      const topDistText = topResult
-        ? topResult.distanceMeters > 1000
-          ? `${(topResult.distanceMeters / 1000).toFixed(1)} km`
-          : `${topResult.distanceMeters} m`
-        : '';
-      const topDir = topResult ? getBearingDirectionText(topResult.bearingDegrees) : '';
-
+      this.container.className =
+        'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex justify-center pointer-events-none transition-all box-border';
       this.container.innerHTML = `
-        <div class="hud-glass rounded-2xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl transition-all border border-white/10 w-full max-w-full overflow-hidden box-border">
-          <div id="btn-drag-handle" class="w-10 h-1 bg-white/25 hover:bg-white/40 rounded-full mx-auto mb-1.5 cursor-pointer transition-colors" title="Yukarı kaydır veya tıkla"></div>
-          <div class="flex items-center justify-between gap-2">
-            <div id="btn-peek-expand" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
-              <span class="w-2.5 h-2.5 rounded-full ${dotColor} animate-pulse flex-shrink-0"></span>
-              <div class="min-w-0 leading-tight">
-                <div class="text-xs font-bold text-white truncate">
-                  ${topResult ? `#1 ${topResult.point.name}` : this.contextTitle}
-                </div>
-                <div class="text-[11px] text-emerald-400 font-mono font-medium truncate mt-0.5">
-                  ${topResult ? `${topDistText} • ${topDir} • ~${topResult.walkingMinutes} dk yürüyüş` : 'Güvenlik Noktaları'}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              ${
-                topResult
-                  ? `
-                <button
-                  id="btn-peek-route"
-                  class="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-bold text-[11px] shadow-glow-emerald transition-colors"
-                >
-                  Rota Çiz
-                </button>
-              `
-                  : ''
-              }
-              <button
-                id="btn-collapse-toggle"
-                class="p-1 px-2.5 py-1.5 text-gray-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/15 text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                title="Tüm Listeyi Genişlet"
-              >
-                <span>Tümü (${list.length})</span>
-                <span class="text-xs text-emerald-400">▲</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <button
+          id="btn-open-nearest-drawer"
+          type="button"
+          class="pointer-events-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-950/80 hover:bg-obsidian-950/95 border border-white/10 text-gray-300 hover:text-white text-xs font-medium shadow-xl backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+          title="Toplanma Alanları ve Hastaneleri Göster"
+        >
+          <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+          <span>Toplanma Alanları (${list.length})</span>
+          <span class="text-[10px] text-gray-400">▲</span>
+        </button>
       `;
 
-      const dragHandle = this.container.querySelector('#btn-drag-handle');
-      const peekExpand = this.container.querySelector('#btn-peek-expand');
-      const collapseToggle = this.container.querySelector('#btn-collapse-toggle');
-      const expandHandler = () => {
+      const openDrawerBtn = this.container.querySelector('#btn-open-nearest-drawer');
+      openDrawerBtn?.addEventListener('click', () => {
         this.isCollapsed = false;
         this.render();
-      };
-
-      dragHandle?.addEventListener('click', expandHandler);
-      peekExpand?.addEventListener('click', expandHandler);
-      collapseToggle?.addEventListener('click', expandHandler);
-
-      const peekRoute = this.container.querySelector('#btn-peek-route');
-      peekRoute?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (topResult) {
-          this.onSelectPoint(topResult.point as any);
-        }
       });
 
       return;
     }
+
+    this.container.className =
+      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     // 2. Fully Expanded Bottom Sheet / Drawer View
     let categoryHeaderBanner = '';
