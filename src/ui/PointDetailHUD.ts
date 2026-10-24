@@ -129,18 +129,57 @@ export class PointDetailHUD {
             <span>Canlı Rota Çiz</span>
           </button>
 
+          <button
+            id="btn-share-point"
+            type="button"
+            class="flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 text-xs font-medium border border-white/5 transition-colors"
+            title="Bu Noktayı Paylaş (Derin Bağlantı)"
+          >
+            ${Icons.share('w-3.5 h-3.5')}
+            <span class="hidden sm:inline">Paylaş</span>
+          </button>
+
           <a
             href="${mapsUrl}"
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
-            title="Navigasyonda Aç"
+            title="Google Haritalar'da Aç"
           >
-            ${Icons.share('w-4 h-4')}
+            <span class="text-xs">🗺️</span>
           </a>
         </div>
       </div>
     `;
+
+    const sharePointBtn = this.container.querySelector('#btn-share-point') as HTMLButtonElement | null;
+    sharePointBtn?.addEventListener('click', async () => {
+      if (!this.currentPoint) return;
+      const shareUrl = `https://afet.live/?point=${encodeURIComponent(this.currentPoint.id)}`;
+      const title = `${this.currentPoint.name} - afet.live`;
+      const text = `${this.currentPoint.name} (${this.currentPoint.district}, ${this.currentPoint.city}) acil toplanma/sağlık noktası harita konumu ve canlı rotası: ${shareUrl}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url: shareUrl });
+          return;
+        } catch {}
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        if (sharePointBtn) {
+          sharePointBtn.innerHTML = `${Icons.checkCircle('w-3.5 h-3.5')} <span class="hidden sm:inline">Kopyalandı!</span>`;
+          setTimeout(() => {
+            if (sharePointBtn) {
+              sharePointBtn.innerHTML = `${Icons.share('w-3.5 h-3.5')} <span class="hidden sm:inline">Paylaş</span>`;
+            }
+          }, 2000);
+        }
+      } catch {
+        alert(shareUrl);
+      }
+    });
 
     const closeBtn = this.container.querySelector('#btn-close-detail') as HTMLButtonElement;
     closeBtn.addEventListener('click', () => {

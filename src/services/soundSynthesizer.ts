@@ -134,6 +134,46 @@ class SoundSynthesizer {
     return this.isWhistleActive;
   }
 
+  /**
+   * Must be called synchronously inside a user gesture (tap/click).
+   * Resumes the AudioContext and plays an inaudible blip so that later,
+   * gesture-less playback (e.g. Night Watch alarm at 03:00) is allowed on iOS/Android.
+   */
+  public unlock(): void {
+    try {
+      const ctx = this.getAudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.03);
+    } catch {}
+  }
+
+  private alarmInterval: number | null = null;
+
+  /** Full-volume continuous alarm: 2.9 kHz whistle + repeating 440↔880 Hz siren sweep. */
+  public startAlarm(): void {
+    if (this.alarmInterval !== null) return;
+    this.startWhistle(2900);
+    this.playEarlyWarningSiren(4);
+    this.alarmInterval = window.setInterval(() => this.playEarlyWarningSiren(4), 4000);
+  }
+
+  public stopAlarm(): void {
+    if (this.alarmInterval !== null) {
+      clearInterval(this.alarmInterval);
+      this.alarmInterval = null;
+    }
+    this.stopWhistle();
+  }
+
+  public isAlarmRunning(): boolean {
+    return this.alarmInterval !== null;
+  }
+
   // 4. International Morse Code SOS Audio (... --- ...)
   public playMorseSOS(onFinished?: () => void): void {
     try {

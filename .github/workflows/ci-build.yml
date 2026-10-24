@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build & Verify
+    name: Node 22 Build & Typecheck
     runs-on: ubuntu-latest
 
     steps:
@@ -25,9 +25,6 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Generate Civic & Assembly Datasets
-        run: node scripts/fetch-civic-data.mjs
 
       - name: Verify TypeScript & Build
         run: npm run build

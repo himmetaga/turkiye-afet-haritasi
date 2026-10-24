@@ -23,6 +23,10 @@ import { EmergencyWhistleModal } from './ui/EmergencyWhistleModal';
 import { FeltReportModal } from './ui/FeltReportModal';
 import { feltReportsService } from './services/feltReportsService';
 import { CrisisChatHUD } from './ui/CrisisChatHUD';
+import { NightWatchHUD } from './ui/NightWatchHUD';
+import { BuildingRiskModal } from './ui/BuildingRiskModal';
+import { OfflineQRPackModal } from './ui/OfflineQRPackModal';
+import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -34,6 +38,7 @@ class DisasterAtlasApp {
   private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul (Yoğurtçu Parkı çevresi)
   private selectedPoint: AssemblyPoint | null = null;
   private onlyDutyPharmacies = true;
+  private deepLink: ParsedDeepLink = parseDeepLink();
 
   private headerHUD!: HeaderHUD;
   private nearestHUD!: NearestPointsHUD;
@@ -52,6 +57,9 @@ class DisasterAtlasApp {
   private whistleModal!: EmergencyWhistleModal;
   private feltModal!: FeltReportModal;
   private crisisHUD!: CrisisChatHUD;
+  private nightWatchHUD!: NightWatchHUD;
+  private buildingRiskModal!: BuildingRiskModal;
+  private qrPackModal!: OfflineQRPackModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -76,10 +84,13 @@ class DisasterAtlasApp {
       onToggleEarlyWarning: () => {
         this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
       },
+      onToggleNightWatch: () => this.nightWatchHUD.show(),
       onToggleSeismograph: () => this.seismographModal.show(),
+      onToggleBuildingRisk: () => this.buildingRiskModal.show(),
       onToggleWhistle: () => this.whistleModal.show(),
       onToggleFelt: () => this.feltModal.show(),
-      onToggleCrisis: () => this.crisisHUD.show()
+      onToggleCrisis: () => this.crisisHUD.show(),
+      onToggleQRPack: () => this.qrPackModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -111,12 +122,20 @@ class DisasterAtlasApp {
       }
     });
 
+    this.nightWatchHUD = new NightWatchHUD(appEl);
+    this.buildingRiskModal = new BuildingRiskModal(appEl, this.userCoords, {
+      onNavigateToPoint: (point) => this.focusPoint(point)
+    });
+    this.qrPackModal = new OfflineQRPackModal(appEl, this.userCoords);
+
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
     this.feltModal = new FeltReportModal(appEl, this.userCoords, (report) => {
       this.notificationToast.show(`📍 Hissedildi bildirimi alındı (${report.intensityRoman} - ${report.district}).`, false);
     });
-    this.crisisHUD = new CrisisChatHUD(appEl, this.userCoords);
+    this.crisisHUD = new CrisisChatHUD(appEl, this.userCoords, {
+      onOpenQRPack: (preferredStatus) => this.qrPackModal.show(preferredStatus)
+    });
     this.layerHUD = new LayerControlHUD(appEl, (layerKey, visible) => {
       this.handleLayerToggle(layerKey, visible);
     });
@@ -174,9 +193,15 @@ class DisasterAtlasApp {
     // 5. Place user marker & immediate calculations
     this.mapEngine.setUserLocation(this.userCoords, 0);
     this.updateUserContextCalculations('Kadıköy / İstanbul (Örnek Konum)');
+    this.updateBuildingRiskContext();
 
-    // 6. Request real GPS location if permission granted
-    this.requestUserLocation(true);
+    // 6. Handle Deep Link or request real GPS location
+    this.handleDeepLink();
+    if (!this.deepLink.coords) {
+      this.requestUserLocation(true);
+    } else {
+      this.requestUserLocation(false);
+    }
 
     // 7. PWA Service Worker
     this.registerPWA();
@@ -217,6 +242,7 @@ class DisasterAtlasApp {
 
       // Re-trigger nearest calculation now that assembly data is ready
       this.updateUserContextCalculations();
+      this.updateBuildingRiskContext();
     } catch {}
   }
 
@@ -236,6 +262,7 @@ class DisasterAtlasApp {
         }));
         this.mapEngine.setFaultLines(this.faultLines);
         this.updateFaultProximity();
+        this.updateBuildingRiskContext();
       }
     } catch {}
   }
@@ -285,12 +312,80 @@ class DisasterAtlasApp {
     earlyWarningEngine.setUserCoordinates(coords);
     this.feltModal.setUserCoords(coords);
     this.crisisHUD.setUserLocation(coords);
+    this.qrPackModal?.setUserCoords(coords);
+    this.updateBuildingRiskContext();
 
     this.mapEngine.setUserLocation(coords, 0);
     if (flyTo) {
       this.mapEngine.flyTo(coords, 15.5, 52, -15);
     }
     this.updateUserContextCalculations(`${source}: Bölgenizdeki Acil Noktalar`);
+  }
+
+  private updateBuildingRiskContext(): void {
+    if (this.buildingRiskModal) {
+      let nearestPoint: AssemblyPoint | null = null;
+      if (this.assemblyPoints.length > 0) {
+        const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+        if (nearest.length > 0) nearestPoint = nearest[0].point;
+      }
+      this.buildingRiskModal.setUserContext(this.userCoords, this.faultLines, nearestPoint);
+    }
+  }
+
+  private handleDeepLink(): void {
+    if (this.deepLink.coords) {
+      this.applyVerifiedLocation(this.deepLink.coords, 'Paylaşılan Konum', true);
+      if (this.deepLink.zoom) {
+        this.mapEngine.flyTo(this.deepLink.coords, this.deepLink.zoom, 52, -15);
+      }
+    }
+
+    if (this.deepLink.city) {
+      this.handleProvinceSelect(this.deepLink.city);
+    }
+
+    if (this.deepLink.pointId) {
+      const match =
+        this.assemblyPoints.find((p) => p.id === this.deepLink.pointId) ||
+        this.facilities.find((f) => f.id === this.deepLink.pointId);
+      if (match) {
+        this.focusPoint(match as any);
+      }
+    }
+
+    if (this.deepLink.mod) {
+      switch (this.deepLink.mod) {
+        case 'gece-nobeti':
+          this.nightWatchHUD.show();
+          break;
+        case 'bina-risk':
+          this.buildingRiskModal.show();
+          break;
+        case 'qr':
+          this.qrPackModal.show();
+          break;
+        case 'duduk':
+          this.whistleModal.show();
+          break;
+        case 'sismograf':
+          this.seismographModal.show();
+          break;
+        case 'kriz':
+          this.crisisHUD.show();
+          break;
+        case 'canta':
+          this.bagHUD.show();
+          break;
+        case 'erken-uyari':
+          if (this.earthquakes.length > 0) {
+            earlyWarningEngine.startWarning(this.earthquakes[0]);
+          } else {
+            this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
+          }
+          break;
+      }
+    }
   }
 
   private requestUserLocation(flyToUser = true): void {

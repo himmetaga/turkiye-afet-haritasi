@@ -1,0 +1,23 @@
+# afet.live — Cloudflare Pages Redirects
+#
+# www → apex (kanonik alan adı)
+# Not: Cloudflare Pages _redirects dosyası alan adı (host) bazlı kaynakları
+# desteklemeyebilir; bu satır desteklenmezse derleme günlüğünde yok sayılır.
+# Kesin çözüm: Cloudflare Dashboard → Rules → Redirect Rules / Bulk Redirects
+# ile "www.afet.live/*  →  https://afet.live/${1}  (301, sorgu dizesini koru)".
+https://www.afet.live/* https://afet.live/:splat 301!
+
+# Kısa, paylaşılabilir V2 derin bağlantıları (SMS / sosyal medya için)
+/nobet     /?mod=gece-nobeti   302
+/gece      /?mod=gece-nobeti   302
+/risk      /?mod=bina-risk     302
+/bina      /?mod=bina-risk     302
+/qr        /?mod=qr            302
+/guvendeyim /?mod=qr           302
+/duduk     /?mod=duduk         302
+/sismograf /?mod=sismograf     302
+
+# SPA / PWA derin bağlantı desteği:
+# Cloudflare Pages, kökte 404.html bulunmadığında eşleşmeyen tüm yolları
+# otomatik olarak /index.html'e (200) düşürür. Bu yüzden "/* /index.html 200"
+# kuralı EKLENMEZ — Pages bunu sonsuz döngü olarak işaretler.

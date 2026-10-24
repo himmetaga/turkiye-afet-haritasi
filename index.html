@@ -3,21 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası</title>
+    <meta name="description" content="afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası. 27.331 resmi AFAD toplanma alanı, 1.226 acil servis hastanesi, 514 nöbetçi eczane, gece sismograf nöbeti, bina risk kartı ve çevrimdışı QR durum paketi." />
+    <link rel="canonical" href="https://afet.live/" />
     <meta name="theme-color" content="#090a0f" />
-    <meta name="description" content="afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası. 27.331 resmi AFAD toplanma alanı, 1.226 acil servis hastanesi, 514 nöbetçi eczane ve kilitli GPS mimarisi." />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="afet.live" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="afet.live" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:url" content="https://afet.live/" />
     <meta property="og:title" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
-    <meta property="og:description" content="Kandilli & AFAD deprem akışı, tek odaklı sismik gösterge, doğrulanmış AFAD toplanma alanları ve canlı yürüyüş rotası." />
-    <meta property="og:image" content="/logo.svg" />
+    <meta property="og:description" content="Kandilli & AFAD canlı deprem akışı, 27.331 doğrulanmış toplanma alanı, gece sismograf nöbeti, bina sismik risk kartı ve internetsiz QR 'Güvendeyim' paketi." />
+    <meta property="og:image" content="https://afet.live/og-banner.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
+    <meta name="twitter:description" content="Canlı deprem akışı, en yakın toplanma alanı, gece sismograf nöbeti ve çevrimdışı QR durum paketi." />
+    <meta name="twitter:image" content="https://afet.live/og-banner.png" />
+
+    <!-- PWA / iOS -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="afet.live" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "afet.live",
+        "url": "https://afet.live/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "inLanguage": "tr-TR",
+        "description": "Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" }
+      }
+    </script>
   </head>
   <body class="bg-obsidian-950 text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
     <div id="app">
+      <h1 class="sr-only">afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası</h1>
       <div id="map-container"></div>
     </div>
     <script src="/registerSW.js"></script>

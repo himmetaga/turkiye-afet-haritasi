@@ -144,5 +144,105 @@ export const Icons = {
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
       <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
     </svg>
+  `,
+  siren: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 18v-6a5 5 0 0 1 10 0v6"></path>
+      <path d="M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1z"></path>
+      <path d="M21 12h1"></path>
+      <path d="M18.5 4.5 18 5"></path>
+      <path d="M2 12h1"></path>
+      <path d="M12 2v1"></path>
+      <path d="m4.93 4.93.71.71"></path>
+      <path d="M12 13v2"></path>
+    </svg>
+  `,
+  activity: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path>
+    </svg>
+  `,
+  handRaised: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 11V6a2 2 0 0 0-4 0v5"></path>
+      <path d="M14 10V4a2 2 0 0 0-4 0v6"></path>
+      <path d="M10 10.5V6a2 2 0 0 0-4 0v8"></path>
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+    </svg>
+  `,
+  messages: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"></path>
+      <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"></path>
+    </svg>
+  `,
+  backpack: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path>
+      <path d="M8 10h8"></path>
+      <path d="M8 18h8"></path>
+      <path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"></path>
+      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+    </svg>
+  `,
+  chevronDown: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  `,
+  mapPin: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+  `,
+  hospital: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+      <path d="M12 8v8"></path>
+      <path d="M8 12h8"></path>
+    </svg>
+  `,
+  pill: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+      <path d="m8.5 8.5 7 7"></path>
+    </svg>
+  `,
+  alertTriangle: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
+      <path d="M12 9v4"></path>
+      <path d="M12 17h.01"></path>
+    </svg>
+  `,
+  building: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+      <path d="M9 22v-4h6v4"></path>
+      <path d="M8 6h.01"></path>
+      <path d="M16 6h.01"></path>
+      <path d="M8 10h.01"></path>
+      <path d="M16 10h.01"></path>
+      <path d="M8 14h.01"></path>
+      <path d="M16 14h.01"></path>
+    </svg>
+  `,
+  qrCode: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+      <path d="M7 7h.01"></path>
+      <path d="M18 7h.01"></path>
+      <path d="M7 18h.01"></path>
+      <path d="M18 18h.01"></path>
+    </svg>
+  `,
+  moon: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+    </svg>
   `
 };

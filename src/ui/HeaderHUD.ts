@@ -15,6 +15,9 @@ export interface HeaderHUDCallbacks {
   onToggleWhistle: () => void;
   onToggleFelt: () => void;
   onToggleCrisis: () => void;
+  onToggleNightWatch: () => void;
+  onToggleBuildingRisk: () => void;
+  onToggleQRPack: () => void;
 }
 
 export interface SearchResultItem {
@@ -25,6 +28,33 @@ export interface SearchResultItem {
   city: string;
   distanceKm?: number;
   raw: any;
+}
+
+/** Quick tool tile definitions (rgb triplets feed the `--tool` CSS variable). */
+const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon: (c?: string) => string }[] = [
+  { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
+  { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon },
+  { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
+  { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
+  { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.handRaised },
+  { id: 'btn-open-crisis', label: 'Kriz Odası', title: 'Kriz Durum Koordinasyon Odası & Güvendeyim Bildirimi', rgb: '34, 211, 238', icon: Icons.messages },
+  { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode },
+  { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack }
+];
+
+const SEARCH_CATEGORY_STYLE: Record<SearchResultItem['category'], { label: string; cls: string; icon: (c?: string) => string }> = {
+  assembly: { label: 'Toplanma', cls: 'text-emerald-300 bg-emerald-500/15', icon: Icons.shield },
+  hospital: { label: 'Hastane', cls: 'text-cyan-300 bg-cyan-500/15', icon: Icons.hospital },
+  pharmacy: { label: 'Eczane', cls: 'text-amber-300 bg-amber-500/15', icon: Icons.pill }
+};
+
+function escapeHtml(value: string): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export class HeaderHUD {
@@ -38,7 +68,7 @@ export class HeaderHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('header');
     this.container.className =
-      'absolute top-4 left-4 z-20 flex flex-col gap-2.5 pointer-events-auto max-w-[calc(100vw-32px)] sm:max-w-lg';
+      'absolute top-4 left-4 z-20 flex flex-col gap-2.5 pointer-events-auto w-[calc(100vw-32px)] sm:w-[400px]';
     parent.appendChild(this.container);
 
     window.addEventListener('online', () => this.setOnlineState(true));
@@ -51,15 +81,8 @@ export class HeaderHUD {
     this.isOnline = online;
     const badge = this.container.querySelector('#connection-badge');
     if (badge) {
-      if (online) {
-        badge.className =
-          'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400';
-        badge.innerHTML = `${Icons.wifi('w-3 h-3')} <span>Canlı</span>`;
-      } else {
-        badge.className =
-          'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300';
-        badge.innerHTML = `${Icons.wifiOff('w-3 h-3')} <span>Çevrimdışı</span>`;
-      }
+      badge.className = this.connectionBadgeClass(online);
+      badge.innerHTML = this.connectionBadgeInner(online);
     }
   }
 
@@ -73,15 +96,20 @@ export class HeaderHUD {
     this.nearestFault = faultResult;
     const faultBadge = this.container.querySelector('#fault-proximity-badge');
     if (faultBadge && faultResult) {
+      const shortName = escapeHtml(faultResult.fault.name.split('(')[0].trim());
       faultBadge.classList.remove('hidden');
+      faultBadge.classList.add('flex');
       faultBadge.innerHTML = `
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse flex-shrink-0"></span>
-          <span class="truncate" title="${faultResult.fault.name}">
-            ${faultResult.fault.name.split('(')[0]}
-          </span>
+        <span class="grid place-items-center w-6 h-6 rounded-lg bg-rose-500/15 text-rose-400 flex-shrink-0">
+          ${Icons.alertTriangle('w-3.5 h-3.5')}
+        </span>
+        <div class="min-w-0 flex-1 leading-tight">
+          <div class="hud-section-label !text-rose-300/70">En yakın diri fay</div>
+          <div class="text-[11.5px] font-medium text-rose-100 truncate" title="${escapeHtml(faultResult.fault.name)}">${shortName}</div>
         </div>
-        <span class="font-mono text-rose-300 font-bold flex-shrink-0">${faultResult.distanceKm} km</span>
+        <span class="font-mono text-[13px] font-bold text-rose-300 tabular-nums flex-shrink-0">
+          ${faultResult.distanceKm}<span class="text-[10px] font-medium text-rose-300/70 ml-0.5">km</span>
+        </span>
       `;
     }
   }
@@ -91,7 +119,7 @@ export class HeaderHUD {
     if (!select) return;
     select.innerHTML =
       '<option value="">Türkiye Geneli (Tüm İller)</option>' +
-      provinces.map((p) => `<option value="${p}">${p}</option>`).join('');
+      provinces.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   }
 
   public renderSearchResults(
@@ -103,45 +131,46 @@ export class HeaderHUD {
 
     if (results.length === 0) {
       dropdown.innerHTML = `
-        <div class="px-3 py-2 text-[11px] text-gray-400 text-center font-medium">
-          Eşleşen toplanma alanı veya hastane bulunamadı.
+        <div class="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
+          <span class="text-gray-500">${Icons.search('w-5 h-5')}</span>
+          <div class="text-[11.5px] text-gray-300 font-medium">Sonuç bulunamadı</div>
+          <div class="text-[10.5px] text-gray-500">Farklı bir ilçe, park veya hastane adı deneyin.</div>
         </div>
       `;
       dropdown.classList.remove('hidden');
       return;
     }
 
-    dropdown.innerHTML = results
-      .map((item) => {
-        const icon =
-          item.category === 'hospital'
-            ? '🏥'
-            : item.category === 'pharmacy'
-            ? '💊'
-            : '🟢';
+    dropdown.innerHTML =
+      `<div class="px-2.5 pt-1.5 pb-1 hud-section-label">${results.length} sonuç · yakına göre</div>` +
+      results
+        .map((item) => {
+          const style = SEARCH_CATEGORY_STYLE[item.category];
+          const distBadge =
+            item.distanceKm !== undefined
+              ? `<span class="text-[10.5px] font-mono font-semibold text-gray-300 tabular-nums shrink-0">${item.distanceKm.toFixed(1)} km</span>`
+              : '';
 
-        const distBadge =
-          item.distanceKm !== undefined
-            ? `<span class="text-[10px] font-mono font-bold text-emerald-400 shrink-0">${item.distanceKm.toFixed(1)} km</span>`
-            : '';
-
-        return `
-          <div
-            data-id="${item.id}"
-            class="search-result-item flex items-center justify-between gap-2 px-2.5 py-1.5 hover:bg-white/10 active:bg-white/15 rounded-lg cursor-pointer transition-colors"
-          >
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="text-sm shrink-0">${icon}</span>
-              <div class="min-w-0">
-                <div class="text-xs font-semibold text-white truncate">${item.name}</div>
-                <div class="text-[10px] text-gray-400 truncate">${item.district}, ${item.city}</div>
+          return `
+            <button
+              type="button"
+              data-id="${escapeHtml(item.id)}"
+              class="search-result-item w-full text-left flex items-center justify-between gap-2.5 px-2 py-1.5 hover:bg-white/[0.07] focus-visible:bg-white/[0.07] outline-none rounded-lg cursor-pointer transition-colors"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="grid place-items-center w-7 h-7 rounded-lg shrink-0 ${style.cls}" title="${style.label}">
+                  ${style.icon('w-3.5 h-3.5')}
+                </span>
+                <div class="min-w-0">
+                  <div class="text-[12px] font-medium text-white truncate">${escapeHtml(item.name)}</div>
+                  <div class="text-[10.5px] text-gray-400 truncate">${style.label} · ${escapeHtml(item.district)}, ${escapeHtml(item.city)}</div>
+                </div>
               </div>
-            </div>
-            ${distBadge}
-          </div>
-        `;
-      })
-      .join('');
+              ${distBadge}
+            </button>
+          `;
+        })
+        .join('');
 
     dropdown.classList.remove('hidden');
 
@@ -152,6 +181,7 @@ export class HeaderHUD {
         if (match) {
           const searchInput = this.container.querySelector('#search-input') as HTMLInputElement;
           if (searchInput) searchInput.value = match.name;
+          this.syncClearButton();
           dropdown.classList.add('hidden');
           onSelect(match.raw);
         }
@@ -164,212 +194,265 @@ export class HeaderHUD {
     if (dropdown) dropdown.classList.add('hidden');
   }
 
-  private render(): void {
-    this.container.innerHTML = `
-      <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all">
-        <!-- Brand Header with Official Vector Logo -->
-        <div class="flex items-center justify-between gap-2 mb-2.5">
-          <div class="flex items-center gap-2.5">
-            <a href="/" class="flex items-center gap-2 group">
-              <img src="/logo-horizontal.svg" alt="afet.live" class="h-7 sm:h-8 w-auto object-contain group-hover:scale-105 transition-transform" />
-            </a>
-          </div>
+  private connectionBadgeClass(online: boolean): string {
+    const base =
+      'inline-flex items-center gap-1.5 h-6 pl-2 pr-2.5 rounded-full text-[10.5px] font-semibold tracking-wide border';
+    return online
+      ? `${base} bg-emerald-500/10 border-emerald-500/20 text-emerald-300`
+      : `${base} bg-amber-500/15 border-amber-500/25 text-amber-200`;
+  }
 
-          <div class="flex items-center gap-1.5">
-            <div id="connection-badge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
-              this.isOnline ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/20 text-amber-300'
-            }">
-              ${this.isOnline ? Icons.wifi('w-3 h-3') : Icons.wifiOff('w-3 h-3')}
-              <span>${this.isOnline ? 'Canlı' : 'Çevrimdışı'}</span>
-            </div>
+  private connectionBadgeInner(online: boolean): string {
+    return online
+      ? `<span class="relative flex w-1.5 h-1.5">
+           <span class="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
+           <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+         </span>
+         <span>CANLI</span>`
+      : `${Icons.wifiOff('w-3 h-3')}<span>ÇEVRİMDIŞI</span>`;
+  }
+
+  private syncClearButton(): void {
+    const input = this.container.querySelector('#search-input') as HTMLInputElement | null;
+    const clearBtn = this.container.querySelector('#btn-search-clear') as HTMLElement | null;
+    const kbd = this.container.querySelector('#search-kbd-hint') as HTMLElement | null;
+    const hasValue = !!input && input.value.length > 0;
+    clearBtn?.classList.toggle('hidden', !hasValue);
+    kbd?.classList.toggle('sm:inline-block', !hasValue);
+  }
+
+  private render(): void {
+    const toolTiles = QUICK_TOOLS.map(
+      (t) => `
+        <button id="${t.id}" type="button" class="hud-tool" style="--tool: ${t.rgb}" title="${t.title}" aria-label="${t.title}">
+          <span class="hud-tool-icon">${t.icon('w-4 h-4')}</span>
+          <span>${t.label}</span>
+        </button>
+      `
+    ).join('');
+
+    this.container.innerHTML = `
+      <div class="hud-header-panel rounded-[20px] p-3 sm:p-3.5 flex flex-col gap-2.5">
+        <!-- 1. Brand & live status -->
+        <div class="flex items-center justify-between gap-2">
+          <a href="/" class="flex items-center group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400/60" aria-label="afet.live ana sayfa">
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-7 sm:h-[30px] w-auto object-contain group-hover:opacity-90 transition-opacity" />
+          </a>
+          <div id="connection-badge" class="${this.connectionBadgeClass(this.isOnline)}" role="status" aria-live="polite">
+            ${this.connectionBadgeInner(this.isOnline)}
           </div>
         </div>
 
-        <!-- Fault Proximity Indicator -->
-        <div
-          id="fault-proximity-badge"
-          class="hidden mb-2 px-2.5 py-1 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[10px] text-rose-400 flex items-center justify-between gap-1.5 font-medium cursor-pointer"
-          title="En yakın diri fay hattı mesafesi"
-        ></div>
-
-        <!-- Search Bar & GPS -->
-        <div class="flex items-center gap-2 mb-2">
-          <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-gray-400">
-              ${Icons.search('w-3.5 h-3.5')}
-            </span>
-            <input
-              id="search-input"
-              type="text"
-              placeholder="Toplanma alanı, hastane veya ilçe ara..."
-              class="w-full pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 bg-white/5 rounded-xl outline-none focus:bg-white/10 transition-colors"
-            />
+        <!-- 2. Search & GPS -->
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1 min-w-0">
+            <label class="hud-control flex items-center gap-2 pl-2.5 pr-1.5 cursor-text">
+              <span class="text-gray-400 flex-shrink-0">${Icons.search('w-4 h-4')}</span>
+              <input
+                id="search-input"
+                type="search"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Toplanma alanı, hastane veya ilçe ara"
+                placeholder="Toplanma alanı, hastane, ilçe ara…"
+                class="flex-1 min-w-0 bg-transparent text-[12.5px] text-white placeholder-gray-500 outline-none [&::-webkit-search-cancel-button]:hidden"
+              />
+              <kbd id="search-kbd-hint" class="hud-kbd hidden sm:inline-block flex-shrink-0">/</kbd>
+              <button
+                id="btn-search-clear"
+                type="button"
+                aria-label="Aramayı temizle"
+                class="hidden grid place-items-center w-6 h-6 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
+              >
+                ${Icons.close('w-3.5 h-3.5')}
+              </button>
+            </label>
             <!-- Search Results Floating Dropdown -->
-            <div id="search-results-dropdown" class="absolute top-full left-0 right-0 mt-1.5 max-h-64 overflow-y-auto bg-obsidian-950/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-2xl z-50 hidden p-1"></div>
+            <div
+              id="search-results-dropdown"
+              class="hud-search-dropdown absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto bg-obsidian-950/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl z-50 hidden p-1"
+            ></div>
           </div>
 
           <button
             id="btn-locate-me"
+            type="button"
             title="Konumuma Git ve En Yakın Noktaları Hesapla"
-            class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-white bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 rounded-xl transition-all flex-shrink-0"
+            aria-label="Konumuma git"
+            class="hud-control flex items-center justify-center gap-1.5 px-2.5 !bg-emerald-500/15 !border-emerald-500/25 hover:!bg-emerald-500/25 text-emerald-300 flex-shrink-0"
           >
-            ${Icons.crosshair('w-4 h-4 text-emerald-400')}
-            <span class="hidden sm:inline text-[11px] font-medium text-emerald-300">Konumum</span>
+            ${Icons.crosshair('w-4 h-4')}
+            <span class="hidden sm:inline text-[11.5px] font-semibold">Konumum</span>
           </button>
         </div>
 
-        <!-- Province Filter & Primary Action Buttons -->
-        <div class="flex flex-wrap items-center gap-1.5 mb-2">
-          <select
-            id="province-select"
-            class="flex-1 min-w-[110px] px-2 py-1.5 text-xs text-gray-300 bg-white/5 rounded-xl outline-none cursor-pointer hover:bg-white/10 transition-colors appearance-none"
-          >
-            <option value="">İl Seçiniz...</option>
-          </select>
+        <!-- 3. Fault proximity (filled after data load) -->
+        <div
+          id="fault-proximity-badge"
+          class="hidden items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl bg-rose-500/[0.07] border border-rose-500/15"
+          title="En yakın diri fay hattı mesafesi"
+        ></div>
+
+        <!-- 4. Province filter, layers, live quake feed -->
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1 min-w-0">
+            <select
+              id="province-select"
+              aria-label="İl filtresi"
+              class="hud-control w-full pl-2.5 pr-8 text-[12px] text-gray-200 cursor-pointer appearance-none outline-none"
+            >
+              <option value="">İl Seçiniz...</option>
+            </select>
+            <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-gray-500">
+              ${Icons.chevronDown('w-3.5 h-3.5')}
+            </span>
+          </div>
 
           <button
             id="btn-toggle-layers"
+            type="button"
             title="Harita Katmanları"
-            class="p-1.5 text-gray-200 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+            aria-label="Harita katmanları"
+            class="hud-control grid place-items-center w-[34px] text-gray-300 hover:text-white flex-shrink-0"
           >
             ${Icons.layers('w-4 h-4')}
           </button>
 
           <button
             id="btn-toggle-seismic"
+            type="button"
             title="Canlı Deprem Akışı"
-            class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors"
+            aria-label="Canlı deprem akışı"
+            class="hud-control flex items-center gap-1.5 px-2.5 !bg-amber-500/10 !border-amber-500/20 hover:!bg-amber-500/20 text-amber-300 flex-shrink-0"
           >
-            ${Icons.seismic('w-3.5 h-3.5')}
-            <span id="seismic-badge-count">${this.seismicCount}</span>
-          </button>
-
-          <button
-            id="btn-open-whistle"
-            title="Afet Düdüğü & Kurtarma İşareti"
-            class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-300 bg-rose-500/20 hover:bg-rose-500/30 rounded-xl transition-colors shadow-glow-red"
-          >
-            ${Icons.whistle('w-3.5 h-3.5 text-rose-400')}
-            <span>Afet Düdüğü</span>
+            ${Icons.seismic('w-4 h-4')}
+            <span id="seismic-badge-count" class="font-mono text-[12px] font-bold tabular-nums">${this.seismicCount}</span>
+            <span class="hidden sm:inline text-[11px] font-medium text-amber-300/80">deprem</span>
           </button>
         </div>
 
-        <!-- Earthquake Network Quick Tools Row -->
-        <div class="grid grid-cols-5 gap-1 pt-1.5 border-t border-white/5 text-[10px]">
-          <button
-            id="btn-open-early-warning"
-            class="py-1 px-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-bold transition-all text-center flex flex-col items-center justify-center gap-0.5"
-            title="Sismik Erken Uyarı ve P/S Dalgası Simülasyonu"
-          >
-            <span>🚨</span>
-            <span class="truncate">Erken Uyarı</span>
-          </button>
-
-          <button
-            id="btn-open-seismograph"
-            class="py-1 px-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold transition-all text-center flex flex-col items-center justify-center gap-0.5"
-            title="Canlı Cihaz İvmeölçer Sismografı"
-          >
-            <span>📈</span>
-            <span class="truncate">Sismograf</span>
-          </button>
-
-          <button
-            id="btn-open-felt"
-            class="py-1 px-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold transition-all text-center flex flex-col items-center justify-center gap-0.5"
-            title="Depremi Hissettiniz mi? Mercalli Bildirimi"
-          >
-            <span>📍</span>
-            <span class="truncate">Hissedildi</span>
-          </button>
-
-          <button
-            id="btn-open-crisis"
-            class="py-1 px-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-semibold transition-all text-center flex flex-col items-center justify-center gap-0.5"
-            title="Kriz Durum Koordinasyon Odası & Güvendeyim Bildirimi"
-          >
-            <span>💬</span>
-            <span class="truncate">Kriz Odası</span>
-          </button>
-
-          <button
-            id="btn-toggle-bag"
-            class="py-1 px-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 font-semibold transition-all text-center flex flex-col items-center justify-center gap-0.5"
-            title="Afet Çantası & Aile Güvenliği"
-          >
-            <span>🎒</span>
-            <span class="truncate">Afet Kiti</span>
-          </button>
+        <!-- 5. Quick tools (4x2 Matrix) -->
+        <div class="pt-2.5 border-t border-white/[0.06]">
+          <div class="grid grid-cols-4 gap-1">
+            ${toolTiles}
+          </div>
         </div>
+
+        <!-- 6. Primary emergency action -->
+        <button
+          id="btn-open-whistle"
+          type="button"
+          title="Afet Düdüğü & Kurtarma İşareti"
+          class="hud-emergency-btn flex items-center justify-between gap-3 w-full pl-2 pr-3 py-2 rounded-xl text-white"
+        >
+          <span class="flex items-center gap-2.5 min-w-0">
+            <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/15 flex-shrink-0">
+              ${Icons.whistle('w-[18px] h-[18px]')}
+            </span>
+            <span class="flex flex-col items-start leading-tight min-w-0">
+              <span class="text-[13px] font-bold tracking-wide">Afet Düdüğü</span>
+              <span class="text-[10.5px] text-rose-100/80 truncate">2.9 kHz ses · S.O.S ışık sinyali</span>
+            </span>
+          </span>
+          <span class="text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded-md bg-black/20 text-rose-50 flex-shrink-0">Acil</span>
+        </button>
       </div>
     `;
 
-    // Bind event listeners
-    const searchInput = this.container.querySelector('#search-input') as HTMLInputElement;
+    this.bindEvents();
+  }
+
+  private bindEvents(): void {
+    const q = <T extends HTMLElement>(sel: string) => this.container.querySelector(sel) as T | null;
+
+    const searchInput = q<HTMLInputElement>('#search-input');
     searchInput?.addEventListener('input', (e) => {
+      this.syncClearButton();
       this.callbacks.onSearchChange((e.target as HTMLInputElement).value);
-    });
-
-    const locateBtn = this.container.querySelector('#btn-locate-me') as HTMLButtonElement;
-    locateBtn?.addEventListener('click', () => {
-      this.callbacks.onLocateMe();
-    });
-
-    const provinceSelect = this.container.querySelector('#province-select') as HTMLSelectElement;
-    provinceSelect?.addEventListener('change', (e) => {
-      this.callbacks.onSelectProvince((e.target as HTMLSelectElement).value);
-    });
-
-    const bagBtn = this.container.querySelector('#btn-toggle-bag') as HTMLButtonElement;
-    bagBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleBag();
-    });
-
-    const layersBtn = this.container.querySelector('#btn-toggle-layers') as HTMLButtonElement;
-    layersBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleLayers();
-    });
-
-    const seismicBtn = this.container.querySelector('#btn-toggle-seismic') as HTMLButtonElement;
-    seismicBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleSeismic();
-    });
-
-    const whistleBtn = this.container.querySelector('#btn-open-whistle') as HTMLButtonElement;
-    whistleBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleWhistle();
-    });
-
-    const ewBtn = this.container.querySelector('#btn-open-early-warning') as HTMLButtonElement;
-    ewBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleEarlyWarning();
-    });
-
-    const seismoBtn = this.container.querySelector('#btn-open-seismograph') as HTMLButtonElement;
-    seismoBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleSeismograph();
-    });
-
-    const feltBtn = this.container.querySelector('#btn-open-felt') as HTMLButtonElement;
-    feltBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleFelt();
-    });
-
-    const crisisBtn = this.container.querySelector('#btn-open-crisis') as HTMLButtonElement;
-    crisisBtn?.addEventListener('click', () => {
-      this.callbacks.onToggleCrisis();
-    });
-
-    document.addEventListener('click', (e) => {
-      const dropdown = this.container.querySelector('#search-results-dropdown') as HTMLElement;
-      if (dropdown && !this.container.contains(e.target as Node)) {
-        dropdown.classList.add('hidden');
-      }
     });
 
     searchInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (searchInput.value) {
+          searchInput.value = '';
+          this.syncClearButton();
+          this.callbacks.onSearchChange('');
+        } else {
+          searchInput.blur();
+        }
         this.clearSearchResults();
+      } else if (e.key === 'ArrowDown') {
+        const first = q<HTMLElement>('#search-results-dropdown .search-result-item');
+        if (first) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    // Arrow-key navigation inside the results list
+    q<HTMLElement>('#search-results-dropdown')?.addEventListener('keydown', (e) => {
+      const items = Array.from(this.container.querySelectorAll<HTMLElement>('.search-result-item'));
+      const idx = items.indexOf(document.activeElement as HTMLElement);
+      if (idx === -1) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        items[Math.min(idx + 1, items.length - 1)].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx === 0) searchInput?.focus();
+        else items[idx - 1].focus();
+      } else if (e.key === 'Escape') {
+        this.clearSearchResults();
+        searchInput?.focus();
+      }
+    });
+
+    q<HTMLButtonElement>('#btn-search-clear')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!searchInput) return;
+      searchInput.value = '';
+      this.syncClearButton();
+      this.callbacks.onSearchChange('');
+      searchInput.focus();
+    });
+
+    // "/" focuses search from anywhere (unless already typing in a field)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+      e.preventDefault();
+      searchInput?.focus();
+    });
+
+    q<HTMLSelectElement>('#province-select')?.addEventListener('change', (e) => {
+      this.callbacks.onSelectProvince((e.target as HTMLSelectElement).value);
+    });
+
+    const clickMap: Record<string, () => void> = {
+      'btn-locate-me': () => this.callbacks.onLocateMe(),
+      'btn-toggle-layers': () => this.callbacks.onToggleLayers(),
+      'btn-toggle-seismic': () => this.callbacks.onToggleSeismic(),
+      'btn-open-whistle': () => this.callbacks.onToggleWhistle(),
+      'btn-open-early-warning': () => this.callbacks.onToggleEarlyWarning(),
+      'btn-open-night-watch': () => this.callbacks.onToggleNightWatch(),
+      'btn-open-seismograph': () => this.callbacks.onToggleSeismograph(),
+      'btn-open-building-risk': () => this.callbacks.onToggleBuildingRisk(),
+      'btn-open-felt': () => this.callbacks.onToggleFelt(),
+      'btn-open-crisis': () => this.callbacks.onToggleCrisis(),
+      'btn-open-qr-pack': () => this.callbacks.onToggleQRPack(),
+      'btn-toggle-bag': () => this.callbacks.onToggleBag()
+    };
+    for (const [id, handler] of Object.entries(clickMap)) {
+      q<HTMLButtonElement>(`#${id}`)?.addEventListener('click', handler);
+    }
+
+    document.addEventListener('click', (e) => {
+      const dropdown = q<HTMLElement>('#search-results-dropdown');
+      if (dropdown && !this.container.contains(e.target as Node)) {
+        dropdown.classList.add('hidden');
       }
     });
   }

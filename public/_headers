@@ -1,11 +1,92 @@
+# afet.live — Cloudflare Pages Edge Cache & Security Headers
+#
+# NOT: Cloudflare Pages, bir URL birden çok kurala uyarsa aynı başlıkları
+# virgülle BİRLEŞTİRİR. Bu yüzden Cache-Control yalnızca birbiriyle çakışmayan
+# yollarda tanımlanır; güvenlik başlıkları ise tek bir global (/*) kuralda durur.
+
+# ---------------------------------------------------------------------------
+# 1) Global güvenlik başlıkları (tüm yanıtlar)
+#    Donanım sensörleri (ivmeölçer, jiroskop, GPS, Wake Lock) yalnızca kendi
+#    kökenimize açık; iOS Safari & Android Chrome'da izin akışı kesintisiz çalışır.
+# ---------------------------------------------------------------------------
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Permissions-Policy: geolocation=(self), accelerometer=(self), gyroscope=(self), magnetometer=(self), screen-wake-lock=(self), camera=(), microphone=(), payment=()
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+
+# ---------------------------------------------------------------------------
+# 2) HTML kabuğu — edge'de 60 sn taze, sonra 1 gün boyunca bayat-ama-anında
+#    sunulur; arka planda yenilenir. Deprem anındaki trafik patlamasında köken
+#    sunucuya istek yığılmaz.
+# ---------------------------------------------------------------------------
+/
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+
+/index.html
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+
+# ---------------------------------------------------------------------------
+# 3) GIS veri katmanları (27.331 toplanma alanı, sağlık tesisleri, fay hatları,
+#    summary.json). Tüm .geojson / .json veri dosyaları /data/ altındadır.
+#    1 saat tarayıcı, 1 gün edge, 7 gün stale-while-revalidate.
+# ---------------------------------------------------------------------------
 /data/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
   Access-Control-Allow-Origin: *
 
-*.geojson
-  Cache-Control: public, max-age=31536000, immutable
+/*.pmtiles
+  Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
   Access-Control-Allow-Origin: *
 
-*.pmtiles
+# ---------------------------------------------------------------------------
+# 4) Vite tarafından içerik-hash'li derlenmiş varlıklar — asla değişmez.
+# ---------------------------------------------------------------------------
+/assets/*
   Cache-Control: public, max-age=31536000, immutable
-  Access-Control-Allow-Origin: *
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# ---------------------------------------------------------------------------
+# 5) Hash'siz marka görselleri (logo, ikon, OG banner) — dosya adı sabit
+#    olduğu için immutable DEĞİL; 1 gün taze + 30 gün SWR.
+# ---------------------------------------------------------------------------
+/icons/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/logo.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/logo-horizontal.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/favicon.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/icon.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/og-banner.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/og-banner.png
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+# ---------------------------------------------------------------------------
+# 6) PWA servis çalışanı & manifest — her zaman yeniden doğrulanmalı, aksi
+#    halde kullanıcılar eski sürümde (ve eski veride) takılı kalır.
+# ---------------------------------------------------------------------------
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/registerSW.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/workbox-*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=86400
+  Content-Type: application/manifest+json

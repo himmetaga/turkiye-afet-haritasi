@@ -22,9 +22,15 @@ export class CrisisChatHUD {
   private userCoords: [number, number];
   private currentCity = 'İstanbul';
   private currentDistrict = 'Kadıköy';
+  private onOpenQRPack?: (status: 'SAFE' | 'HELP') => void;
 
-  constructor(parent: HTMLElement, userCoords: [number, number]) {
+  constructor(
+    parent: HTMLElement,
+    userCoords: [number, number],
+    options?: { onOpenQRPack?: (status: 'SAFE' | 'HELP') => void }
+  ) {
     this.userCoords = userCoords;
+    this.onOpenQRPack = options?.onOpenQRPack;
     this.container = document.createElement('div');
     this.container.id = 'crisis-chat-hud';
     this.container.className =
@@ -174,18 +180,29 @@ export class CrisisChatHUD {
         </div>
 
         <!-- Quick 1-Click Status Broadcast Bar -->
-        <div class="p-3 bg-white/5 border-b border-white/10 flex items-center gap-2">
+        <div class="p-3 bg-white/5 border-b border-white/10 flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <button
+              id="btn-broadcast-safe"
+              class="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-extrabold text-xs shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>✓ Güvendeyim</span>
+            </button>
+            <button
+              id="btn-broadcast-help"
+              class="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-glow-rose active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>🚨 Acil Yardım Gerekli</span>
+            </button>
+          </div>
+
           <button
-            id="btn-broadcast-safe"
-            class="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-extrabold text-xs shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            id="btn-open-crisis-qr"
+            type="button"
+            class="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-98"
           >
-            <span>✓ Güvendeyim</span>
-          </button>
-          <button
-            id="btn-broadcast-help"
-            class="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-glow-rose active:scale-95 transition-all flex items-center justify-center gap-1.5"
-          >
-            <span>🚨 Acil Yardım Gerekli</span>
+            ${Icons.qrCode('w-4 h-4')}
+            <span>İnternetsiz Çevrimdışı QR Kodunu Aç (Kamerayla Okunur)</span>
           </button>
         </div>
 
@@ -272,6 +289,13 @@ export class CrisisChatHUD {
 
     this.container.querySelector('#btn-broadcast-help')?.addEventListener('click', () => {
       this.sendMessage('ACİL YARDIM ÇAĞRISI: Konumum bildirildi, lütfen arama kurtarma yönlendirin!', 'help');
+    });
+
+    this.container.querySelector('#btn-open-crisis-qr')?.addEventListener('click', () => {
+      if (this.onOpenQRPack) {
+        this.hide();
+        this.onOpenQRPack('SAFE');
+      }
     });
 
     this.container.addEventListener('click', (e) => {

@@ -31,14 +31,25 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'data/*.geojson'],
       manifest: {
-        name: 'Türkiye 3D Afet ve Toplanma Atlası',
-        short_name: 'Afet Atlası',
-        description: '3B Harita, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası',
+        id: '/',
+        name: 'afet.live — Türkiye 3D Afet ve Deprem Atlası',
+        short_name: 'afet.live',
+        description: '3B Harita, Deprem Erken Uyarı, Gece Sismograf Nöbeti, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası',
+        lang: 'tr-TR',
+        dir: 'ltr',
+        categories: ['utilities', 'navigation', 'weather'],
         theme_color: '#090a0f',
         background_color: '#090a0f',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: '/',
+        start_url: '/?source=pwa',
+        scope: '/',
+        shortcuts: [
+          { name: 'Gece Sismograf Nöbeti', short_name: 'Gece Nöbeti', url: '/?mod=gece-nobeti', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'Bina Sismik Risk Kartı', short_name: 'Bina Riski', url: '/?mod=bina-risk', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'Çevrimdışı QR Durum Paketi', short_name: 'QR Durum', url: '/?mod=qr', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'Afet Düdüğü', short_name: 'Düdük', url: '/?mod=duduk', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] }
+        ],
         icons: [
           {
             src: '/icons/icon-192.svg',

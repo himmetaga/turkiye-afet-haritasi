@@ -1,0 +1,45 @@
+name: Daily Automated GIS & Duty Pharmacy Sync
+
+on:
+  schedule:
+    # 18:30 TR (UTC+3) -> 15:30 UTC
+    - cron: '30 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync Civic Datasets & Duty Pharmacies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Fetch Latest Civic & Duty Pharmacy Data
+        run: npm run fetch:data
+
+      - name: Commit and Push Changes If Updated
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n $(git status --porcelain public/data/) ]]; then
+            git add public/data/
+            git commit -m "chore(data): daily automated GIS & duty pharmacy sync [skip ci]"
+            git push origin main
+          else
+            echo "No data changes detected. Everything is up to date."
+          fi
