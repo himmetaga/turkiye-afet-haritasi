@@ -16,7 +16,25 @@
     <loc>https://afet.live/?mod=duduk</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=kilit-ekrani</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=rehber</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=sms</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
     <loc>https://afet.live/?mod=gece-nobeti</loc>

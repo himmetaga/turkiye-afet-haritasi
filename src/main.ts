@@ -30,6 +30,9 @@ import { OfflineQRPackModal } from './ui/OfflineQRPackModal';
 import { DrillSimulator } from './simulation/DrillSimulator';
 import { ApartmentPosterGenerator } from './ui/ApartmentPosterGenerator';
 import { SocialShareCard } from './ui/SocialShareCard';
+import { LockScreenICEGenerator } from './ui/LockScreenICEGenerator';
+import { DisasterSurvivalGuideModal } from './ui/DisasterSurvivalGuideModal';
+import { QuickEmergencySMSModal } from './ui/QuickEmergencySMSModal';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
 class DisasterAtlasApp {
@@ -67,6 +70,9 @@ class DisasterAtlasApp {
   private drillSimulator!: DrillSimulator;
   private apartmentPoster!: ApartmentPosterGenerator;
   private familyCard!: SocialShareCard;
+  private iceGenerator!: LockScreenICEGenerator;
+  private survivalGuide!: DisasterSurvivalGuideModal;
+  private emergencySMS!: QuickEmergencySMSModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -104,6 +110,7 @@ class DisasterAtlasApp {
 
     const appEl = document.getElementById('app')!;
     const mapContainer = document.getElementById('map-container')!;
+    appEl.querySelectorAll('header').forEach((el) => el.remove());
 
     this.notificationToast = new OfflineNotificationToast(appEl);
 
@@ -129,7 +136,10 @@ class DisasterAtlasApp {
       onToggleWhistle: () => this.whistleModal.show(),
       onToggleFelt: () => this.feltModal.show(),
       onToggleCrisis: () => this.crisisHUD.show(),
-      onToggleQRPack: () => this.qrPackModal.show()
+      onToggleQRPack: () => this.qrPackModal.show(),
+      onToggleICE: () => this.iceGenerator.show(),
+      onToggleGuide: () => this.survivalGuide.show(),
+      onToggleSMS: () => this.emergencySMS.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -169,6 +179,9 @@ class DisasterAtlasApp {
     this.drillSimulator = new DrillSimulator(appEl, this.mapEngine, this.userCoords, this.assemblyPoints);
     this.apartmentPoster = new ApartmentPosterGenerator(appEl, this.userCoords, this.assemblyPoints, this.facilities);
     this.familyCard = new SocialShareCard(appEl, this.userCoords, this.assemblyPoints, this.facilities);
+    this.iceGenerator = new LockScreenICEGenerator(appEl, this.userCoords, this.assemblyPoints);
+    this.survivalGuide = new DisasterSurvivalGuideModal(appEl);
+    this.emergencySMS = new QuickEmergencySMSModal(appEl, this.userCoords);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -285,6 +298,7 @@ class DisasterAtlasApp {
       // Re-trigger nearest calculation now that assembly data is ready
       this.updateUserContextCalculations();
       this.updateBuildingRiskContext();
+      this.iceGenerator?.setData(this.userCoords, this.assemblyPoints);
     } catch {}
   }
 
@@ -379,6 +393,8 @@ class DisasterAtlasApp {
     this.feltModal.setUserCoords(coords);
     this.crisisHUD.setUserLocation(coords);
     this.qrPackModal?.setUserCoords(coords);
+    this.iceGenerator?.setData(coords, this.assemblyPoints);
+    this.emergencySMS?.setCoords(coords);
     this.updateBuildingRiskContext();
 
     this.mapEngine.setUserLocation(coords, 0);
@@ -432,13 +448,31 @@ class DisasterAtlasApp {
         'canta': 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
         'qr': 'Çevrimdışı Güvendeyim QR Durum Paketi — afet.live',
         'sismograf': 'Canlı Sismograf ve İvmeölçer — afet.live',
-        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live'
+        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live',
+        'ice': 'Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE) — afet.live',
+        'kilit-ekrani': 'Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE) — afet.live',
+        'rehber': 'Afet Hayatta Kalma & İlk Yardım Rehberi — afet.live',
+        'ilk-yardim': 'Afet Hayatta Kalma & İlk Yardım Rehberi — afet.live',
+        'sms': 'Acil Durum SMS ve Hızlı İhbar Hatları — afet.live',
+        'acil-sms': 'Acil Durum SMS ve Hızlı İhbar Hatları — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
       }
 
       switch (this.deepLink.mod) {
+        case 'ice':
+        case 'kilit-ekrani':
+          this.iceGenerator.show();
+          break;
+        case 'rehber':
+        case 'ilk-yardim':
+          this.survivalGuide.show();
+          break;
+        case 'sms':
+        case 'acil-sms':
+          this.emergencySMS.show();
+          break;
         case 'gece-nobeti':
           this.nightWatchHUD.show();
           break;

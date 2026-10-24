@@ -21,6 +21,9 @@ export interface HeaderHUDCallbacks {
   onToggleDrill: () => void;
   onToggleApartmentPoster: () => void;
   onToggleFamilyCard: () => void;
+  onToggleICE: () => void;
+  onToggleGuide: () => void;
+  onToggleSMS: () => void;
 }
 
 export interface SearchResultItem {
@@ -35,6 +38,9 @@ export interface SearchResultItem {
 
 /** Quick tool tile definitions (rgb triplets feed the `--tool` CSS variable). */
 const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon: (c?: string) => string }[] = [
+  { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
+  { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
+  { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
   { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
   { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', icon: Icons.moon },
   { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı', rgb: '52, 211, 153', icon: Icons.activity },
@@ -449,6 +455,9 @@ export class HeaderHUD {
       'btn-toggle-layers': () => this.callbacks.onToggleLayers(),
       'btn-toggle-seismic': () => this.callbacks.onToggleSeismic(),
       'btn-open-whistle': () => this.callbacks.onToggleWhistle(),
+      'btn-open-ice': () => this.callbacks.onToggleICE(),
+      'btn-open-guide': () => this.callbacks.onToggleGuide(),
+      'btn-open-sms': () => this.callbacks.onToggleSMS(),
       'btn-open-early-warning': () => this.callbacks.onToggleEarlyWarning(),
       'btn-open-night-watch': () => this.callbacks.onToggleNightWatch(),
       'btn-open-seismograph': () => this.callbacks.onToggleSeismograph(),
@@ -466,8 +475,7 @@ export class HeaderHUD {
     }
 
     q<HTMLButtonElement>('#btn-toggle-tools-menu')?.addEventListener('click', () => {
-      this.isMenuOpen = !this.isMenuOpen;
-      this.render();
+      this.toggleMenu();
     });
 
     document.addEventListener('click', (e) => {
@@ -476,5 +484,27 @@ export class HeaderHUD {
         dropdown.classList.add('hidden');
       }
     });
+  }
+
+  public toggleMenu(force?: boolean): void {
+    this.isMenuOpen = force !== undefined ? force : !this.isMenuOpen;
+    const collapsible = this.container.querySelector('#hud-tools-collapsible') as HTMLElement | null;
+    const toggleBtn = this.container.querySelector('#btn-toggle-tools-menu') as HTMLButtonElement | null;
+    if (collapsible) {
+      collapsible.classList.toggle('hidden', !this.isMenuOpen);
+      collapsible.classList.toggle('flex', this.isMenuOpen);
+    }
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', String(this.isMenuOpen));
+      toggleBtn.className = `flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+        this.isMenuOpen
+          ? 'bg-white/20 border-white/30 text-white shadow-sm'
+          : 'bg-white/10 hover:bg-white/15 border-white/10 text-gray-200'
+      }`;
+      const spanText = toggleBtn.querySelector('span:first-child');
+      const spanArrow = toggleBtn.querySelector('span:last-child');
+      if (spanText) spanText.textContent = this.isMenuOpen ? 'Kapat' : 'Menü';
+      if (spanArrow) spanArrow.textContent = this.isMenuOpen ? '▲' : '▼';
+    }
   }
 }

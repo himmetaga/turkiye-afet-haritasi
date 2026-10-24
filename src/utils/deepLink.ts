@@ -18,7 +18,13 @@ export interface ParsedDeepLink {
     | 'canta'
     | 'tatbikat'
     | 'afis'
-    | 'kart';
+    | 'kart'
+    | 'kilit-ekrani'
+    | 'ice'
+    | 'rehber'
+    | 'ilk-yardim'
+    | 'sms'
+    | 'acil-sms';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -59,7 +65,13 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'canta',
       'tatbikat',
       'afis',
-      'kart'
+      'kart',
+      'kilit-ekrani',
+      'ice',
+      'rehber',
+      'ilk-yardim',
+      'sms',
+      'acil-sms'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;
