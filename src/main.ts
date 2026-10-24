@@ -73,6 +73,35 @@ class DisasterAtlasApp {
   }
 
   public async bootstrap(): Promise<void> {
+    // Instant Synchronous SEO Title & Meta Resolution for Deep Links / Crawlers
+    if (this.deepLink.city) {
+      const cityCapitalized = this.deepLink.city.charAt(0).toUpperCase() + this.deepLink.city.slice(1);
+      document.title = `${cityCapitalized} Deprem, Sel ve Toplanma Alanları — afet.live`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute(
+          'content',
+          `${cityCapitalized} genelinde AFAD toplanma alanları, acil servis hastaneleri, nöbetçi eczaneler ve diri fay hattı analizi. afet.live ile internetsiz çevrimdışı harita.`
+        );
+      }
+    } else if (this.deepLink.mod) {
+      const titles: Record<string, string> = {
+        'duduk': 'Afet Düdüğü (2.9 kHz SOS) — afet.live',
+        'gece-nobeti': 'Gece Sismograf Nöbeti (Başucu Deprem Alarmı) — afet.live',
+        'bina-risk': 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
+        'afis': 'Apartman Acil Durum Afişi Üretici (A4 Çıktı) — afet.live',
+        'kart': 'Aile Afet Buluşma Planı Kartı — afet.live',
+        'tatbikat': 'Deprem Tatbikat Simülatörü — afet.live',
+        'canta': 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
+        'qr': 'Çevrimdışı Güvendeyim QR Durum Paketi — afet.live',
+        'sismograf': 'Canlı Sismograf ve İvmeölçer — afet.live',
+        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live'
+      };
+      if (titles[this.deepLink.mod]) {
+        document.title = titles[this.deepLink.mod];
+      }
+    }
+
     const appEl = document.getElementById('app')!;
     const mapContainer = document.getElementById('map-container')!;
 
@@ -210,9 +239,9 @@ class DisasterAtlasApp {
 
     // 6. Handle Deep Link or request real GPS location
     this.handleDeepLink();
-    if (!this.deepLink.coords) {
+    if (!this.deepLink.coords && !this.deepLink.city) {
       this.requestUserLocation(true, false);
-    } else {
+    } else if (this.deepLink.coords) {
       this.requestUserLocation(false, false);
     }
 
@@ -393,6 +422,22 @@ class DisasterAtlasApp {
     }
 
     if (this.deepLink.mod) {
+      const titles: Record<string, string> = {
+        'duduk': 'Afet Düdüğü (2.9 kHz SOS) — afet.live',
+        'gece-nobeti': 'Gece Sismograf Nöbeti (Başucu Deprem Alarmı) — afet.live',
+        'bina-risk': 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
+        'afis': 'Apartman Acil Durum Afişi Üretici (A4 Çıktı) — afet.live',
+        'kart': 'Aile Afet Buluşma Planı Kartı — afet.live',
+        'tatbikat': 'Deprem Tatbikat Simülatörü — afet.live',
+        'canta': 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
+        'qr': 'Çevrimdışı Güvendeyim QR Durum Paketi — afet.live',
+        'sismograf': 'Canlı Sismograf ve İvmeölçer — afet.live',
+        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live'
+      };
+      if (titles[this.deepLink.mod]) {
+        document.title = titles[this.deepLink.mod];
+      }
+
       switch (this.deepLink.mod) {
         case 'gece-nobeti':
           this.nightWatchHUD.show();
@@ -646,14 +691,43 @@ class DisasterAtlasApp {
 
   private handleProvinceSelect(province: string): void {
     if (!province) {
+      document.title = 'afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası';
       this.mapEngine.setAssemblyPoints(this.assemblyPoints);
       this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
       this.mapEngine.flyTo([35.2433, 38.9637], 6, 30, 0);
       return;
     }
 
-    const filteredAssembly = this.assemblyPoints.filter((p) => p.city === province);
-    const filteredFacilities = this.facilities.filter((f) => f.city === province);
+    const norm = (str: string) =>
+      str
+        .toLowerCase()
+        .trim()
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c');
+
+    const searchNorm = norm(province);
+    const foundPoint =
+      this.assemblyPoints.find((p) => norm(p.city) === searchNorm) ||
+      this.facilities.find((f) => norm(f.city) === searchNorm);
+
+    const actualProvinceName = foundPoint ? foundPoint.city : province;
+
+    // Dinamik SEO Title ve Açıklama
+    document.title = `${actualProvinceName} Deprem, Sel ve Toplanma Alanları — afet.live`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        `${actualProvinceName} genelinde AFAD toplanma alanları, acil servis hastaneleri, nöbetçi eczaneler ve diri fay hattı analizi. afet.live ile internetsiz çevrimdışı harita.`
+      );
+    }
+
+    const filteredAssembly = this.assemblyPoints.filter((p) => norm(p.city) === searchNorm);
+    const filteredFacilities = this.facilities.filter((f) => norm(f.city) === searchNorm);
 
     this.mapEngine.setAssemblyPoints(filteredAssembly);
     this.mapEngine.setEmergencyFacilities(filteredFacilities, this.onlyDutyPharmacies);
@@ -664,7 +738,7 @@ class DisasterAtlasApp {
       this.mapEngine.flyTo(filteredFacilities[0].coordinates, 11, 45, -10);
     }
 
-    this.refreshLiveDutyPharmacies(province);
+    this.refreshLiveDutyPharmacies(actualProvinceName);
   }
 
   private handleLayerToggle(layerKey: string, visible: boolean): void {

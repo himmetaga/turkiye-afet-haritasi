@@ -1,0 +1,26 @@
+# robots.txt for afet.live
+# Türkiye Afet, Deprem, Sel ve Acil Durum Haritası
+User-agent: *
+Allow: /
+Allow: /?il=*
+Allow: /?mod=*
+Allow: /data/*.geojson
+Disallow: /api/
+Disallow: /*?*preview=*
+
+# Arama Motoru Botları
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Sitemap
+Sitemap: https://afet.live/sitemap.xml
+Host: https://afet.live

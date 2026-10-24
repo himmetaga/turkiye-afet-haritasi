@@ -3,33 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası</title>
-    <meta name="description" content="afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası. 27.331 resmi AFAD toplanma alanı, 1.226 acil servis hastanesi, 514 nöbetçi eczane, gece sismograf nöbeti, bina risk kartı ve çevrimdışı QR durum paketi." />
+    <title>afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası</title>
+    <meta name="description" content="Türkiye genelinde 27.331 resmi AFAD toplanma alanı, Kandilli ve AFAD son depremler haritası, diri fay hatları, acil hastaneler, nöbetçi eczaneler ve afet düdüğü. İnternetsiz çevrimdışı çalışır." />
+    <meta name="keywords" content="deprem, son depremler, deprem haritası, toplanma alanları, afad toplanma alanı, afad toplanma alanı sorgulama, sel haritası, su baskını acil durum, kandilli rasathanesi, afad, nöbetçi eczane, acil servis hastaneleri, diri fay hatları, afet düdüğü, sismograf, deprem çantası, bina sismik risk, istanbul toplanma alanları, ankara toplanma alanları, izmir toplanma alanları" />
     <link rel="canonical" href="https://afet.live/" />
     <meta name="theme-color" content="#090a0f" />
     <meta name="color-scheme" content="dark" />
     <meta name="application-name" content="afet.live" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-    <!-- Open Graph -->
+    <!-- Coğrafi Konum Bilgileri (Yerel SEO / Türkiye) -->
+    <meta name="geo.region" content="TR" />
+    <meta name="geo.placename" content="Türkiye" />
+    <meta name="geo.position" content="39.9334;32.8597" />
+    <meta name="ICBM" content="39.9334, 32.8597" />
+
+    <!-- Open Graph / Sosyal Medya -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="afet.live" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="https://afet.live/" />
-    <meta property="og:title" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
-    <meta property="og:description" content="Kandilli & AFAD canlı deprem akışı, 27.331 doğrulanmış toplanma alanı, gece sismograf nöbeti, bina sismik risk kartı ve internetsiz QR 'Güvendeyim' paketi." />
+    <meta property="og:title" content="afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası" />
+    <meta property="og:description" content="Kandilli ve AFAD son depremler haritası, 27.331 resmi AFAD toplanma alanı, acil hastaneler, günlük nöbetçi eczaneler ve afet düdüğü. %100 internetsiz çevrimdışı çalışır." />
     <meta property="og:image" content="https://afet.live/og-banner.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
+    <meta property="og:image:alt" content="afet.live — Türkiye Deprem ve Toplanma Haritası" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="afet.live — Türkiye 3D Afet ve Deprem Erken Uyarı Atlası" />
-    <meta name="twitter:description" content="Canlı deprem akışı, en yakın toplanma alanı, gece sismograf nöbeti ve çevrimdışı QR durum paketi." />
+    <meta name="twitter:site" content="@afetlive" />
+    <meta name="twitter:creator" content="@afetlive" />
+    <meta name="twitter:title" content="afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası" />
+    <meta name="twitter:description" content="Kandilli ve AFAD son depremler haritası, 27.331 resmi toplanma alanı, acil hastaneler, nöbetçi eczaneler ve afet düdüğü. İnternetsiz çevrimdışı çalışır." />
     <meta name="twitter:image" content="https://afet.live/og-banner.png" />
 
-    <!-- PWA / iOS -->
+    <!-- PWA / Mobil İkonlar -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -39,28 +49,334 @@
     <link rel="apple-touch-icon" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
+    <!-- Fontlar -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+    <!-- 1. WebApplication Schema -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "afet.live",
+        "alternateName": "Türkiye Afet ve Deprem Atlası",
         "url": "https://afet.live/",
-        "applicationCategory": "UtilitiesApplication",
-        "operatingSystem": "Any",
+        "applicationCategory": "EmergencyApplication, UtilitiesApplication",
+        "operatingSystem": "All (Web, iOS, Android, Windows, macOS, Linux)",
         "inLanguage": "tr-TR",
-        "description": "Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" }
+        "description": "Türkiye genelinde 27.331 resmi AFAD toplanma alanı, son depremler haritası, diri fay hatları, acil hastaneler ve nöbetçi eczaneler platformu.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
+        "author": {
+          "@type": "Organization",
+          "name": "afet.live Açık Kaynak Topluluğu",
+          "url": "https://afet.live"
+        }
+      }
+    </script>
+
+    <!-- 2. EmergencyService Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EmergencyService",
+        "name": "afet.live Acil Durum Bilgi Ağı",
+        "url": "https://afet.live/",
+        "logo": "https://afet.live/logo.svg",
+        "image": "https://afet.live/og-banner.png",
+        "telephone": "112",
+        "areaServed": {
+          "@type": "Country",
+          "name": "Turkey"
+        },
+        "description": "Deprem, sel, heyelan ve doğal afet durumlarında vatandaşların toplanma alanlarına, hastanelere ve nöbetçi eczanelere güvenle ulaşmasını sağlayan sivil harita."
+      }
+    </script>
+
+    <!-- 3. SpecialAnnouncement (Google Kriz ve Doğal Afet Schema'sı) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SpecialAnnouncement",
+        "name": "Türkiye Afet, Deprem ve Sel Toplanma Rehberi",
+        "text": "Deprem veya afet anında konumunuza en yakın resmi AFAD toplanma alanlarını, acil hastaneleri ve nöbetçi eczaneleri çevrimdışı harita üzerinden görüntüleyin.",
+        "category": "https://schema.org/GovernmentBenefitsAnnouncement",
+        "datePosted": "2026-10-24T00:00:00+03:00",
+        "expires": "2030-12-31T23:59:59+03:00",
+        "url": "https://afet.live/",
+        "announcementLocation": {
+          "@type": "AdministrativeArea",
+          "name": "Türkiye"
+        },
+        "spatialCoverage": {
+          "@type": "Place",
+          "geo": {
+            "@type": "GeoShape",
+            "box": "35.8 25.5 42.2 44.8"
+          }
+        }
+      }
+    </script>
+
+    <!-- 4. FAQPage Schema (Google Arama Zengin Soru-Cevap Kutuları) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "En yakın AFAD toplanma alanı nasıl bulunur?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "afet.live sitesine girdiğinizde veya konum butonuna bastığınızda, GPS konumunuza en yakın resmi AFAD toplanma alanları sokak mesafesi (metre/kilometre), tahmini yürüyüş süresi ve pusula yönüyle birlikte anında listelenir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Deprem veya afet anında internet kesilirse afet.live çalışır mı?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet. afet.live çevrimdışı (offline-first) mimariyle geliştirilmiştir. Uygulamayı bir kez açtığınızda veya ana ekrana eklediğinizde; 27.331 toplanma alanı, acil hastaneler, diri fay hatları ve afet düdüğü hücresel şebeke ve internet tamamen kopsa bile kesintisiz çalışır."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Afet düdüğü telefon kilitliyken çalmaya devam eder mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet. afet.live afet düdüğü 2.9 kHz insan kulağının en hassas olduğu frekansta ses üretir ve Web Audio API arka plan kilidi sayesinde telefonunuzun ekranı kapansa dahi aralıksız SOS ritminde çalmayı sürdürür."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Nöbetçi eczaneler ne sıklıkla güncellenir?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nöbetçi eczaneler her gün resmi nöbetçi listeleri ve belediye açık veri portalları üzerinden dinamik olarak güncellenir. Her eczanenin üzerinde o günün nöbet tarihi (örn. 24 Ekim) açıkça belirtilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Bina altından veya yakınından diri fay hattı geçip geçmediği nasıl anlaşılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "afet.live üzerinde yer alan MTA resmi diri fay hatları katmanı ve Bina Sismik Risk Kartı sayesinde, bulunduğunuz koordinata en yakın aktif fay hattının adı, mesafesi ve tahmini sismik risk seviyesi anında görüntülenir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Sel ve su baskını anında toplanma alanlarında nelere dikkat edilmelidir?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sel ve taşkın afetlerinde dere yatakları, çukur zeminler ve alt geçitlerden uzak durulmalı; yüksek kotta yer alan, elektrik ve temiz su altyapısına sahip resmi AFAD toplanma alanlarına intikal edilmelidir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Apartman veya site girişi için acil toplanma afişi nasıl oluşturulur?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "afet.live menüsünden 'Apartman Afişi' seçildiğinde; binanızın etrafındaki en yakın 3 toplanma alanı, acil hastaneler, nöbetçi eczaneler ve dinamik QR kodu içeren A4 boyutunda yazdırılabilir afiş tek tıkla hazırlanır ve çıktısı alınabilir."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- 5. BreadcrumbList Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Ana Sayfa",
+            "item": "https://afet.live/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Toplanma Alanları",
+            "item": "https://afet.live/?il=istanbul"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Afet Düdüğü",
+            "item": "https://afet.live/?mod=duduk"
+          }
+        ]
       }
     </script>
   </head>
   <body class="bg-obsidian-950 text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
     <div id="app">
-      <h1 class="sr-only">afet.live — Türkiye 3D Afet, Deprem Erken Uyarı ve Toplanma Atlası</h1>
+      <!-- 
+        ========================================================================
+        CRAWLABLE SEMANTIC SEO LAYER (Googlebot, Yandex, Bing, Screen Readers)
+        Bu içerik tüm arama motorlarının sitenin 81 ilini, deprem, sel, toplanma
+        alanı ve acil durum rehberini eksiksiz indekslemesini sağlar.
+        ========================================================================
+      -->
+      <header class="sr-only">
+        <h1>afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası</h1>
+        <p>Türkiye genelinde 27.331 resmi AFAD toplanma alanı, Kandilli ve AFAD son depremler haritası, diri fay hatları, acil hastaneler, nöbetçi eczaneler ve afet düdüğü.</p>
+      </header>
+
       <div id="map-container"></div>
+
+      <!-- Semantik ve İndekslenebilir Arama Motoru İçerik Bloğu -->
+      <section id="seo-content" class="sr-only" aria-label="Afet Bilgilendirme ve Şehir Dizini">
+        <article>
+          <h2>Türkiye Afet ve Acil Durum Rehberi</h2>
+          <p>
+            afet.live; Türkiye'de meydana gelebilecek deprem, sel, yangın, heyelan ve diğer doğal afet anlarında
+            vatandaşların en yakın güvenli noktalara en kısa sürede ulaşabilmesi amacıyla geliştirilmiş sivil ve açık kaynaklı bir haritadır.
+          </p>
+
+          <h3>1. Kandilli ve AFAD Canlı Son Depremler Haritası</h3>
+          <p>
+            Türkiye ve yakın çevresinde meydana gelen tüm sismik sarsıntılar Kandilli Rasathanesi ve AFAD veritabanları üzerinden anlık olarak harita üzerine işlenir.
+            Depremin büyüklüğü (Mw/Ml), derinliği (km), merkez üssü ve P/S dalga yayılım süreleri eş zamanlı hesaplanır.
+          </p>
+
+          <h3>2. 81 İl Resmi AFAD Toplanma Alanları Envanteri (27.331 Saha)</h3>
+          <p>
+            e-Devlet ve AFAD resmi açık veri kaynaklarından derlenen 27.331 afet toplanma sahası; su, elektrik, çadır alanı ve jeneratör altyapı bilgileriyle sunulmaktadır.
+            Kullanıcının GPS konumuna göre en yakın toplanma noktasına sokak tabanlı yürüyüş rotası çizilir.
+          </p>
+
+          <h3>3. 7/24 Acil Servis Hastaneleri ve Doğrulanmış Sağlık Tesisleri</h3>
+          <p>
+            T.C. Sağlık Bakanlığı onaylı 1.200'den fazla acil servis hastanesi, travma merkezi, acil yatak kapasitesi ve helikopter pisti bilgileriyle haritada yer alır.
+          </p>
+
+          <h3>4. Günlük Canlı Nöbetçi Eczaneler</h3>
+          <p>
+            İzmir Büyükşehir Belediyesi ve EczaneBul resmi açık veri sistemlerinden çekilen günlük nöbetçi eczaneler, açık adres ve telefon numaralarıyla birlikte her gün otomatik olarak güncellenir.
+          </p>
+
+          <h3>5. Sel, Taşkın ve Su Baskınında Güvenlik Önlemleri</h3>
+          <p>
+            Aşırı yağış ve sel uyarılarında bodrum ve zemin katlar derhal tahliye edilmeli; dere yataklarından uzak, yüksek kotlu resmi AFAD toplanma alanlarına sığınılmalıdır.
+          </p>
+
+          <h3>6. Diri Fay Hatları ve Bina Sismik Risk Kartı</h3>
+          <p>
+            MTA Türkiye Diri Fay Haritası entegrasyonuyla binanızın veya arsanızın diri fay hattına olan mesafesini, zemin ivmesini ve bina yapım yılına göre ön değerlendirmesini anında sorgulayabilirsiniz.
+          </p>
+
+          <h3>7. Afet Düdüğü & Aile Buluşma Planı</h3>
+          <p>
+            Enkaz altında veya acil durumda 2.9 kHz yüksek frekanslı ses üreten afet düdüğü ekran kapalıyken bile çalışır.
+            Ayrıca bina girişi için A4 Apartman Afişi ve sosyal medya için Aile Afet Buluşma Kartı hazırlanabilir.
+          </p>
+
+          <!-- 81 İl İndeks Bağlantıları (Googlebot'un Tüm Şehirleri Derinlemesine İndekslemesi İçin) -->
+          <h3>Türkiye'nin 81 İli Toplanma Alanları ve Deprem Rehberi</h3>
+          <nav aria-label="81 İl Listesi">
+            <ul>
+              <li><a href="/?il=adana">Adana Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=adiyaman">Adıyaman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=afyonkarahisar">Afyonkarahisar Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=agri">Ağrı Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=amasya">Amasya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=ankara">Ankara Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=antalya">Antalya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=artvin">Artvin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=aydin">Aydın Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=balikesir">Balıkesir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bilecik">Bilecik Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bingol">Bingöl Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bitlis">Bitlis Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bolu">Bolu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=burdur">Burdur Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bursa">Bursa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=canakkale">Çanakkale Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=cankiri">Çankırı Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=corum">Çorum Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=denizli">Denizli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=diyarbakir">Diyarbakır Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=edirne">Edirne Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=elazig">Elazığ Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=erzincan">Erzincan Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=erzurum">Erzurum Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=eskisehir">Eskişehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=gaziantep">Gaziantep Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=giresun">Giresun Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=gumushane">Gümüşhane Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=hakkari">Hakkari Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=hatay">Hatay Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=isparta">Isparta Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=mersin">Mersin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=istanbul">İstanbul Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=izmir">İzmir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kars">Kars Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kastamonu">Kastamonu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kayseri">Kayseri Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kirklareli">Kırklareli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kirsehir">Kırşehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kocaeli">Kocaeli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=konya">Konya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kutahya">Kütahya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=malatya">Malatya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=manisa">Manisa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kahramanmaras">Kahramanmaraş Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=mardin">Mardin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=mugla">Muğla Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=mus">Muş Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=nevsehir">Nevşehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=nigde">Niğde Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=ordu">Ordu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=rize">Rize Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=sakarya">Sakarya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=samsun">Samsun Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=siirt">Siirt Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=sinop">Sinop Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=sivas">Sivas Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=tekirdag">Tekirdağ Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=tokat">Tokat Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=trabzon">Trabzon Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=tunceli">Tunceli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=sanliurfa">Şanlıurfa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=usak">Uşak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=van">Van Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=yozgat">Yozgat Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=zonguldak">Zonguldak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=aksaray">Aksaray Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bayburt">Bayburt Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=karaman">Karaman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kirikkale">Kırıkkale Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=batman">Batman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=sirnak">Şırnak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=bartin">Bartın Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=ardahan">Ardahan Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=igdir">Iğdır Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=yalova">Yalova Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=karabuk">Karabük Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=kilis">Kilis Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=osmaniye">Osmaniye Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/?il=duzce">Düzce Deprem ve Toplanma Alanları</a></li>
+            </ul>
+          </nav>
+
+          <!-- Araç ve Modül Bağlantıları -->
+          <h3>Acil Durum Araçları</h3>
+          <ul>
+            <li><a href="/?mod=duduk">Afet Düdüğü (2.9 kHz SOS Düdüğü)</a></li>
+            <li><a href="/?mod=gece-nobeti">Gece Sismograf Nöbeti (Başucu Deprem Alarmı)</a></li>
+            <li><a href="/?mod=bina-risk">Bina Sismik Risk Kartı ve Diri Fay Analizi</a></li>
+            <li><a href="/?mod=afis">Apartman Girişi ve Asansör Acil Durum Afişi</a></li>
+            <li><a href="/?mod=kart">Aile İçin Afet Buluşma Kartı</a></li>
+            <li><a href="/?mod=tatbikat">Deprem Tatbikat ve Dalga Yayılım Simülatörü</a></li>
+            <li><a href="/?mod=canta">Acil Durum ve Deprem Çantası Malzeme Kontrol Listesi</a></li>
+            <li><a href="/?mod=qr">Çevrimdışı Güvendeyim QR Kod Paketi</a></li>
+          </ul>
+        </article>
+      </section>
     </div>
     <script src="/registerSW.js"></script>
     <script type="module" src="/src/main.ts"></script>

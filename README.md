@@ -68,6 +68,7 @@ npm run preview
 - **Arayüz:** TypeScript, Vanilla JavaScript, Tailwind CSS
 - **Harita Motoru:** MapLibre GL JS, OpenFreeMap, 3B bina ekstrüzyonları
 - **PWA & Önbellekleme:** Vite PWA, Workbox (Service Worker ile tam çevrimdışı destek)
+- **Teknik SEO:** Schema.org (SpecialAnnouncement, FAQPage, EmergencyService), 81 il indeks dizini ve XML sitemap
 - **Dağıtım:** Cloudflare Pages & Cloudflare Edge Functions (`/api/duty-pharmacies`)
 
 ---
