@@ -36,6 +36,9 @@ import { QuickEmergencySMSModal } from './ui/QuickEmergencySMSModal';
 import { FloodRadarModal } from './ui/FloodRadarModal';
 import { EmergencyRadioModal } from './ui/EmergencyRadioModal';
 import { TriageModal } from './ui/TriageModal';
+import { AirQualityRadarModal } from './ui/AirQualityRadarModal';
+import { TsunamiRadarModal } from './ui/TsunamiRadarModal';
+import { BloodCenterModal } from './ui/BloodCenterModal';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 
@@ -80,6 +83,9 @@ class DisasterAtlasApp {
   private floodRadarModal!: FloodRadarModal;
   private emergencyRadioModal!: EmergencyRadioModal;
   private triageModal!: TriageModal;
+  private airQualityModal!: AirQualityRadarModal;
+  private tsunamiModal!: TsunamiRadarModal;
+  private bloodCenterModal!: BloodCenterModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -149,7 +155,10 @@ class DisasterAtlasApp {
       onToggleSMS: () => this.emergencySMS.show(),
       onToggleFloodRadar: () => this.floodRadarModal.show(),
       onToggleRadio: () => this.emergencyRadioModal.show(),
-      onToggleTriage: () => this.triageModal.show()
+      onToggleTriage: () => this.triageModal.show(),
+      onToggleAirQuality: () => this.airQualityModal.show(),
+      onToggleTsunami: () => this.tsunamiModal.show(),
+      onToggleBlood: () => this.bloodCenterModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -200,6 +209,22 @@ class DisasterAtlasApp {
         coordinates: this.userCoords
       });
     });
+    this.airQualityModal = new AirQualityRadarModal(appEl, this.userCoords);
+    this.tsunamiModal = new TsunamiRadarModal(appEl, this.userCoords, this.assemblyPoints, (point) => {
+      this.focusPoint(point);
+    });
+    this.bloodCenterModal = new BloodCenterModal(
+      appEl,
+      this.userCoords,
+      this.facilities,
+      (point) => this.focusPoint(point),
+      (text) => {
+        this.crisisHUD.show();
+        bitChatService.broadcastMessage(text, 'chat', {
+          coordinates: this.userCoords
+        });
+      }
+    );
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -522,6 +547,18 @@ class DisasterAtlasApp {
         case 'triage':
           this.triageModal.show();
           break;
+        case 'hava':
+        case 'duman':
+          this.airQualityModal.show();
+          break;
+        case 'tsunami':
+        case 'dalga':
+          this.tsunamiModal.show();
+          break;
+        case 'kan':
+        case 'kizilay':
+          this.bloodCenterModal.show();
+          break;
         case 'canta':
           this.bagHUD.show();
           break;
@@ -637,6 +674,17 @@ class DisasterAtlasApp {
     }
     if (this.triageModal) {
       this.triageModal.setUserCoords(this.userCoords);
+    }
+    if (this.airQualityModal) {
+      this.airQualityModal.setUserCoords(this.userCoords);
+    }
+    if (this.tsunamiModal) {
+      this.tsunamiModal.setUserCoords(this.userCoords);
+      this.tsunamiModal.setAssemblyPoints(this.assemblyPoints);
+    }
+    if (this.bloodCenterModal) {
+      this.bloodCenterModal.setUserCoords(this.userCoords);
+      this.bloodCenterModal.setFacilities(this.facilities);
     }
   }
 

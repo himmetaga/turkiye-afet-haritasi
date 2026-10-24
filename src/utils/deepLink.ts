@@ -31,7 +31,13 @@ export interface ParsedDeepLink {
     | 'radyo'
     | 'bitchat'
     | 'triyaj'
-    | 'triage';
+    | 'triage'
+    | 'hava'
+    | 'duman'
+    | 'tsunami'
+    | 'dalga'
+    | 'kan'
+    | 'kizilay';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -85,7 +91,13 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'radyo',
       'bitchat',
       'triyaj',
-      'triage'
+      'triage',
+      'hava',
+      'duman',
+      'tsunami',
+      'dalga',
+      'kan',
+      'kizilay'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

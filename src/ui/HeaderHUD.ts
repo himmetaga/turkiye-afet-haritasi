@@ -27,6 +27,9 @@ export interface HeaderHUDCallbacks {
   onToggleFloodRadar: () => void;
   onToggleRadio: () => void;
   onToggleTriage: () => void;
+  onToggleAirQuality: () => void;
+  onToggleTsunami: () => void;
+  onToggleBlood: () => void;
 }
 
 export interface SearchResultItem {
@@ -44,6 +47,9 @@ const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon
   { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
   { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
   { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
+  { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi, Yangın ve Zehirli Gaz Radarı (Open-Meteo)', rgb: '245, 158, 11', icon: Icons.wind },
+  { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara/Ege)', rgb: '59, 130, 246', icon: Icons.waves },
+  { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
   { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
   { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
   { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
@@ -465,6 +471,9 @@ export class HeaderHUD {
       'btn-open-ice': () => this.callbacks.onToggleICE(),
       'btn-open-guide': () => this.callbacks.onToggleGuide(),
       'btn-open-triage': () => this.callbacks.onToggleTriage(),
+      'btn-open-air-quality': () => this.callbacks.onToggleAirQuality(),
+      'btn-open-tsunami': () => this.callbacks.onToggleTsunami(),
+      'btn-open-blood': () => this.callbacks.onToggleBlood(),
       'btn-open-sms': () => this.callbacks.onToggleSMS(),
       'btn-open-flood-radar': () => this.callbacks.onToggleFloodRadar(),
       'btn-open-emergency-radio': () => this.callbacks.onToggleRadio(),
