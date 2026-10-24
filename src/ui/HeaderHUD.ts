@@ -88,11 +88,6 @@ export class HeaderHUD {
 
   public setOnlineState(online: boolean): void {
     this.isOnline = online;
-    const badge = this.container.querySelector('#connection-badge');
-    if (badge) {
-      badge.className = this.connectionBadgeClass(online);
-      badge.innerHTML = this.connectionBadgeInner(online);
-    }
   }
 
   public updateSeismicCount(count: number): void {
@@ -213,24 +208,6 @@ export class HeaderHUD {
     if (dropdown) dropdown.classList.add('hidden');
   }
 
-  private connectionBadgeClass(online: boolean): string {
-    const base =
-      'inline-flex items-center gap-1.5 h-6 pl-2 pr-2.5 rounded-full text-[10.5px] font-semibold tracking-wide border';
-    return online
-      ? `${base} bg-emerald-500/10 border-emerald-500/20 text-emerald-300`
-      : `${base} bg-amber-500/15 border-amber-500/25 text-amber-200`;
-  }
-
-  private connectionBadgeInner(online: boolean): string {
-    return online
-      ? `<span class="relative flex w-1.5 h-1.5">
-           <span class="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
-           <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-         </span>
-         <span>CANLI</span>`
-      : `${Icons.wifiOff('w-3 h-3')}<span>ÇEVRİMDIŞI</span>`;
-  }
-
   private syncClearButton(): void {
     const input = this.container.querySelector('#search-input') as HTMLInputElement | null;
     const clearBtn = this.container.querySelector('#btn-search-clear') as HTMLElement | null;
@@ -255,59 +232,36 @@ export class HeaderHUD {
         <!-- 1. Brand bar & Symmetrical Menu Toggle -->
         <div class="flex items-center justify-between gap-2 min-w-0 w-full">
           <a href="/" class="flex items-center group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400/60 flex-shrink-0" aria-label="afet.live ana sayfa">
-            <img src="/logo-horizontal.svg" alt="afet.live" class="h-6 sm:h-[28px] w-auto max-w-[110px] sm:max-w-none object-contain group-hover:opacity-90 transition-opacity" />
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-6 sm:h-[28px] w-auto max-w-[120px] sm:max-w-none object-contain group-hover:opacity-90 transition-opacity" />
           </a>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <div id="connection-badge" class="${this.connectionBadgeClass(this.isOnline)}" role="status" aria-live="polite">
-              ${this.connectionBadgeInner(this.isOnline)}
-            </div>
-            <button
-              id="btn-toggle-tools-menu"
-              type="button"
-              class="flex items-center gap-1 px-2.5 py-1 rounded-xl text-white text-[11px] font-bold border transition-all ${
-                this.isMenuOpen
-                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-sm'
-                  : 'bg-white/10 hover:bg-white/15 border-white/10 text-gray-200'
-              }"
-              title="Tüm Menüleri ve Sismik Araçları Aç / Kapat"
-              aria-expanded="${this.isMenuOpen}"
-            >
-              <span class="${this.isMenuOpen ? 'text-amber-300' : 'text-amber-400'}">⚡</span>
-              <span>${this.isMenuOpen ? 'Kapat' : 'Menü'}</span>
-              <span class="text-[9px] opacity-75">${this.isMenuOpen ? '▲' : '▼'}</span>
-            </button>
-          </div>
+          <button
+            id="btn-toggle-tools-menu"
+            type="button"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              this.isMenuOpen
+                ? 'bg-white/20 border-white/30 text-white shadow-sm'
+                : 'bg-white/10 hover:bg-white/15 border-white/10 text-gray-200'
+            }"
+            title="Menüyü Aç / Kapat"
+            aria-expanded="${this.isMenuOpen}"
+          >
+            <span>${this.isMenuOpen ? 'Kapat' : 'Menü'}</span>
+            <span class="text-[9px] opacity-75">${this.isMenuOpen ? '▲' : '▼'}</span>
+          </button>
         </div>
 
-        <!-- 2. PRIMARY EMERGENCY ACTION: AFET DÜDÜĞÜ & S.O.S (HER ZAMAN ODAKTA & GÖRÜNÜR) -->
+        <!-- 2. PRIMARY EMERGENCY ACTION: AFET DÜDÜĞÜ & S.O.S -->
         <button
           id="btn-open-whistle"
           type="button"
-          title="Afet Düdüğü & Kurtarma İşareti (2.9 kHz Ses · S.O.S Ekran Flaşı)"
+          title="Afet Düdüğü & S.O.S"
           aria-label="Afet Düdüğünü Başlat"
-          class="hud-emergency-btn flex items-center justify-between gap-2 w-full max-w-full px-2.5 py-2 sm:py-2.5 rounded-xl text-white cursor-pointer select-none min-w-0"
+          class="hud-emergency-btn flex items-center justify-center gap-2.5 w-full max-w-full px-4 py-2.5 rounded-xl text-white cursor-pointer select-none min-w-0 active:scale-95 transition-transform"
         >
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <span class="grid place-items-center w-8 h-8 rounded-lg bg-white/20 text-white flex-shrink-0 shadow-inner">
-              ${Icons.whistle('w-4 h-4 sm:w-5 sm:h-5')}
-            </span>
-            <div class="flex flex-col items-start leading-tight min-w-0 flex-1 text-left">
-              <div class="flex items-center gap-1.5 min-w-0">
-                <span class="text-[13px] sm:text-[14px] font-black tracking-wide text-white truncate">AFET DÜDÜĞÜ</span>
-                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/30 text-rose-200 flex-shrink-0">S.O.S</span>
-              </div>
-              <span class="text-[10px] sm:text-[10.5px] text-rose-100/90 truncate font-medium w-full block">2.9 kHz ses · S.O.S flaş</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <span class="flex h-2 w-2 relative">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-            </span>
-            <span class="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-black/25 text-rose-50 border border-white/20 shadow-sm">
-              ACİL
-            </span>
-          </div>
+          <span class="grid place-items-center w-6 h-6 rounded-md bg-white/20 text-white flex-shrink-0">
+            ${Icons.whistle('w-4 h-4')}
+          </span>
+          <span class="text-[13px] sm:text-[14px] font-black tracking-wide text-white">AFET DÜDÜĞÜ & S.O.S</span>
         </button>
 
         <!-- 3. Collapsible Menus & Tools (Sonradan Açılan Menüler) -->
@@ -400,11 +354,10 @@ export class HeaderHUD {
             </button>
           </div>
 
-          <!-- Quick tools Matrix (11 Modül) -->
+          <!-- Quick tools Matrix -->
           <div class="pt-1">
             <div class="flex items-center justify-between mb-1.5 px-0.5">
-              <span class="hud-section-label">Acil Durum & Sismik Araçlar</span>
-              <span class="text-[10px] text-gray-400 font-mono">11 Modül</span>
+              <span class="hud-section-label">Acil Durum Araçları</span>
             </div>
             <div class="grid grid-cols-4 gap-1">
               ${toolTiles}

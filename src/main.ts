@@ -80,7 +80,7 @@ class DisasterAtlasApp {
     // 1. Initialize UI Modals & Drawers
     this.headerHUD = new HeaderHUD(appEl, {
       onSearchChange: (q) => this.handleSearch(q),
-      onLocateMe: () => this.requestUserLocation(true),
+      onLocateMe: () => this.requestUserLocation(true, true),
       onToggleSeismic: () => this.toggleSeismicDrawer(),
       onToggleSOS: () => this.openSOSModal(),
       onToggleBag: () => this.bagHUD.show(),
@@ -88,7 +88,7 @@ class DisasterAtlasApp {
       onToggleLayers: () => this.layerHUD.toggle(),
       onSelectProvince: (prov) => this.handleProvinceSelect(prov),
       onToggleEarlyWarning: () => {
-        this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
+        this.notificationToast.show('Sismik erken uyarı ağı devrede.', false);
       },
       onToggleNightWatch: () => this.nightWatchHUD.show(),
       onToggleSeismograph: () => this.seismographModal.show(),
@@ -143,7 +143,7 @@ class DisasterAtlasApp {
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
     this.feltModal = new FeltReportModal(appEl, this.userCoords, (report) => {
-      this.notificationToast.show(`📍 Hissedildi bildirimi alındı (${report.intensityRoman} - ${report.district}).`, false);
+      this.notificationToast.show(`Hissedildi bildirimi alındı (${report.intensityRoman} - ${report.district}).`, false);
     });
     this.crisisHUD = new CrisisChatHUD(appEl, this.userCoords, {
       onOpenQRPack: (preferredStatus) => this.qrPackModal.show(preferredStatus)
@@ -204,15 +204,15 @@ class DisasterAtlasApp {
 
     // 5. Place user marker & immediate calculations
     this.mapEngine.setUserLocation(this.userCoords, 0);
-    this.updateUserContextCalculations('Kadıköy / İstanbul (Örnek Konum)');
+    this.updateUserContextCalculations('En Yakın Güvenlik Noktaları');
     this.updateBuildingRiskContext();
 
     // 6. Handle Deep Link or request real GPS location
     this.handleDeepLink();
     if (!this.deepLink.coords) {
-      this.requestUserLocation(true);
+      this.requestUserLocation(true, false);
     } else {
-      this.requestUserLocation(false);
+      this.requestUserLocation(false, false);
     }
 
     // 7. PWA Service Worker
@@ -331,7 +331,7 @@ class DisasterAtlasApp {
     if (flyTo) {
       this.mapEngine.flyTo(coords, 15.5, 52, -15);
     }
-    this.updateUserContextCalculations(`${source}: Bölgenizdeki Acil Noktalar`);
+    this.updateUserContextCalculations(source ? `${source} · En Yakın Noktalar` : 'En Yakın Güvenlik Noktaları');
   }
 
   private updateBuildingRiskContext(): void {
@@ -393,7 +393,7 @@ class DisasterAtlasApp {
           if (this.earthquakes.length > 0) {
             earlyWarningEngine.startWarning(this.earthquakes[0]);
           } else {
-            this.notificationToast.show('🚨 Kandilli & AFAD Sismik Erken Uyarı Ağı arka planda kesintisiz devrede.', false);
+            this.notificationToast.show('Sismik erken uyarı ağı devrede.', false);
           }
           break;
         case 'tatbikat':
@@ -409,19 +409,21 @@ class DisasterAtlasApp {
     }
   }
 
-  private requestUserLocation(flyToUser = true): void {
+  private requestUserLocation(flyToUser = true, notify = false): void {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
-          this.applyVerifiedLocation(coords, 'GPS Doğrulandı', flyToUser);
-          this.notificationToast.show('📍 GPS uydusuyla kesin konumunuz doğrulandı ve kilitlendi.', false);
+          this.applyVerifiedLocation(coords, 'Doğrulanan Konum', flyToUser);
+          if (notify) {
+            this.notificationToast.show('Konumunuz doğrulandı.', false);
+          }
 
           try {
             navigator.geolocation.watchPosition(
               (p) => {
                 const liveCoords: [number, number] = [p.coords.longitude, p.coords.latitude];
-                this.applyVerifiedLocation(liveCoords, 'Canlı GPS', false);
+                this.applyVerifiedLocation(liveCoords, 'Canlı Konum', false);
               },
               () => {},
               { enableHighAccuracy: true, maximumAge: 10000 }
@@ -435,13 +437,17 @@ class DisasterAtlasApp {
               const data = await res.json();
               if (data.latitude && data.longitude) {
                 const ipCoords: [number, number] = [Number(data.longitude), Number(data.latitude)];
-                this.applyVerifiedLocation(ipCoords, `Şebeke (${data.city || 'Türkiye'})`, flyToUser);
-                this.notificationToast.show(`🌐 Şebeke/IP konumunuz doğrulandı: ${data.city || 'Türkiye'}. Konum sabitlendi.`, false);
+                this.applyVerifiedLocation(ipCoords, `${data.city || 'Bölgeniz'}`, flyToUser);
+                if (notify) {
+                  this.notificationToast.show(`Konum: ${data.city || 'Türkiye'}`, false);
+                }
                 return;
               }
             }
           } catch {}
-          this.notificationToast.show('📍 Varsayılan merkez konumu devrede. GPS izni verdiğinizde anında güncellenir.', true);
+          if (notify) {
+            this.notificationToast.show('Konum izni alınamadı.', true);
+          }
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );
@@ -713,7 +719,7 @@ class DisasterAtlasApp {
     this.obstacles.push(obs);
     this.mapEngine.setObstacles(this.obstacles);
     this.updateUserContextCalculations();
-    this.notificationToast.show('⚠️ Enkaz eklendi. Rota alternatif sokaklardan güncellendi.', true);
+    this.notificationToast.show('Enkaz eklendi. Rota alternatif sokaklardan güncellendi.', true);
   }
 
   private registerPWA(): void {
