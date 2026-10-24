@@ -54,7 +54,7 @@ const QUICK_TOOLS: { id: string; label: string; title: string; rgb: string; icon
   { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users },
   { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode },
   { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.handRaised },
-  { id: 'btn-open-crisis', label: 'Kriz Odası', title: 'Kriz Durum Koordinasyon Odası & Güvendeyim Bildirimi', rgb: '34, 211, 238', icon: Icons.messages },
+  { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', icon: Icons.messages },
   { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack }
 ];
 

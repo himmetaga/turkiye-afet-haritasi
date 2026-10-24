@@ -1,28 +1,16 @@
 import { Icons } from './icons';
-
-export interface CrisisMessage {
-  id: string;
-  senderName: string;
-  type: 'safe' | 'help' | 'chat';
-  text: string;
-  timestamp: number;
-  timeString: string;
-  city: string;
-  district: string;
-  batteryLevel?: number;
-}
-
-const STORAGE_KEY = 'afet_live_crisis_chat_v1';
-const CHANNEL_NAME = 'afet_live_crisis_channel';
+import { bitChatService, BitChatMessage } from '../services/bitChatService';
 
 export class CrisisChatHUD {
   private container: HTMLElement;
-  private messages: CrisisMessage[] = [];
-  private channel: BroadcastChannel | null = null;
   private userCoords: [number, number];
   private currentCity = 'İstanbul';
   private currentDistrict = 'Kadıköy';
   private onOpenQRPack?: (status: 'SAFE' | 'HELP') => void;
+  private unsubscribeMessages?: () => void;
+  private unsubscribeStatus?: () => void;
+  private networkStatus = { connectedRelays: 0, meshPeers: 1 };
+  private isPairingModalOpen = false;
 
   constructor(
     parent: HTMLElement,
@@ -34,12 +22,21 @@ export class CrisisChatHUD {
     this.container = document.createElement('div');
     this.container.id = 'crisis-chat-hud';
     this.container.className =
-      'fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300';
+      'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/85 backdrop-blur-md hidden transition-all';
     parent.appendChild(this.container);
 
-    this.loadMessages();
-    this.initBroadcastChannel();
-    this.render();
+    this.initSubscriptions();
+  }
+
+  private initSubscriptions(): void {
+    this.unsubscribeMessages = bitChatService.subscribeMessages(() => {
+      this.render();
+    });
+
+    this.unsubscribeStatus = bitChatService.subscribeStatus((st) => {
+      this.networkStatus = st;
+      this.updateStatusBadge();
+    });
   }
 
   public setUserLocation(coords: [number, number], city = 'İstanbul', district = 'Kadıköy'): void {
@@ -49,70 +46,14 @@ export class CrisisChatHUD {
   }
 
   public show(): void {
-    this.container.classList.remove('opacity-0', 'pointer-events-none');
-    this.container.classList.add('opacity-100', 'pointer-events-auto');
+    this.container.classList.remove('hidden');
+    // Connect to public Nostr relays in background
+    bitChatService.connectRelays();
     this.render();
   }
 
   public hide(): void {
-    this.container.classList.remove('opacity-100', 'pointer-events-auto');
-    this.container.classList.add('opacity-0', 'pointer-events-none');
-  }
-
-  private initBroadcastChannel(): void {
-    if (typeof BroadcastChannel !== 'undefined') {
-      try {
-        this.channel = new BroadcastChannel(CHANNEL_NAME);
-        this.channel.onmessage = (e) => {
-          if (e.data && e.data.type === 'NEW_CHAT_MSG') {
-            this.messages.unshift(e.data.message);
-            this.render();
-          }
-        };
-      } catch {}
-    }
-  }
-
-  private loadMessages(): void {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        this.messages = JSON.parse(raw);
-      } else {
-        this.messages = [
-          {
-            id: 'msg-init-1',
-            senderName: 'Ahmet Y.',
-            type: 'safe',
-            text: 'Moda Sahili toplanma alanındayız, ailemizle birlikte güvendeyiz.',
-            timestamp: Date.now() - 1000 * 60 * 25,
-            timeString: '25 dk önce',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            batteryLevel: 88
-          },
-          {
-            id: 'msg-init-2',
-            senderName: 'Selin B.',
-            type: 'safe',
-            text: 'Yoğurtçu Parkı toplanma sahasında çadır kurulumu yapılıyor, su dağıtımı mevcut.',
-            timestamp: Date.now() - 1000 * 60 * 12,
-            timeString: '12 dk önce',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            batteryLevel: 74
-          }
-        ];
-      }
-    } catch {
-      this.messages = [];
-    }
-  }
-
-  private saveMessages(): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.messages.slice(0, 100)));
-    } catch {}
+    this.container.classList.add('hidden');
   }
 
   private async getBatteryPercent(): Promise<number | undefined> {
@@ -125,118 +66,169 @@ export class CrisisChatHUD {
     return undefined;
   }
 
-  private async sendMessage(text: string, type: 'safe' | 'help' | 'chat' = 'chat'): Promise<void> {
-    const bat = await this.getBatteryPercent();
-    const newMsg: CrisisMessage = {
-      id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      senderName: type === 'safe' ? 'Vatandaş (Güvende)' : type === 'help' ? 'Acil Yardım Çağrısı' : 'Bölge Sakini',
-      type,
-      text: text.trim(),
-      timestamp: Date.now(),
-      timeString: 'Az önce',
-      city: this.currentCity,
-      district: this.currentDistrict,
-      batteryLevel: bat
-    };
+  private updateStatusBadge(): void {
+    const badge = this.container.querySelector('#bitchat-network-badge');
+    if (!badge) return;
 
-    this.messages.unshift(newMsg);
-    this.saveMessages();
-    this.render();
-
-    if (this.channel) {
-      try {
-        this.channel.postMessage({ type: 'NEW_CHAT_MSG', message: newMsg });
-      } catch {}
+    const relays = this.networkStatus.connectedRelays;
+    if (relays > 0) {
+      badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1';
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Nostr: ${relays} Röle • P2P Mesh`;
+    } else {
+      badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1';
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Yerel Mesh (Çevrimdışı P2P)`;
     }
   }
 
   private render(): void {
+    const identity = bitChatService.getIdentity();
+    const activeChannel = bitChatService.getActiveChannel();
+    const messages = bitChatService.getMessages(activeChannel);
+
+    const channels = [
+      { id: '#afet-genel', label: 'Genel Koordinasyon' },
+      { id: '#afet-enkaz', label: '🚨 Enkaz & Acil İmdat' },
+      { id: `#afet-${this.currentCity.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yerel'}`, label: `📍 ${this.currentCity}` },
+      { id: '#afet-lojistik', label: 'Erzak & Su' }
+    ];
+
     this.container.innerHTML = `
-      <div class="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl bg-obsidian-900 border border-white/10 shadow-2xl backdrop-blur-2xl text-white overflow-hidden">
+      <div class="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl bg-obsidian-900/95 border border-white/10 shadow-2xl backdrop-blur-2xl text-white overflow-hidden">
         <!-- Header -->
-        <div class="flex items-center justify-between p-4 border-b border-white/10 bg-obsidian-950/50">
+        <div class="flex items-center justify-between p-3.5 sm:p-4 border-b border-white/10 bg-obsidian-950/60 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-              ${Icons.user('w-5 h-5')}
+            <span class="p-2 rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">
+              ${Icons.messages('w-5 h-5')}
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-sm font-bold text-white tracking-wide">
-                  Afet Kriz Koordinasyon Odası
+                <h3 class="text-sm sm:text-base font-bold text-white tracking-wide">
+                  BitChat Afet Ağı
                 </h3>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">
-                  ${this.currentDistrict} / ${this.currentCity}
-                </span>
+                <div id="bitchat-network-badge"></div>
               </div>
-              <p class="text-[11px] text-gray-400">
-                P2P & Mesh tabanlı güvenli durum bildirimi ve bilgi paylaşımı
+              <p class="text-[11px] text-gray-400 flex items-center gap-1.5 mt-0.5">
+                <span>Kimlik:</span>
+                <button id="btn-edit-alias" type="button" class="text-cyan-300 hover:underline font-mono font-semibold" title="Rumuz Değiştir">
+                  ${identity.alias} (${identity.pubkey}) ✏️
+                </button>
               </p>
             </div>
           </div>
 
-          <button id="btn-close-crisis" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all">
-            ${Icons.close('w-4 h-4 text-gray-400')}
+          <button id="btn-close-crisis" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-gray-400 hover:text-white">
+            ${Icons.close('w-4 h-4')}
           </button>
         </div>
 
-        <!-- Quick 1-Click Status Broadcast Bar -->
-        <div class="p-3 bg-white/5 border-b border-white/10 flex flex-col gap-2">
+        <!-- Channel Tabs -->
+        <div class="flex items-center gap-1.5 p-2 bg-white/[0.02] border-b border-white/5 overflow-x-auto text-xs no-scrollbar flex-shrink-0">
+          ${channels
+            .map((ch) => {
+              const isActive = ch.id === activeChannel;
+              return `
+                <button
+                  type="button"
+                  data-channel="${ch.id}"
+                  class="btn-channel px-2.5 py-1 rounded-lg font-semibold text-[11px] transition-all whitespace-nowrap ${
+                    isActive
+                      ? 'bg-cyan-500/20 border border-cyan-500/40 text-cyan-300'
+                      : 'bg-white/5 border border-transparent text-gray-400 hover:text-gray-200'
+                  }"
+                >
+                  ${ch.label}
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+
+        <!-- Quick 1-Click Action Bar -->
+        <div class="p-2.5 sm:p-3 bg-white/[0.03] border-b border-white/5 flex flex-col gap-2 flex-shrink-0">
           <div class="flex items-center gap-2">
             <button
               id="btn-broadcast-safe"
-              class="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-extrabold text-xs shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              type="button"
+              class="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-bold text-xs shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
               <span>✓ Güvendeyim</span>
             </button>
             <button
               id="btn-broadcast-help"
-              class="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-glow-rose active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              type="button"
+              class="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs shadow-glow-rose active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
-              <span>🚨 Acil Yardım Gerekli</span>
+              <span>🚨 Acil İmdat / Enkaz</span>
             </button>
           </div>
 
-          <button
-            id="btn-open-crisis-qr"
-            type="button"
-            class="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-98"
-          >
-            ${Icons.qrCode('w-4 h-4')}
-            <span>İnternetsiz Çevrimdışı QR Kodunu Aç (Kamerayla Okunur)</span>
-          </button>
+          <div class="flex items-center gap-2 text-[11px]">
+            <button
+              id="btn-webrtc-pair"
+              type="button"
+              class="flex-1 py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <span>🔗</span><span>Cihaz Eşle (P2P WebRTC)</span>
+            </button>
+            <button
+              id="btn-open-crisis-qr"
+              type="button"
+              class="flex-1 py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-300 font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <span>📱</span><span>Hava Boşluğu (QR Kod)</span>
+            </button>
+            <button
+              id="btn-emergency-wipe"
+              type="button"
+              class="py-1 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 font-medium transition-all"
+              title="Acil Temizle: Cihazdaki tüm mesajları ve anahtarları kalıcı olarak siler"
+            >
+              <span>🧹 Sıfırla</span>
+            </button>
+          </div>
         </div>
 
         <!-- Message Feed List -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[260px] max-h-[380px]">
+        <div class="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-2.5 min-h-[220px]">
           ${
-            this.messages.length === 0
+            messages.length === 0
               ? `
             <div class="text-center py-10 text-xs text-gray-500">
-              Henüz bir mesaj bulunmuyor. İlk durumu siz paylaşın.
+              Bu kanalda henüz mesaj bulunmuyor. İlk durumu siz paylaşın.
             </div>
           `
-              : this.messages
+              : messages
                   .map((m) => {
+                    const isSOS = m.type === 'sos';
                     const isSafe = m.type === 'safe';
-                    const isHelp = m.type === 'help';
-                    const cardBorder = isHelp
-                      ? 'border-rose-500/40 bg-rose-500/10'
+                    const cardBorder = isSOS
+                      ? 'border-rose-500/50 bg-rose-500/15 shadow-glow-rose animate-pulse'
                       : isSafe
                       ? 'border-emerald-500/30 bg-emerald-500/5'
                       : 'border-white/5 bg-white/5';
 
+                    const transportBadge =
+                      m.transport === 'nostr'
+                        ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">Nostr</span>'
+                        : m.transport === 'webrtc'
+                        ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">P2P</span>'
+                        : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Mesh</span>';
+
+                    const timeAgo = this.formatTimeAgo(m.timestamp);
+
                     return `
                     <div class="p-3 rounded-xl border ${cardBorder} text-xs">
-                      <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center gap-1.5">
-                          <span class="font-bold ${isHelp ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
+                      <div class="flex items-center justify-between gap-1 mb-1">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                          <span class="font-bold truncate ${isSOS ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
                             ${m.senderName}
                           </span>
-                          <span class="text-[10px] text-gray-400 font-mono">(${m.district})</span>
+                          ${transportBadge}
+                          ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${m.district})</span>` : ''}
                         </div>
-                        <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
+                        <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono flex-shrink-0">
                           ${m.batteryLevel !== undefined ? `<span>🔋 %${m.batteryLevel}</span>` : ''}
-                          <span>${m.timeString}</span>
+                          <span>${timeAgo}</span>
                         </div>
                       </div>
                       <p class="text-gray-200 leading-relaxed font-normal">${m.text}</p>
@@ -248,16 +240,18 @@ export class CrisisChatHUD {
         </div>
 
         <!-- Chat Input Bar -->
-        <div class="p-3 border-t border-white/10 bg-obsidian-950/80 flex items-center gap-2">
+        <div class="p-3 border-t border-white/10 bg-obsidian-950/80 flex items-center gap-2 flex-shrink-0">
           <input
             id="crisis-chat-input"
             type="text"
-            placeholder="Bilgi veya durum paylaşın..."
-            class="flex-1 px-3 py-2 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none placeholder-gray-500 focus:bg-white/10 transition-colors"
+            maxlength="280"
+            placeholder="${activeChannel} kanalında durum paylaşın..."
+            class="flex-1 px-3 py-2 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none placeholder-gray-500 focus:border-cyan-500/50 transition-colors"
           />
           <button
             id="btn-send-crisis"
-            class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-obsidian-950 font-bold text-xs active:scale-95 transition-all"
+            type="button"
+            class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-obsidian-950 font-bold text-xs active:scale-95 transition-all"
           >
             Gönder
           </button>
@@ -265,15 +259,37 @@ export class CrisisChatHUD {
       </div>
     `;
 
-    // Event listeners
+    this.updateStatusBadge();
+    this.attachEventListeners();
+  }
+
+  private attachEventListeners(): void {
     this.container.querySelector('#btn-close-crisis')?.addEventListener('click', () => this.hide());
 
+    // Channel Switching
+    this.container.querySelectorAll('.btn-channel').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const ch = btn.getAttribute('data-channel');
+        if (ch) {
+          bitChatService.setActiveChannel(ch);
+          this.render();
+        }
+      });
+    });
+
+    // Send Message
     const input = this.container.querySelector('#crisis-chat-input') as HTMLInputElement;
     const sendBtn = this.container.querySelector('#btn-send-crisis');
 
-    const doSend = () => {
+    const doSend = async () => {
       if (input && input.value.trim()) {
-        this.sendMessage(input.value);
+        const bat = await this.getBatteryPercent();
+        await bitChatService.broadcastMessage(input.value, 'chat', {
+          city: this.currentCity,
+          district: this.currentDistrict,
+          coordinates: this.userCoords,
+          batteryLevel: bat
+        });
         input.value = '';
       }
     };
@@ -283,14 +299,37 @@ export class CrisisChatHUD {
       if (e.key === 'Enter') doSend();
     });
 
-    this.container.querySelector('#btn-broadcast-safe')?.addEventListener('click', () => {
-      this.sendMessage('Durumum iyi, ailemle birlikte güvendeyim.', 'safe');
+    // 1-Click Safe Beacon
+    this.container.querySelector('#btn-broadcast-safe')?.addEventListener('click', async () => {
+      const bat = await this.getBatteryPercent();
+      await bitChatService.broadcastMessage(
+        'Durumum iyi, ailemle birlikte güvendeyiz.',
+        'safe',
+        {
+          city: this.currentCity,
+          district: this.currentDistrict,
+          coordinates: this.userCoords,
+          batteryLevel: bat
+        }
+      );
     });
 
-    this.container.querySelector('#btn-broadcast-help')?.addEventListener('click', () => {
-      this.sendMessage('ACİL YARDIM ÇAĞRISI: Konumum bildirildi, lütfen arama kurtarma yönlendirin!', 'help');
+    // 1-Click SOS Beacon
+    this.container.querySelector('#btn-broadcast-help')?.addEventListener('click', async () => {
+      const bat = await this.getBatteryPercent();
+      await bitChatService.broadcastMessage(
+        `🚨 ACİL İMDAT / ENKAZ ÇAĞRISI: Konum [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}], acil kurtarma ve sağlık ekibi yönlendirin!`,
+        'sos',
+        {
+          city: this.currentCity,
+          district: this.currentDistrict,
+          coordinates: this.userCoords,
+          batteryLevel: bat
+        }
+      );
     });
 
+    // QR Mode
     this.container.querySelector('#btn-open-crisis-qr')?.addEventListener('click', () => {
       if (this.onOpenQRPack) {
         this.hide();
@@ -298,8 +337,42 @@ export class CrisisChatHUD {
       }
     });
 
+    // Alias Edit
+    this.container.querySelector('#btn-edit-alias')?.addEventListener('click', () => {
+      const newAlias = prompt('Yeni rumuzunuzu girin:', bitChatService.getIdentity().alias);
+      if (newAlias) {
+        bitChatService.setAlias(newAlias);
+        this.render();
+      }
+    });
+
+    // Emergency Wipe
+    this.container.querySelector('#btn-emergency-wipe')?.addEventListener('click', () => {
+      if (confirm('DİKKAT: Cihazdaki tüm sohbet geçmişi ve kimlik anahtarları kalıcı olarak silinecek. Emin misiniz?')) {
+        bitChatService.emergencyWipe();
+        this.render();
+      }
+    });
+
+    // WebRTC Direct Pairing Modal / Prompt
+    this.container.querySelector('#btn-webrtc-pair')?.addEventListener('click', async () => {
+      try {
+        const offer = await bitChatService.createWebRTCOffer();
+        prompt('P2P WebRTC Bağlantı Kodunuz (Karşı cihaza gönderin veya yapıştırın):', offer);
+      } catch {
+        alert('WebRTC doğrudan eşleme başlatılamadı. Nostr veya QR modu kullanılabilir.');
+      }
+    });
+
     this.container.addEventListener('click', (e) => {
       if (e.target === this.container) this.hide();
     });
+  }
+
+  private formatTimeAgo(timestamp: number): string {
+    const diff = Math.floor((Date.now() - timestamp) / 1000);
+    if (diff < 60) return 'Az önce';
+    if (diff < 3600) return `${Math.floor(diff / 60)} dk önce`;
+    return `${Math.floor(diff / 3600)} sa önce`;
   }
 }

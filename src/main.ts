@@ -505,6 +505,7 @@ class DisasterAtlasApp {
           this.seismographModal.show();
           break;
         case 'kriz':
+        case 'bitchat':
           this.crisisHUD.show();
           break;
         case 'canta':
