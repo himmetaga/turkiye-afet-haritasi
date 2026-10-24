@@ -150,8 +150,21 @@ export class PointDetailHUD {
           </a>
         </div>
 
+        <!-- Safe Check-In Action Button -->
+        <div class="mt-2.5">
+          <button
+            id="btn-checkin-point"
+            type="button"
+            class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition-all active:scale-[0.98]"
+            title="Bu toplanma alanına güvenle ulaştığınızı yakınlarınıza SMS / WhatsApp ile iletin"
+          >
+            <span>📍</span>
+            <span>Buradayım (Aileme & Yakınlarıma Bildir)</span>
+          </button>
+        </div>
+
         <!-- Community Crowdsourced Verification Button (GitHub) -->
-        <div class="mt-2.5 pt-2 border-t border-white/5">
+        <div class="mt-2 pt-2 border-t border-white/5">
           <a
             id="btn-verify-point-github"
             href="#"
@@ -201,6 +214,53 @@ export class PointDetailHUD {
         }
       } catch {
         alert(shareUrl);
+      }
+    });
+
+    const checkinBtn = this.container.querySelector('#btn-checkin-point') as HTMLButtonElement | null;
+    checkinBtn?.addEventListener('click', async () => {
+      if (!this.currentPoint) return;
+      const p = this.currentPoint;
+      const lat = p.coordinates[1].toFixed(5);
+      const lon = p.coordinates[0].toFixed(5);
+      const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
+      const msg = `Ben "${p.name}" (${p.district ? p.district + ', ' : ''}${p.city}) toplanma alanına güvenle ulaştım! Konumum: ${mapUrl} — afet.live`;
+
+      try {
+        localStorage.setItem(
+          'afet_last_checkin',
+          JSON.stringify({
+            name: p.name,
+            city: p.city,
+            district: p.district,
+            time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toLocaleDateString('tr-TR'),
+            coords: p.coordinates
+          })
+        );
+      } catch {}
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Toplanma Alanına Ulaştım',
+            text: msg
+          });
+          checkinBtn.innerHTML = `<span>✓</span><span>Aileye İletildi</span>`;
+          return;
+        } catch {}
+      }
+
+      try {
+        await navigator.clipboard.writeText(msg);
+        checkinBtn.innerHTML = `<span>✓</span><span>Konum Kopyalandı (SMS / WhatsApp'a Yapıştırın)</span>`;
+        setTimeout(() => {
+          if (checkinBtn) {
+            checkinBtn.innerHTML = `<span>📍</span><span>Buradayım (Aileme & Yakınlarıma Bildir)</span>`;
+          }
+        }, 3000);
+      } catch {
+        alert(msg);
       }
     });
 

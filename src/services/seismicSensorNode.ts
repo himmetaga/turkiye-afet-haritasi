@@ -87,6 +87,25 @@ class SeismicSensorNode {
     return this.buffer;
   }
 
+  public setSensitivity(level: 'high' | 'normal' | 'low'): void {
+    if (level === 'high') {
+      this.triggerThreshold = 2.2;
+      this.minMagThreshold = 0.20;
+    } else if (level === 'low') {
+      this.triggerThreshold = 4.5;
+      this.minMagThreshold = 0.55;
+    } else {
+      this.triggerThreshold = 3.2;
+      this.minMagThreshold = 0.35;
+    }
+  }
+
+  public getSensitivity(): 'high' | 'normal' | 'low' {
+    if (this.triggerThreshold <= 2.5) return 'high';
+    if (this.triggerThreshold >= 4.0) return 'low';
+    return 'normal';
+  }
+
   public subscribe(listener: SeismicNodeListener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);

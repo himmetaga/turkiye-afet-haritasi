@@ -53,6 +53,8 @@ export class EmergencyBagHUD {
     );
   }
 
+  private activeFilter: 'all' | 'missing' | 'completed' = 'all';
+
   public show(): void {
     this.container.classList.remove('hidden');
     this.render();
@@ -62,13 +64,49 @@ export class EmergencyBagHUD {
     this.container.classList.add('hidden');
   }
 
+  private shareMissingItems(): void {
+    const missing = this.items.filter((i) => !i.checked);
+    if (missing.length === 0) {
+      const msg = '72 Saatlik Afet Çantam %100 hazır ve eksiksiz! afet.live üzerinden sen de afet çantası hazırlığını kontrol et.';
+      if (navigator.share) {
+        navigator.share({ title: 'Afet Çantam Hazır', text: msg }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(msg);
+      }
+      return;
+    }
+
+    const missingList = missing.slice(0, 6).map((m) => `• ${m.title}`).join('\n');
+    const msg = `72 Saatlik Afet Çantamda Tamamlanması Gereken Eksikler:\n${missingList}\n\nKontrol listeni afet.live/?mod=canta adresinden tamamlayabilirsin.`;
+
+    if (navigator.share) {
+      navigator.share({ title: 'Afet Çantası Eksikleri', text: msg }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(msg).then(() => {
+        const shareBtn = this.container.querySelector('#btn-share-bag') as HTMLElement | null;
+        if (shareBtn) {
+          shareBtn.innerHTML = `✓ Kopyalandı`;
+          setTimeout(() => {
+            if (shareBtn) shareBtn.innerHTML = `📋 Eksikleri Paylaş`;
+          }, 2000);
+        }
+      });
+    }
+  }
+
   private render(): void {
     const completedCount = this.items.filter((i) => i.checked).length;
     const progressPct = Math.round((completedCount / this.items.length) * 100);
 
+    const filteredItems = this.items.filter((item) => {
+      if (this.activeFilter === 'missing') return !item.checked;
+      if (this.activeFilter === 'completed') return item.checked;
+      return true;
+    });
+
     this.container.innerHTML = `
-      <div class="relative w-full max-w-xl hud-glass rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+      <div class="relative w-full max-w-xl hud-glass rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[88vh] flex flex-col bg-obsidian-900/95 border border-white/10 text-white">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
           <div class="flex items-center gap-2.5">
             <span class="text-xl">🎒</span>
             <div>
@@ -83,7 +121,7 @@ export class EmergencyBagHUD {
           </button>
         </div>
 
-        <div class="my-4 p-3.5 rounded-2xl bg-white/5">
+        <div class="my-3 p-3 rounded-2xl bg-white/5 shrink-0">
           <div class="flex items-center justify-between text-xs mb-1.5 font-mono">
             <span class="text-gray-300">Hazırlık Durumu:</span>
             <span class="text-emerald-400 font-bold">%${progressPct} (${completedCount} / ${this.items.length})</span>
@@ -93,8 +131,21 @@ export class EmergencyBagHUD {
           </div>
         </div>
 
+        <!-- Filter tabs & Share action -->
+        <div class="flex items-center justify-between gap-2 pb-2 shrink-0">
+          <div class="flex items-center gap-1 text-[11px]">
+            <button type="button" data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg border transition-all ${this.activeFilter === 'all' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-semibold' : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'}">Tümü (${this.items.length})</button>
+            <button type="button" data-filter="missing" class="filter-btn px-2.5 py-1 rounded-lg border transition-all ${this.activeFilter === 'missing' ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 font-semibold' : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'}">Eksikler (${this.items.length - completedCount})</button>
+            <button type="button" data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg border transition-all ${this.activeFilter === 'completed' ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-semibold' : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'}">Hazır (${completedCount})</button>
+          </div>
+
+          <button id="btn-share-bag" type="button" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-gray-200 text-[11px] font-medium transition-all active:scale-95 flex items-center gap-1">
+            <span>📋</span><span>Eksikleri Paylaş</span>
+          </button>
+        </div>
+
         <div class="flex-1 overflow-y-auto space-y-2 pr-1">
-          ${this.items
+          ${filteredItems
             .map(
               (item) => `
             <label
@@ -128,6 +179,18 @@ export class EmergencyBagHUD {
 
     const closeBtn = this.container.querySelector('#btn-close-bag') as HTMLButtonElement;
     closeBtn.addEventListener('click', () => this.hide());
+
+    this.container.querySelector('#btn-share-bag')?.addEventListener('click', () => this.shareMissingItems());
+
+    this.container.querySelectorAll('.filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const f = btn.getAttribute('data-filter') as 'all' | 'missing' | 'completed';
+        if (f) {
+          this.activeFilter = f;
+          this.render();
+        }
+      });
+    });
 
     const rows = this.container.querySelectorAll('.bag-row');
     rows.forEach((row) => {

@@ -21,7 +21,9 @@ afet.live, Türkiye'de olası bir deprem anında ve sonrasında vatandaşların 
 - **Deprem Tatbikatı & Dalga Simülasyonu:** Olası deprem senaryolarında P ve S dalgalarının yayılımını ve tahmini varış süresini gösteren eğitim modu.
 - **Apartman Bilgilendirme Afişi:** Bina yöneticileri ve komşuların bina girişine veya asansör yanına asabileceği, çevre toplanma alanlarını ve acil numaraları içeren A4 afiş çıktısı (Yazdır / PNG indir).
 - **Aile Afet Buluşma Kartı:** Aile bireyleriyle paylaşılabilecek (WhatsApp / Instagram Hikaye uyumlu) özet buluşma planı görseli.
-- **Gece Nöbeti:** Telefonu gece yatarken düz bir zemine bıraktığınızda sensörler üzerinden sarsıntı algılayan ve gerekirse sesli alarm veren başucu modu.
+- **Kalibre Edilebilir Cihaz Sismografı (STA/LTA):** Akıllı telefon ivmeölçerini kullanarak mikrosarsıntıları analiz eden, ayarlanabilir hassasiyet eşiği (Hassas / Normal / Yüksek), gerçek zamanlı ivme ($m/s^2$ ve Gal), Mercalli şiddet skalası ve ekran açık tutma (WakeLock) özellikli sismik sensör paneli.
+- **Toplanma Alanı "Buradayım" Güvenli Bildirimi (Check-in):** Haritada veya listede seçilen toplanma alanına ulaştığınızda, tam konum ve koordinatlarınızı içeren "Güvendeyim" mesajını tek tıkla SMS veya WhatsApp üzerinden yakınlarınıza iletme.
+- **72 Saatlik Afet Çantası & Eksik Paylaşımı:** Çevrimdışı kaydedilen aile hazırlık kontrol listesi, filtreleme (Tümü / Eksikler / Hazır) ve eksik malzemeleri yakınlarınıza mesaj olarak gönderebilme desteği.
 - **Bina Risk Ön Bilgilendirmesi:** Bina yapım yılı, kat sayısı ve diri fay hattına olan mesafeye göre genel durum özeti.
 
 ---
