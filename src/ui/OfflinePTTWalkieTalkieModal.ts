@@ -30,6 +30,10 @@ export class OfflinePTTWalkieTalkieModal {
   private savedSosAudioBlob: Blob | null = null;
   private savedSosAudioUrl: string | null = null;
 
+  // P2P Mesh Voice Bus
+  private instanceId = `peer-${Math.random().toString(36).substring(2, 9)}`;
+  private broadcastChannel: BroadcastChannel | null = null;
+
   constructor(parent: HTMLElement) {
     this.container = document.createElement('div');
     this.container.id = 'offline-ptt-walkie-talkie-modal';
@@ -37,6 +41,7 @@ export class OfflinePTTWalkieTalkieModal {
       'fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md hidden transition-opacity';
     parent.appendChild(this.container);
 
+    this.initMeshRadio();
     this.render();
   }
 
@@ -222,6 +227,101 @@ export class OfflinePTTWalkieTalkieModal {
     }
   }
 
+  private initMeshRadio(): void {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        this.broadcastChannel = new BroadcastChannel('afet_ptt_mesh_audio_channel');
+        this.broadcastChannel.onmessage = (event) => this.handleIncomingBroadcast(event.data);
+      } catch {}
+    }
+    this.loadStoredTransmissions();
+  }
+
+  private loadStoredTransmissions(): void {
+    try {
+      const stored = localStorage.getItem('afet_ptt_transmissions_v1');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (item.base64Audio) {
+              fetch(item.base64Audio)
+                .then((r) => r.blob())
+                .then((blob) => {
+                  this.transmissions.push({
+                    id: item.id,
+                    senderName: item.senderName,
+                    channel: item.channel,
+                    timestamp: item.timestamp,
+                    durationSec: item.durationSec,
+                    audioBlob: blob,
+                    audioUrl: URL.createObjectURL(blob),
+                    isMe: item.isMe
+                  });
+                  this.renderTransmissions();
+                })
+                .catch(() => {});
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  private saveTransmissionLocally(trans: RadioTransmission, base64Audio: string): void {
+    try {
+      const stored = localStorage.getItem('afet_ptt_transmissions_v1');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift({
+        id: trans.id,
+        senderName: trans.senderName,
+        channel: trans.channel,
+        timestamp: trans.timestamp,
+        durationSec: trans.durationSec,
+        isMe: trans.isMe,
+        base64Audio
+      });
+      if (list.length > 10) list.pop();
+      localStorage.setItem('afet_ptt_transmissions_v1', JSON.stringify(list));
+    } catch {}
+  }
+
+  private handleIncomingBroadcast(data: any): void {
+    if (!data || data.type !== 'PTT_VOICE_TX' || data.senderId === this.instanceId) return;
+
+    fetch(data.base64Audio)
+      .then((r) => r.blob())
+      .then((recBlob) => {
+        const recUrl = URL.createObjectURL(recBlob);
+        const incomingTrans: RadioTransmission = {
+          id: data.id,
+          senderName: data.senderName,
+          channel: data.channel,
+          timestamp: data.timestamp,
+          durationSec: data.durationSec,
+          audioBlob: recBlob,
+          audioUrl: recUrl,
+          isMe: false
+        };
+
+        this.transmissions.unshift(incomingTrans);
+        if (this.transmissions.length > 25) this.transmissions.pop();
+        this.renderTransmissions();
+
+        // If currently monitoring this channel and modal is active, automatically play radio squelch & voice
+        if (this.currentChannel === data.channel && !this.container.classList.contains('hidden')) {
+          this.playSquelchSound();
+          setTimeout(() => {
+            const a = new Audio(recUrl);
+            a.volume = 1.0;
+            a.onended = () => this.playRogerBeep();
+            a.play().catch(() => {});
+          }, 120);
+        }
+      })
+      .catch(() => {});
+  }
+
   private handleRecordedAudio(blob: Blob, durationSec: number): void {
     const audioUrl = URL.createObjectURL(blob);
     this.savedSosAudioBlob = blob;
@@ -239,9 +339,30 @@ export class OfflinePTTWalkieTalkieModal {
     };
 
     this.transmissions.unshift(trans);
+    if (this.transmissions.length > 25) this.transmissions.pop();
     this.renderTransmissions();
 
-    // Broadcast over P2P mesh
+    // Convert to Base64 and broadcast audio payload to peer mesh
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Audio = reader.result as string;
+      this.saveTransmissionLocally(trans, base64Audio);
+      if (this.broadcastChannel) {
+        this.broadcastChannel.postMessage({
+          type: 'PTT_VOICE_TX',
+          senderId: this.instanceId,
+          id: trans.id,
+          senderName: 'Uzak Eş (Mesh Telsiz)',
+          channel: trans.channel,
+          timestamp: trans.timestamp,
+          durationSec: trans.durationSec,
+          base64Audio
+        });
+      }
+    };
+    reader.readAsDataURL(blob);
+
+    // Broadcast announcement over P2P BitChat text mesh
     bitChatService.broadcastMessage(
       `🎙️ [${this.currentChannel}] Telsiz Anonsu (${durationSec}s)`,
       'sos'
