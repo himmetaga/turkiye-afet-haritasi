@@ -15,14 +15,14 @@
 - [🇹🇷 Türkçe Dokümantasyon](#-türkçe-afetlive--türkiye-afet-ve-acil-durum-atlası)
   - [1. Genel Bakış ve Misyon](#1-genel-bakış-ve-misyon)
   - [2. Sistem ve Yazılım Mimarisi](#2-sistem-ve-yazılım-mimarisi)
-  - [3. Faydaya Göre Modül Kataloğu (21 Araç)](#3-faydaya-göre-modül-kataloğu-21-araç)
+  - [3. Faydaya Göre Modül Kataloğu (27 Araç)](#3-faydaya-göre-modül-kataloğu-27-araç)
   - [4. Veri Kaynakları & Doğruluk](#4-veri-kaynakları--doğruluk)
   - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
   - [6. Kurulum ve Yerel Çalıştırma](#6-kurulum-ve-yerel-çalıştırma)
 - [🇬🇧 English Documentation](#-english-afetlive--turkiye-disaster-resilience-and-emergency-atlas)
   - [1. Overview & Core Mission](#1-overview--core-mission)
   - [2. System Architecture](#2-system-architecture)
-  - [3. Feature Catalog by Utility (21 Modules)](#3-feature-catalog-by-utility-21-modules)
+  - [3. Feature Catalog by Utility (27 Modules)](#3-feature-catalog-by-utility-27-modules)
   - [4. Telemetry & Data Sources](#4-telemetry--data-sources)
   - [5. Privacy & Zero Tracking Architecture](#5-privacy--zero-tracking-architecture)
   - [6. Installation & Local Development](#6-installation--local-development)
@@ -177,35 +177,46 @@ afet.live menüsü, afet esnasında kafa karışıklığını önlemek amacıyla
 16. **Ev İçi Deprem Tehlike Avı (Yapısal Olmayan Risk Denetimi & Ev Puanı):**
     - Deprem yaralanmalarının %70'ini oluşturan mobilya devrilmelerine karşı oda bazlı interaktif denetim.
     - Gardırop, kombi, mutfak dolap mandalları ve kaçış koridoru denetlenerek %0-100 Ev Güvenlik Puanı (A-B-C-D Seviyesi) ve DIY sabitleme raporu üretir.
-17. **72 Saatlik Afet Çantası & Eksik Malzeme Takibi:**
+17. **Afet Sahra İhtiyaç & Yardım Masası (P2P Dağıtım & Çadırkent Koordinasyonu):**
+    - Çadırkentlerde ve sahra bölgelerinde bebek maması, bez, kadın hijyen kiti, içme suyu, kışlık bot, uyku tulumu ve jeneratör gibi acil ihtiyaçları veya eldeki fazla malzemeyi kategorize eder.
+    - GPS koordinatları ve çadır numarasıyla standart sahra yardım pusulası üretir; tek tıkla BitChat P2P ağına yayınlar veya SMS/WhatsApp için kopyalar.
+18. **Pati & Evcil Hayvan Afet Güvenliği (Pati Pasaportu & HayTAP Tahliye Rehberi):**
+    - Afet anında kedi, köpek ve can dostlarımız için 15 haneli mikroçip, sahip telefonu ve tıbbi notları içeren Dijital Pati Pasaportu ve Tasma Künyesi.
+    - 7 günlük mama, katlanır su kabı, taşıma kafesi (box) ve hayvan ilk yardım kiti içeren Pati Afet Çantası kontrol listesi.
+    - HayTAP ve AFAD onaylı enkaz altı hayvan kurtarma, kaçmayı önleyen tahliye protokolleri ve acil hayvan kurtarma ihbar hatları.
+19. **72 Saatlik Afet Çantası & Eksik Malzeme Takibi:**
     - Su, gıda, ilk yardım, hijyen, araç-gereç ve resmi evrak kategorilerinde kişiselleştirilebilir kontrol listesi.
     - Eksik malzemeleri filtreleyip tek dokunuşla aile fertlerine SMS veya WhatsApp ile gönderebilme.
-18. **Bina ve Zemin Sismik Ön Değerlendirme Kartı:**
+20. **Bina ve Zemin Sismik Ön Değerlendirme Kartı:**
     - Kullanıcının koordinatına en yakın MTA aktif diri fay hattının adı, mesafesi ve yıllık kayma hızı.
     - Bina yapım yılı (1999 öncesi / 2000-2018 / 2018 sonrası deprem yönetmelikleri) ve zemin sınıfı analizi.
-19. **Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE):**
+21. **Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE):**
     - Telefon ekranı kilitli ve şifreliyken dahi arama kurtarma ekiplerinin görebileceği tıbbi duvar kağıdı oluşturur.
     - Kan grubu, kronik hastalıklar, alerjiler, acil aranacak kişi (ICE) numarası ve en yakın toplanma alanını şık bir görselde birleştirip telefon galerisine indirir.
-20. **Deprem Tatbikat Simülatörü:**
+22. **Deprem Tatbikat Simülatörü:**
     - P ve S dalgası siren sesleriyle desteklenen interaktif deprem tatbikatı.
     - Sarsıntı süresince Çök-Kapan-Tutun zamanlayıcısı ve sarsıntı bitiminde tahliye yönergeleri.
-21. **Çevrimdışı QR Güvendeyim Durum Paketi:**
+23. **Çevrimdışı QR Güvendeyim Durum Paketi:**
     - İnternet ve hücresel şebekenin tamamen çöktüğü durumlarda, cihazlar arasında hava boşluğu (air-gap) ile veri aktarımı.
     - Aile bireylerinin durumunu, koordinatlarını ve pil seviyesini QR kod taratarak kaydedebilme.
 
 ---
 
 ### 📋 Kategori 4: Bilgilendirme, Rehberler & Afişler
-22. **Afet, Enkaz & İlkyardım Hayatta Kalma Rehberi:**
+24. **Çadırkent Kış Isınma Güvenliği & Karbonmonoksit (CO) Zehirlenme Testi:**
+    - Çadırkent ve konteynerlerde soba ve katalitik ısıtıcılardan kaynaklanan ölümcül karbonmonoksit gazına karşı interaktif 6 belirti risk testi.
+    - Çadır kumaşı ve yataklardan 100 cm mesafe kuralı, sürekli 5 cm açık tepe havalandırma kuralı, uykuda soba söndürme kuralı ve çadır içinde jeneratör çalıştırmama direktifi.
+    - Galvaniz baca geçiş sacı (flanş) standartları ve zehirlenmede açık havaya çıkarma ilk yardım adımları.
+25. **Afet, Enkaz & İlkyardım Hayatta Kalma Rehberi:**
     - **Kapalı Alanda:** Merdiven tuzağı uyarısı (deprem anında merdivenlere koşmama kuralı), hayat üçgeni, şalter ve vanaların kapatılması.
     - **Enkaz Altında:** Oksijen koruma, 3 vuruş uluslararası akustik dinleme kodu ("TAK - TAK - TAK"), kesinlikle kibrit/çakmak yakmama kuralı (gaz patlaması önleme).
     - **Açık Alanda & Araçta:** Kontak anahtarını üzerinde bırakma kuralı (itfaiye ve ambulans geçişi için), cephe kaplamaları ve cam yağmurundan korunma.
     - **Sel & Yangın:** 30 cm sel suyu sürüklenme riski, yangında zemine paralel sürünme direktifi.
     - **İlk Yardım & Crush Sendromu:** Enkazdan çıkan kazazedeye damar yolu açılmadan önce kontrolsüz su vermeme kuralı (ani böbrek iflası ve potasyum zehirlenmesi önleme), turnike uygulama ve zaman kaydı.
     - **Temiz Su & Salgın Hastalık Önleme:** Şebeke sularını kaynatma protokolü, acil su klorlama formülü (1 litre berrak suya 3 damla, bulanık suya 5-6 damla kokusuz saf çamaşır suyu damlatıp 30 dk bekleme), sahra tuvaletlerinin su kaynaklarından 50 m uzağa kurulması, kireç dökme kuralı, kolera, tifo ve uyuz salgınlarına karşı korunma kuralları.
-23. **Apartman Girişi & Asansör Acil Durum Afişi (A4 Formatı):**
+26. **Apartman Girişi & Asansör Acil Durum Afişi (A4 Formatı):**
     - Bina yöneticileri ve site sakinleri için tek tıkla binanın etrafındaki en yakın 3 AFAD toplanma alanını, acil servis hastanelerini ve nöbetçi eczaneleri harita kroki ve QR koduyla derleyen, doğrudan yazdırılabilir (Ctrl+P / PDF) A4 afişi.
-24. **Aile Afet Buluşma Kartı (Story 9:16 Formatı):**
+27. **Aile Afet Buluşma Kartı (Story 9:16 Formatı):**
     - Aile bireyleriyle sosyal medyada (WhatsApp, Telegram, Instagram Story) paylaşılabilen, acil buluşma noktasını ve irtibat kişisini içeren görsel afet kartı üretici.
 
 ---
@@ -404,30 +415,41 @@ The toolset is organized into **4 logical categories based on immediate survival
 16. **Home Earthquake Hazard Hunt & Non-Structural Safety Score:**
     - Room-by-room interactive audit targeting falling furniture and unanchored appliances that cause 70% of quake injuries.
     - Evaluates wardrobes, water heaters/boilers, kitchen cabinet latches, and escape corridors, calculating a 0-100% Home Safety Score with DIY anchoring tips.
-17. **72-Hour Emergency Go-Bag Checklist:**
+17. **Disaster Field Relief & Aid Needs Coordinator (P2P Mesh Distribution):**
+    - Categorizes acute tent camp shortages and surplus donations (baby formula, diapers, feminine hygiene kits, drinking water, thermal wear, sleeping bags, and generators).
+    - Generates standardized field relief manifests with GPS coordinates and tent numbers; broadcasts directly across the BitChat P2P network or copies to SMS/WhatsApp.
+18. **Pet Disaster Preparedness & Evacuation Guide (Pet ID & HayTAP Protocols):**
+    - Digital Pet Passport with 15-digit microchip record, owner emergency contact, and exportable high-contrast collar tag.
+    - Comprehensive Pet Disaster Go-Bag checklist (crate, 7-day food/water, collapsible bowls, leash, waste bags, and pet first-aid supplies).
+    - HayTAP and AFAD field animal rescue protocols, panic/escape prevention directives, and emergency animal hospital dispatch hotlines.
+19. **72-Hour Emergency Go-Bag Checklist:**
     - Categorized checklist for food, water, medical supplies, tools, sanitation, and documents.
     - One-tap sharing of missing items with family members via SMS or messaging apps.
-18. **Building & Seismic Fault Proximity Risk Card:**
+20. **Building & Seismic Fault Proximity Risk Card:**
     - Measures direct distance to the nearest active MTA fault line, fault slip rate, and year-of-construction vulnerability analysis.
-19. **Lock-Screen Medical Emergency Wallpaper (ICE):**
+21. **Lock-Screen Medical Emergency Wallpaper (ICE):**
     - Generates customized lock-screen wallpapers displaying blood type, chronic conditions, emergency contacts, and the nearest assembly point for first responders.
-20. **Earthquake Drill Simulator:**
+22. **Earthquake Drill Simulator:**
     - Interactive Drop-Cover-Hold drill with authentic seismic audio cues and evacuation timing.
-21. **Air-Gapped Offline QR Status Pack:**
+23. **Air-Gapped Offline QR Status Pack:**
     - Allows devices without cellular or internet connectivity to exchange welfare status, GPS coordinates, and battery levels via optical QR codes.
 
 ---
 
 ### 📋 Category 4: Civic Guides, Public Posters & Awareness
-22. **Disaster Survival, First Aid & Sanitation Handbook:**
+24. **Disaster Tent Heating Safety & Carbon Monoxide (CO) Poisoning Checker:**
+    - Interactive 6-symptom diagnostic checker for odorless, colorless carbon monoxide gas emitted by stoves and heaters in winter tent cities.
+    - 5 golden rules: 100 cm clearance from tent canvas and bedding, mandatory 5 cm roof vent opening, strict bedtime fire extinguishing rule, and total ban on indoor generators.
+    - Galvanized chimney collar insulation directives and fresh-air triage resuscitation protocols.
+25. **Disaster Survival, First Aid & Sanitation Handbook:**
     - **Indoor Safety:** The stairway collapse trap (never run to stairs during shaking), triangle of life, gas/electric shutoff.
     - **Under Debris:** Oxygen management, 3-knock international acoustic tapping code ("TAP - TAP - TAP"), strict ban on open flames (preventing gas explosions).
     - **Outdoor & Vehicle:** Leaving keys in ignition for rescue access, avoiding falling facades and glass showers.
     - **Medical First Aid & Crush Syndrome:** Strict warning against giving uncontrolled water to crushed victims before IV access (preventing sudden hyperkalemia and renal failure), tourniquet timing rules.
     - **Clean Water & Epidemic Prevention:** Water boiling protocols, emergency chlorination formula (3 drops of 5% unscented household bleach per 1 liter of clear water, 5-6 drops for turbid water; wait 30 minutes), latrine placement 50m away from water sources, quicklime application, and prevention of cholera, dysentery, typhoid, and scabies.
-23. **Apartment Building Entrance & Elevator Poster (A4 Printable):**
+26. **Apartment Building Entrance & Elevator Poster (A4 Printable):**
     - Automatically formats an A4 printable sheet detailing the 3 nearest AFAD assembly zones, local hospitals, pharmacies, and a live QR code for apartment lobbies.
-24. **Family Emergency Meeting Card (9:16 Story Format):**
+27. **Family Emergency Meeting Card (9:16 Story Format):**
     - Generates mobile-optimized graphic cards detailing meeting locations and emergency contacts for family sharing.
 
 ---

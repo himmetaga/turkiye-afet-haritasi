@@ -42,6 +42,9 @@ import { BloodCenterModal } from './ui/BloodCenterModal';
 import { TourniquetTimerModal } from './ui/TourniquetTimerModal';
 import { EmergencyPrescriptionModal } from './ui/EmergencyPrescriptionModal';
 import { HomeHazardHuntModal } from './ui/HomeHazardHuntModal';
+import { FieldAidCoordinationModal } from './ui/FieldAidCoordinationModal';
+import { PetDisasterSafetyModal } from './ui/PetDisasterSafetyModal';
+import { TentHeatingSafetyModal } from './ui/TentHeatingSafetyModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -93,6 +96,9 @@ class DisasterAtlasApp {
   private tourniquetModal!: TourniquetTimerModal;
   private medPassportModal!: EmergencyPrescriptionModal;
   private hazardHuntModal!: HomeHazardHuntModal;
+  private fieldAidModal!: FieldAidCoordinationModal;
+  private petSafetyModal!: PetDisasterSafetyModal;
+  private tentHeatingModal!: TentHeatingSafetyModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -168,7 +174,10 @@ class DisasterAtlasApp {
       onToggleBlood: () => this.bloodCenterModal.show(),
       onToggleTourniquet: () => this.tourniquetModal.show(),
       onToggleMedPassport: () => this.medPassportModal.show(),
-      onToggleHazardHunt: () => this.hazardHuntModal.show()
+      onToggleHazardHunt: () => this.hazardHuntModal.show(),
+      onToggleFieldAid: () => this.fieldAidModal.show(),
+      onTogglePetSafety: () => this.petSafetyModal.show(),
+      onToggleTentHeating: () => this.tentHeatingModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -251,6 +260,16 @@ class DisasterAtlasApp {
     });
 
     this.hazardHuntModal = new HomeHazardHuntModal(appEl);
+
+    this.fieldAidModal = new FieldAidCoordinationModal(appEl, (text) => {
+      this.crisisHUD.show();
+      bitChatService.broadcastMessage(text, 'chat', {
+        coordinates: this.userCoords
+      });
+    });
+
+    this.petSafetyModal = new PetDisasterSafetyModal(appEl);
+    this.tentHeatingModal = new TentHeatingSafetyModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -529,7 +548,14 @@ class DisasterAtlasApp {
         'turnike': 'Turnike Güvenlik Zamanlayıcısı (120 Dk) — afet.live',
         'ilac': 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Rehberi — afet.live',
         'recete': 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Rehberi — afet.live',
-        'tehlike-avi': 'Ev İçi Deprem Tehlike Avı & Güvenlik Puanı — afet.live'
+        'tehlike-avi': 'Ev İçi Deprem Tehlike Avı & Güvenlik Puanı — afet.live',
+        'ihtiyac': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
+        'yardim': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
+        'sahra-yardim': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
+        'pati': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
+        'evcil-hayvan': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
+        'isinma-guvenligi': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live',
+        'soba': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
@@ -600,6 +626,19 @@ class DisasterAtlasApp {
           break;
         case 'tehlike-avi':
           this.hazardHuntModal.show();
+          break;
+        case 'ihtiyac':
+        case 'yardim':
+        case 'sahra-yardim':
+          this.fieldAidModal.show();
+          break;
+        case 'pati':
+        case 'evcil-hayvan':
+          this.petSafetyModal.show();
+          break;
+        case 'isinma-guvenligi':
+        case 'soba':
+          this.tentHeatingModal.show();
           break;
         case 'canta':
           this.bagHUD.show();

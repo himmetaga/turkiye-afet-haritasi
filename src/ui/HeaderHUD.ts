@@ -33,6 +33,9 @@ export interface HeaderHUDCallbacks {
   onToggleTourniquet: () => void;
   onToggleMedPassport: () => void;
   onToggleHazardHunt: () => void;
+  onToggleFieldAid: () => void;
+  onTogglePetSafety: () => void;
+  onToggleTentHeating: () => void;
 }
 
 export interface SearchResultItem {
@@ -97,6 +100,8 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Önlem & Planlama',
     accentClass: 'text-amber-400',
     tools: [
+      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Afet Çadırkent İhtiyaç ve Malzeme Dağıtım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
+      { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Pati ve Evcil Hayvan Afet Güvenliği, Çanta ve Tahliye Rehberi', rgb: '251, 146, 60', icon: Icons.paw },
       { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
       { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Etken Madde Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
       { id: 'btn-open-hazard-hunt', label: 'Tehlike Avı', title: 'Ev İçi Deprem Güvenlik Denetimi & Sabitleme Skoru', rgb: '245, 158, 11', icon: Icons.home },
@@ -113,6 +118,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Eğitim & Rehber',
     accentClass: 'text-emerald-400',
     tools: [
+      { id: 'btn-open-tent-heating', label: 'Çadır Isınma', title: 'Çadırkent Kış Isınma ve Karbonmonoksit (CO) Zehirlenme Güvenliği', rgb: '239, 68, 68', icon: Icons.flame },
       { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
       { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
       { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users }
@@ -541,6 +547,9 @@ export class HeaderHUD {
       'btn-open-tourniquet': () => this.callbacks.onToggleTourniquet(),
       'btn-open-med-passport': () => this.callbacks.onToggleMedPassport(),
       'btn-open-hazard-hunt': () => this.callbacks.onToggleHazardHunt(),
+      'btn-open-field-aid': () => this.callbacks.onToggleFieldAid(),
+      'btn-open-pet-safety': () => this.callbacks.onTogglePetSafety(),
+      'btn-open-tent-heating': () => this.callbacks.onToggleTentHeating(),
       'btn-open-air-quality': () => this.callbacks.onToggleAirQuality(),
       'btn-open-tsunami': () => this.callbacks.onToggleTsunami(),
       'btn-open-blood': () => this.callbacks.onToggleBlood(),

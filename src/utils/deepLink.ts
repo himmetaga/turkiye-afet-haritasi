@@ -41,7 +41,14 @@ export interface ParsedDeepLink {
     | 'turnike'
     | 'ilac'
     | 'recete'
-    | 'tehlike-avi';
+    | 'tehlike-avi'
+    | 'ihtiyac'
+    | 'yardim'
+    | 'sahra-yardim'
+    | 'pati'
+    | 'evcil-hayvan'
+    | 'isinma-guvenligi'
+    | 'soba';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -105,7 +112,14 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'turnike',
       'ilac',
       'recete',
-      'tehlike-avi'
+      'tehlike-avi',
+      'ihtiyac',
+      'yardim',
+      'sahra-yardim',
+      'pati',
+      'evcil-hayvan',
+      'isinma-guvenligi',
+      'soba'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;
