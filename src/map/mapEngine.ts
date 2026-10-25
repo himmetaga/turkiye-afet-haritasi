@@ -24,6 +24,7 @@ export class MapEngine {
   private pendingFacilities: EmergencyFacility[] | null = null;
   private allFacilities: EmergencyFacility[] = [];
   private showHospitals = true;
+  private showBloodCenters = true;
   private showPharmacies = true;
   private onlyDutyPharmacies = true;
 
@@ -595,10 +596,12 @@ export class MapEngine {
 
   public updateFacilityFilters(filters: {
     showHospitals?: boolean;
+    showBloodCenters?: boolean;
     showPharmacies?: boolean;
     onlyDutyPharmacies?: boolean;
   }): void {
     if (filters.showHospitals !== undefined) this.showHospitals = filters.showHospitals;
+    if (filters.showBloodCenters !== undefined) this.showBloodCenters = filters.showBloodCenters;
     if (filters.showPharmacies !== undefined) this.showPharmacies = filters.showPharmacies;
     if (filters.onlyDutyPharmacies !== undefined) this.onlyDutyPharmacies = filters.onlyDutyPharmacies;
     this.refreshFacilitiesSource();
@@ -611,7 +614,10 @@ export class MapEngine {
 
     let list = this.allFacilities;
     if (!this.showHospitals) {
-      list = list.filter((f) => f.category !== 'hospital' && f.category !== 'blood_center');
+      list = list.filter((f) => f.category !== 'hospital');
+    }
+    if (!this.showBloodCenters) {
+      list = list.filter((f) => f.category !== 'blood_center');
     }
     if (!this.showPharmacies) {
       list = list.filter((f) => f.category !== 'pharmacy');

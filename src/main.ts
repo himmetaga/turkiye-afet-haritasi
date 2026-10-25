@@ -16,6 +16,14 @@ import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
 import { livePharmacyService } from './services/livePharmacyService';
+import {
+  saveAssemblyPointsToDB,
+  getAssemblyPointsFromDB,
+  saveFacilitiesToDB,
+  getFacilitiesFromDB,
+  saveFaultLinesToDB,
+  getFaultLinesFromDB
+} from './services/storageService';
 
 import { EarlyWarningHUD } from './ui/EarlyWarningHUD';
 import { earlyWarningEngine } from './services/earlyWarningEngine';
@@ -512,6 +520,19 @@ class DisasterAtlasApp {
         hasGenerator: f.properties.hasGenerator ?? true
       }));
 
+      // Background persist to IndexedDB
+      saveAssemblyPointsToDB(this.assemblyPoints).catch(() => {});
+    } catch {
+      // Offline fallback: load from IndexedDB
+      try {
+        const cached = await getAssemblyPointsFromDB();
+        if (cached && cached.length > 0) {
+          this.assemblyPoints = cached;
+        }
+      } catch {}
+    }
+
+    if (this.assemblyPoints.length > 0) {
       // Pil ve GPU tasarrufu için yalnızca yakın noktaları yükle
       this.syncOptimizedMapData();
 
@@ -531,7 +552,7 @@ class DisasterAtlasApp {
       this.updateBuildingRiskContext();
       this.iceGenerator?.setData(this.userCoords, this.assemblyPoints);
       this.floodRadarModal?.setAssemblyPoints(this.assemblyPoints);
-    } catch {}
+    }
   }
 
   private async loadFaultLinesData(): Promise<void> {
@@ -548,11 +569,24 @@ class DisasterAtlasApp {
           description: f.properties.description || '',
           coordinates: f.geometry.coordinates as [number, number][]
         }));
-        this.mapEngine.setFaultLines(this.faultLines);
-        this.updateFaultProximity();
-        this.updateBuildingRiskContext();
+        saveFaultLinesToDB(this.faultLines).catch(() => {});
+      } else {
+        throw new Error('Fault lines fetch error');
       }
-    } catch {}
+    } catch {
+      try {
+        const cached = await getFaultLinesFromDB();
+        if (cached && cached.length > 0) {
+          this.faultLines = cached;
+        }
+      } catch {}
+    }
+
+    if (this.faultLines.length > 0) {
+      this.mapEngine.setFaultLines(this.faultLines);
+      this.updateFaultProximity();
+      this.updateBuildingRiskContext();
+    }
   }
 
   private async loadFacilitiesData(): Promise<void> {
@@ -579,13 +613,26 @@ class DisasterAtlasApp {
           helipad: Boolean(f.properties.helipad),
           coordinates: f.geometry.coordinates as [number, number]
         }));
-        this.syncOptimizedMapData();
-        this.updateUserContextCalculations();
+        saveFacilitiesToDB(this.facilities).catch(() => {});
+      } else {
+        throw new Error('Facilities fetch error');
       }
+    } catch {
+      try {
+        const cached = await getFacilitiesFromDB();
+        if (cached && cached.length > 0) {
+          this.facilities = cached;
+        }
+      } catch {}
+    }
 
-      // Canlı nöbetçi eczaneleri hemen çek
-      this.refreshLiveDutyPharmacies();
-    } catch {}
+    if (this.facilities.length > 0) {
+      this.syncOptimizedMapData();
+      this.updateUserContextCalculations();
+    }
+
+    // Canlı nöbetçi eczaneleri hemen çek
+    this.refreshLiveDutyPharmacies();
   }
 
   private async refreshLiveDutyPharmacies(province?: string): Promise<void> {
@@ -1372,6 +1419,11 @@ class DisasterAtlasApp {
 
     if (layerKey === 'hospitals') {
       this.mapEngine.updateFacilityFilters({ showHospitals: visible });
+      return;
+    }
+
+    if (layerKey === 'bloodCenters') {
+      this.mapEngine.updateFacilityFilters({ showBloodCenters: visible });
       return;
     }
 

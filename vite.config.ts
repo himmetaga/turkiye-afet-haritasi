@@ -151,7 +151,7 @@ export default defineConfig({
     dutyPharmaciesDevPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'data/turkey-fault-lines.geojson', 'data/turkey-assembly-points.geojson'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'data/fault-lines.geojson', 'data/summary.json'],
       manifest: {
         id: '/',
         name: 'afet.live — Türkiye 3D Afet ve Deprem Atlası',
@@ -190,17 +190,31 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
-        globIgnores: ['**/emergency-facilities.geojson'],
+        globIgnores: ['**/emergency-facilities.geojson', '**/assembly-points.geojson'],
         runtimeCaching: [
           {
-            urlPattern: /\/data\/emergency-facilities\.geojson.*$/,
+            urlPattern: /\/data\/(?:assembly-points|emergency-facilities|fault-lines|summary|istanbul|ankara|izmir)\.(?:geojson|json).*$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'afet-datasets-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /\/api\/duty-pharmacies.*$/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'emergency-facilities-cache',
+              cacheName: 'duty-pharmacies-api-cache',
               networkTimeoutSeconds: 3,
               expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 30
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 12
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -208,12 +222,12 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/tiles\.openfreemap\.org\/.*$/,
+            urlPattern: /^https:\/\/(?:tiles\.openfreemap\.org|basemaps\.cartocdn\.com)\/.*$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'openfreemap-tiles',
+              cacheName: 'vector-map-tiles',
               expiration: {
-                maxEntries: 1000,
+                maxEntries: 1500,
                 maxAgeSeconds: 60 * 60 * 24 * 30
               },
               cacheableResponse: {
@@ -222,28 +236,14 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'osm-tiles',
-              expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 60 * 60 * 24 * 30
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/api\.orhanaydogdu\.com\.tr\/deprem\/.*$/,
+            urlPattern: /^https:\/\/(?:api\.orhanaydogdu\.com\.tr|www\.seismicportal\.eu|earthquake\.usgs\.gov|deprem\.afad\.gov\.tr)\/.*$/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'earthquake-api-cache',
-              networkTimeoutSeconds: 4,
+              networkTimeoutSeconds: 3,
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 6
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 12
               },
               cacheableResponse: {
                 statuses: [0, 200]

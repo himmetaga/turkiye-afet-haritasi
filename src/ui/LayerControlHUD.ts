@@ -11,6 +11,7 @@ export class LayerControlHUD {
     assembly: true,
     faults: true,
     hospitals: true,
+    bloodCenters: true,
     pharmacies: true,
     dutyOnly: true,
     earthquakes: true,
@@ -78,6 +79,14 @@ export class LayerControlHUD {
               Acil Servis Hastaneleri
             </span>
             <input type="checkbox" data-layer="hospitals" ${this.states.hospitals ? 'checked' : ''} class="accent-cyan-500 rounded" />
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer select-none">
+            <span class="flex items-center gap-2 text-white">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
+              Kızılay Kan Merkezleri
+            </span>
+            <input type="checkbox" data-layer="bloodCenters" ${this.states.bloodCenters ? 'checked' : ''} class="accent-rose-600 rounded" />
           </label>
 
           <label class="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer select-none">
