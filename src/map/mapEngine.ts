@@ -38,8 +38,8 @@ export class MapEngine {
       this.map = new maplibregl.Map({
         container,
         style: MAP_STYLE_DARK,
-        center: [29.0275, 40.9885],
-        zoom: 12.5,
+        center: [29.03367, 40.98527],
+        zoom: 15,
         pitch: 52,
         bearing: -15,
         maxPitch: 75,

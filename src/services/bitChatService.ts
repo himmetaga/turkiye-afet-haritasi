@@ -1,4 +1,5 @@
 import { antiManipulationService } from './antiManipulationService';
+import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 
 export interface BitChatMessage {
   id: string;
@@ -26,20 +27,22 @@ export interface BitChatIdentity {
   createdAt: number;
 }
 
-const STORAGE_IDENTITY_KEY = 'afet_bitchat_identity_v1';
+const STORAGE_IDENTITY_KEY = 'afet_bitchat_identity_v2';
+const STORAGE_SK_KEY = 'afet_bitchat_sk_v2';
 const STORAGE_MESSAGES_KEY = 'afet_bitchat_messages_v1';
 const BROADCAST_CHANNEL_NAME = 'afet_bitchat_mesh_bus';
 
 const DEFAULT_RELAYS = [
-  'wss://relay.damus.io',
   'wss://nos.lol',
-  'wss://relay.primal.net'
+  'wss://relay.primal.net',
+  'wss://relay.damus.io'
 ];
 
 type MessageListener = (msg: BitChatMessage) => void;
 type StatusListener = (status: { connectedRelays: number; meshPeers: number }) => void;
 
 class BitChatService {
+  private secretKey: Uint8Array;
   private identity: BitChatIdentity;
   private messages: BitChatMessage[] = [];
   private broadcastChannel: BroadcastChannel | null = null;
@@ -53,28 +56,50 @@ class BitChatService {
   private isConnectingRelays = false;
 
   constructor() {
+    this.secretKey = this.loadOrCreateSecretKey();
     this.identity = this.loadOrCreateIdentity();
     this.loadCachedMessages();
     this.initBroadcastChannel();
+    // Start listening to Nostr relays immediately in background
+    this.connectRelays();
   }
 
-  private loadOrCreateIdentity(): BitChatIdentity {
+  private loadOrCreateSecretKey(): Uint8Array {
     try {
-      const stored = localStorage.getItem(STORAGE_IDENTITY_KEY);
-      if (stored) {
-        return JSON.parse(stored);
+      const stored = localStorage.getItem(STORAGE_SK_KEY);
+      if (stored && stored.length === 64) {
+        const arr = new Uint8Array(32);
+        for (let i = 0; i < 32; i++) {
+          arr[i] = parseInt(stored.slice(i * 2, i * 2 + 2), 16);
+        }
+        return arr;
       }
     } catch {}
 
-    const randomBytes = new Uint8Array(8);
-    crypto.getRandomValues(randomBytes);
-    const hex = Array.from(randomBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const sk = generateSecretKey();
+    const hex = Array.from(sk).map((b) => b.toString(16).padStart(2, '0')).join('');
+    try {
+      localStorage.setItem(STORAGE_SK_KEY, hex);
+    } catch {}
+    return sk;
+  }
 
+  private loadOrCreateIdentity(): BitChatIdentity {
+    const fullPubkey = getPublicKey(this.secretKey);
+    try {
+      const stored = localStorage.getItem(STORAGE_IDENTITY_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.pubkey === fullPubkey) {
+          return parsed;
+        }
+      }
+    } catch {}
+
+    const shortId = fullPubkey.slice(0, 4);
     const newIdentity: BitChatIdentity = {
-      pubkey: hex,
-      alias: `AfetZede-${hex.slice(0, 4)}`,
+      pubkey: fullPubkey,
+      alias: `AfetZede-${shortId}`,
       createdAt: Date.now()
     };
 
@@ -161,84 +186,97 @@ class BitChatService {
     this.isConnectingRelays = true;
 
     DEFAULT_RELAYS.forEach((relayUrl) => {
-      try {
-        const ws = new WebSocket(relayUrl);
-        const timeout = setTimeout(() => {
-          if (ws.readyState !== WebSocket.OPEN) {
-            ws.close();
+      this.connectSingleRelay(relayUrl);
+    });
+  }
+
+  private connectSingleRelay(relayUrl: string): void {
+    if (this.sockets.has(relayUrl) && this.sockets.get(relayUrl)?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    try {
+      const ws = new WebSocket(relayUrl);
+      const timeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          ws.close();
+        }
+      }, 7000);
+
+      ws.onopen = () => {
+        clearTimeout(timeout);
+        this.connectedRelays++;
+        this.notifyStatus();
+
+        // Subscribe to disaster messages with tag 'afet-live'
+        const subId = `afet-sub-${Math.random().toString(36).slice(2, 6)}`;
+        const req = JSON.stringify([
+          'REQ',
+          subId,
+          {
+            kinds: [1],
+            '#t': ['afet-live'],
+            limit: 40
           }
-        }, 6000);
+        ]);
+        ws.send(req);
+      };
 
-        ws.onopen = () => {
-          clearTimeout(timeout);
-          this.connectedRelays++;
-          this.notifyStatus();
-
-          // Subscribe to disaster messages with tag 'afet-live'
-          const subId = `afet-sub-${Math.random().toString(36).slice(2, 6)}`;
-          const req = JSON.stringify([
-            'REQ',
-            subId,
-            {
-              kinds: [1],
-              '#t': ['afet-live'],
-              limit: 30
-            }
-          ]);
-          ws.send(req);
-        };
-
-        ws.onmessage = (e) => {
-          try {
-            const data = JSON.parse(e.data);
-            if (Array.isArray(data) && data[0] === 'EVENT' && data[2]?.content) {
-              const ev = data[2];
-              const tagMap = new Map<string, string>();
-              if (Array.isArray(ev.tags)) {
-                for (const t of ev.tags) {
-                  if (Array.isArray(t) && t.length >= 2) {
-                    tagMap.set(String(t[0]), String(t[1]));
-                  }
+      ws.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (Array.isArray(data) && data[0] === 'EVENT' && data[2]?.content) {
+            const ev = data[2];
+            const tagMap = new Map<string, string>();
+            if (Array.isArray(ev.tags)) {
+              for (const t of ev.tags) {
+                if (Array.isArray(t) && t.length >= 2) {
+                  tagMap.set(String(t[0]), String(t[1]));
                 }
               }
-              const type = (tagMap.get('disaster_type') as 'chat' | 'safe' | 'sos') || 'chat';
-              const district = tagMap.get('district') || '';
-              const city = tagMap.get('city') || '';
-              const channel = tagMap.get('channel') || '#afet-genel';
-
-              const msg: BitChatMessage = {
-                id: String(ev.id),
-                pubkey: String(ev.pubkey).slice(0, 10),
-                senderName: `Nostr-${String(ev.pubkey).slice(0, 5)}`,
-                text: String(ev.content),
-                timestamp: Number(ev.created_at) * 1000,
-                channel,
-                type,
-                city,
-                district,
-                transport: 'nostr'
-              };
-              this.handleIncomingMessage(msg, false);
             }
-          } catch {}
-        };
+            const type = (tagMap.get('disaster_type') as 'chat' | 'safe' | 'sos') || 'chat';
+            const district = tagMap.get('district') || '';
+            const city = tagMap.get('city') || '';
+            const channel = tagMap.get('channel') || '#afet-genel';
+            const senderName = tagMap.get('alias') || `AfetZede-${String(ev.pubkey).slice(0, 4)}`;
 
-        ws.onclose = () => {
-          clearTimeout(timeout);
-          if (this.sockets.has(relayUrl)) {
-            this.sockets.delete(relayUrl);
-            this.connectedRelays = Math.max(0, this.connectedRelays - 1);
-            this.notifyStatus();
+            const msg: BitChatMessage = {
+              id: String(ev.id),
+              pubkey: String(ev.pubkey).slice(0, 10),
+              senderName,
+              text: String(ev.content),
+              timestamp: Number(ev.created_at) * 1000,
+              channel,
+              type,
+              city,
+              district,
+              transport: 'nostr'
+            };
+            this.handleIncomingMessage(msg, false);
           }
-        };
+        } catch {}
+      };
 
-        ws.onerror = () => {
-          ws.close();
-        };
+      ws.onclose = () => {
+        clearTimeout(timeout);
+        if (this.sockets.has(relayUrl)) {
+          this.sockets.delete(relayUrl);
+          this.connectedRelays = Math.max(0, this.connectedRelays - 1);
+          this.notifyStatus();
+        }
+        // Auto-reconnect to ensure cross-device messages always sync
+        setTimeout(() => {
+          this.connectSingleRelay(relayUrl);
+        }, 5000);
+      };
 
-        this.sockets.set(relayUrl, ws);
-      } catch {}
-    });
+      ws.onerror = () => {
+        ws.close();
+      };
+
+      this.sockets.set(relayUrl, ws);
+    } catch {}
   }
 
   private notifyStatus(): void {
@@ -346,36 +384,40 @@ class BitChatService {
     // 5. Local append & broadcast to other tabs/windows
     this.handleIncomingMessage(message, true);
 
-    // 6. Publish to Nostr relays via raw WebSocket event (NIP-13 PoW tag compliant)
+    // 6. Publish to Nostr relays via valid BIP-340 Schnorr signed event
     if (this.connectedRelays > 0) {
-      const nostrEvent = [
-        'EVENT',
-        {
-          id,
-          pubkey: this.identity.pubkey.padEnd(64, '0'),
-          created_at: Math.floor(now / 1000),
+      try {
+        const eventTemplate = {
           kind: 1,
+          created_at: Math.floor(now / 1000),
           tags: [
             ['t', 'afet-live'],
             ['channel', this.activeChannel],
             ['disaster_type', type],
+            ['alias', this.identity.alias],
             ['city', meta?.city || ''],
             ['district', meta?.district || ''],
             ['nonce', String(pow.nonce), String(pow.difficulty)],
             ['client', 'afet.live-bitchat']
           ],
-          content: message.text,
-          sig: '00'.repeat(64)
-        }
-      ];
+          content: message.text
+        };
 
-      this.sockets.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          try {
-            ws.send(JSON.stringify(nostrEvent));
-          } catch {}
-        }
-      });
+        const finalized = finalizeEvent(eventTemplate, this.secretKey);
+        // Use verified event id as authoritative message id
+        message.id = finalized.id;
+        const nostrEvent = ['EVENT', finalized];
+
+        this.sockets.forEach((ws) => {
+          if (ws.readyState === WebSocket.OPEN) {
+            try {
+              ws.send(JSON.stringify(nostrEvent));
+            } catch {}
+          }
+        });
+      } catch (err) {
+        console.warn('Nostr publish error:', err);
+      }
     }
 
     // 7. Send over WebRTC DataChannel if peer is active

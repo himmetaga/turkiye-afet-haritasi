@@ -62,6 +62,7 @@ import { CivilDefenseVaultModal } from './ui/CivilDefenseVaultModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
+import { multiHazardEngine } from './services/multiHazardEngine';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -376,8 +377,6 @@ class DisasterAtlasApp {
       onClose: () => {}
     });
 
-    this.initFloatingBitChatButton(appEl);
-
     // 2. Start 3D WebGL Map
     await this.mapEngine.init(mapContainer);
 
@@ -430,8 +429,9 @@ class DisasterAtlasApp {
       this.loadEarthquakeData()
     ]);
 
-    // 5. Place user marker & immediate calculations
+    // 5. Place user marker & immediate calculations (Site açılışında konuma ortalanır)
     this.mapEngine.setUserLocation(this.userCoords, 0);
+    this.mapEngine.flyTo(this.userCoords, 15.5, 52, -15);
     this.updateUserContextCalculations('En Yakın Güvenlik Noktaları');
     this.updateBuildingRiskContext();
 
@@ -649,9 +649,10 @@ class DisasterAtlasApp {
   }
 
   private syncOptimizedMapData(): void {
-    const points = this.getBatteryOptimizedPoints();
+    const rawPoints = this.getBatteryOptimizedPoints();
+    const evaluated = multiHazardEngine.evaluateAssemblyPoints(rawPoints);
     const facs = this.getBatteryOptimizedFacilities();
-    this.mapEngine.setAssemblyPoints(points);
+    this.mapEngine.setAssemblyPoints(evaluated.usableAssemblyPoints);
     this.mapEngine.setEmergencyFacilities(facs, this.onlyDutyPharmacies);
   }
 
@@ -1240,55 +1241,6 @@ class DisasterAtlasApp {
     this.mapEngine.setObstacles(this.obstacles);
     this.updateUserContextCalculations();
     this.notificationToast.show('Enkaz eklendi. Rota alternatif sokaklardan güncellendi.', true);
-  }
-
-  private initFloatingBitChatButton(appEl: HTMLElement): void {
-    const btn = document.createElement('button');
-    btn.id = 'floating-bitchat-btn';
-    btn.type = 'button';
-    btn.title = 'BitChat P2P Afet Ağı & Nostr Kriz Odası';
-    btn.setAttribute('aria-label', 'BitChat Kriz İletişim Ağı');
-    btn.className =
-      'fixed right-3.5 sm:right-5 bottom-32 sm:bottom-36 z-30 flex items-center gap-2 p-2 sm:px-3 sm:py-2 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-900 border border-cyan-500/35 hover:border-cyan-400/70 shadow-[0_8px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl text-cyan-300 active:scale-95 transition-all group pointer-events-auto';
-
-    btn.innerHTML = `
-      <span class="relative flex items-center justify-center w-7 h-7 rounded-xl bg-cyan-500/15 text-cyan-300 group-hover:bg-cyan-500/25 transition-colors">
-        ${Icons.messages('w-4 h-4')}
-        <span id="floating-bitchat-pulse" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse ring-2 ring-obsidian-950"></span>
-      </span>
-      <span class="hidden sm:flex flex-col text-left leading-none">
-        <span class="text-[11.5px] font-bold text-white tracking-wide">BitChat</span>
-        <span id="floating-bitchat-sub" class="text-[9.5px] font-mono text-cyan-300/80">Canlı P2P</span>
-      </span>
-    `;
-
-    btn.addEventListener('click', () => {
-      this.crisisHUD.show();
-    });
-
-    appEl.appendChild(btn);
-
-    // Dynamic network status subscription
-    bitChatService.subscribeStatus(({ connectedRelays, meshPeers }) => {
-      const pulseEl = btn.querySelector('#floating-bitchat-pulse');
-      const subEl = btn.querySelector('#floating-bitchat-sub');
-      const total = connectedRelays + meshPeers;
-      if (total > 0) {
-        if (pulseEl) {
-          pulseEl.className = 'absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse ring-2 ring-obsidian-950';
-        }
-        if (subEl) {
-          subEl.textContent = `Ağ: ${total}`;
-        }
-      } else {
-        if (pulseEl) {
-          pulseEl.className = 'absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-obsidian-950';
-        }
-        if (subEl) {
-          subEl.textContent = 'Yerel Mesh';
-        }
-      }
-    });
   }
 
   private registerPWA(): void {

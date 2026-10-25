@@ -68,8 +68,7 @@ export interface QuickToolItem {
   label: string;
   title: string;
   rgb: string;
-  emoji: string;
-  icon?: (c?: string) => string;
+  icon: (c?: string) => string;
 }
 
 export interface QuickToolCategory {
@@ -88,14 +87,14 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Kritik Müdahale',
     accentClass: 'text-rose-400',
     tools: [
-      { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Sahra Kalp Masajı Metronomu (AHA 110 BPM)', rgb: '244, 63, 94', emoji: '🫀' },
-      { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', emoji: '🩺' },
-      { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)', rgb: '239, 68, 68', emoji: '⏱️' },
-      { id: 'btn-open-sar-beacon', label: 'SAR Flaşör', title: 'Optik LED Flaşör & Ekran Mors S.O.S Beacon', rgb: '239, 68, 68', emoji: '🔦' },
-      { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve Otomatik S.O.S Tetikleyici', rgb: '168, 85, 247', emoji: '🎙️' },
-      { id: 'btn-open-whistle', label: 'SAR Düdüğü', title: '3000 Hz Kurtarma Düdüğü (Web Audio API)', rgb: '245, 158, 11', emoji: '📢' },
-      { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Gece Sismograf Nöbeti & Ekran WakeLock Modu', rgb: '129, 140, 248', emoji: '🌙' },
-      { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Ultra Pil Tasarrufu ve 72 Saat Hayatta Kalma Modu (OLED)', rgb: '16, 185, 129', emoji: '🔋' }
+      { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Kalp Masajı Metronomu (AHA 110 BPM)', rgb: '244, 63, 94', icon: Icons.heartPulse },
+      { id: 'btn-open-triage', label: 'Triyaj', title: 'Sahra Triyaj Asistanı (START Protokolü)', rgb: '236, 72, 153', icon: Icons.stethoscope },
+      { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Zamanlayıcısı (120 Dk Güvenlik)', rgb: '239, 68, 68', icon: Icons.timer },
+      { id: 'btn-open-sar-beacon', label: 'SAR Flaşör', title: 'Optik Flaşör & Ekran Mors S.O.S', rgb: '239, 68, 68', icon: Icons.flashlight },
+      { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve S.O.S Tetikleyici', rgb: '168, 85, 247', icon: Icons.mic },
+      { id: 'btn-open-whistle', label: 'SAR Düdüğü', title: '3000 Hz Kurtarma Düdüğü (Web Audio)', rgb: '245, 158, 11', icon: Icons.whistle },
+      { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Sismograf Başucu Nöbeti & WakeLock', rgb: '129, 140, 248', icon: Icons.moon },
+      { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Ultra Pil Tasarrufu (72 Saat OLED Modu)', rgb: '16, 185, 129', icon: Icons.battery }
     ]
   },
   {
@@ -104,13 +103,13 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Canlı Sensörler',
     accentClass: 'text-sky-400',
     tools: [
-      { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & Enkaz Katı Derinlik HUD', rgb: '16, 185, 129', emoji: '🧭' },
-      { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel, Taşkın ve Şiddetli Yağış Erken Uyarı Radarı (GloFAS)', rgb: '14, 165, 233', emoji: '🌊' },
-      { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi, Yangın ve Zehirli Gaz Radarı (Open-Meteo)', rgb: '245, 158, 11', emoji: '💨' },
-      { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara/Ege)', rgb: '59, 130, 246', emoji: '🌊' },
-      { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik Erken Uyarı ve P/S Dalgası Simülasyonu', rgb: '251, 113, 133', emoji: '🚨' },
-      { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı Cihaz İvmeölçer Sismografı (100 Hz)', rgb: '52, 211, 153', emoji: '📈' },
-      { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettiniz mi? Mercalli Bildirimi', rgb: '249, 115, 22', emoji: '✋' }
+      { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & HUD', rgb: '16, 185, 129', icon: Icons.compass },
+      { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel ve Kentsel Su Baskını Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
+      { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi ve Yangın Dumanı Radarı', rgb: '245, 158, 11', icon: Icons.wind },
+      { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami ve Kıyı Tahliye Radarı', rgb: '59, 130, 246', icon: Icons.waves },
+      { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik P/S Dalgası Yayılım Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
+      { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı İvmeölçer Sismografı (100 Hz)', rgb: '52, 211, 153', icon: Icons.activity },
+      { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettim Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.seismic }
     ]
   },
   {
@@ -119,13 +118,13 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Şebekesiz P2P',
     accentClass: 'text-cyan-400',
     tools: [
-      { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', emoji: '💬' },
-      { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S Anons Döngüsü', rgb: '16, 185, 129', emoji: '📻' },
-      { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', emoji: '📱' },
-      { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', emoji: '📡' },
-      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Sıcak Yemek, Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', emoji: '⛺' },
-      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Afet Çadırkent İhtiyaç ve Malzeme Dağıtım Masası (P2P)', rgb: '245, 158, 11', emoji: '📦' },
-      { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', emoji: '📲' }
+      { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Şebekesiz P2P ve Nostr Kriz Ağı', rgb: '34, 211, 238', icon: Icons.messages },
+      { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz', rgb: '16, 185, 129', icon: Icons.radio },
+      { id: 'btn-open-sms', label: 'Acil SMS', title: 'GPS Konumlu Acil Durum SMS ve Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
+      { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
+      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', icon: Icons.tent },
+      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Çadırkent Malzeme ve Yardım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
+      { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode }
     ]
   },
   {
@@ -134,16 +133,16 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Koruma & Hukuk',
     accentClass: 'text-emerald-400',
     tools: [
-      { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit & DASK Kanıt Tutanağı (FEMA)', rgb: '251, 191, 36', emoji: '🏛️' },
-      { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon & Nükleer Serpinti Sığınağı Kılavuzu', rgb: '234, 179, 8', emoji: '☢️' },
-      { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma & Klorlama Dozajlayıcısı (WHO WASH)', rgb: '14, 165, 233', emoji: '💧' },
-      { id: 'btn-open-civil-vault', label: 'Evrak Kasası', title: 'Mülkiyet Kasası, P2P Takas Defteri & DASK 15 Gün Süre', rgb: '99, 102, 241', emoji: '⚖️' },
-      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', emoji: '🩸' },
-      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Etken Madde Rehberi', rgb: '16, 185, 129', emoji: '💊' },
-      { id: 'btn-open-offline-map', label: 'Harita İndir', title: 'İlçe Bazlı Çevrimdışı Vektör Harita Paketi İndir', rgb: '6, 182, 212', emoji: '🗺️' },
-      { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', emoji: '🎒' },
-      { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Afet Psikolojik İlk Yardım ve 4-4-4-4 Kutu Nefesi Egzersizi', rgb: '59, 130, 246', emoji: '🧠' },
-      { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Pati ve Evcil Hayvan Afet Güvenliği, Çanta ve Tahliye Rehberi', rgb: '251, 146, 60', emoji: '🐾' }
+      { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
+      { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon ve Sığınak Güvenliği', rgb: '234, 179, 8', icon: Icons.radiation },
+      { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı', rgb: '14, 165, 233', icon: Icons.droplet },
+      { id: 'btn-open-civil-vault', label: 'Evrak Kasası', title: 'Mülkiyet Kasası ve P2P Takas Defteri', rgb: '99, 102, 241', icon: Icons.fileText },
+      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Kan Merkezleri ve Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.health },
+      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç Pasaportu ve Eşdeğer Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
+      { id: 'btn-open-offline-map', label: 'Harita İndir', title: 'Çevrimdışı Vektör Harita Paketi', rgb: '6, 182, 212', icon: Icons.download },
+      { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası Malzeme Kontrol Listesi', rgb: '167, 139, 250', icon: Icons.backpack },
+      { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Psikolojik İlk Yardım ve Kutu Nefesi', rgb: '59, 130, 246', icon: Icons.brain },
+      { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Evcil Hayvan Afet Güvenliği ve Tahliye', rgb: '251, 146, 60', icon: Icons.paw }
     ]
   }
 ];
@@ -190,7 +189,7 @@ export class HeaderHUD {
     this.seismicCount = count;
     const badge = this.container.querySelector('#island-seismic-badge');
     if (badge) {
-      badge.textContent = `${count} Deprem`;
+      badge.textContent = 'Son Depremler';
     }
   }
 
@@ -305,57 +304,30 @@ export class HeaderHUD {
            1. TOP CENTER: iOS 27 DYNAMIC ISLAND CAPSULE
            ========================================================= -->
       <div class="fixed top-2.5 sm:top-3.5 left-1/2 -translate-x-1/2 z-40 w-auto max-w-[94vw] pointer-events-auto select-none">
-        <div id="ios27-dynamic-island" class="ios27-capsule px-3 py-1.5 flex items-center gap-2 text-xs text-white shadow-2xl ios27-spring cursor-pointer">
-          <!-- Live Telemetry Pulse -->
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full ${this.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}"></span>
-            <span class="font-black tracking-tight text-[11.5px] text-white">afet<span class="text-cyan-400">.live</span></span>
-          </div>
-
-          <!-- Divider -->
-          <span class="h-3.5 w-px bg-white/20"></span>
-
-          <!-- Province Selector Pill -->
-          <button id="btn-island-province" type="button" class="flex items-center gap-1 text-[11px] font-bold text-gray-200 hover:text-white px-1.5 py-0.5 rounded-lg hover:bg-white/10 transition-colors">
-            <span id="island-province-label">${this.selectedProvince || '81 İl'}</span>
-            <span class="text-[9px] opacity-70">▾</span>
-          </button>
+        <div id="ios27-dynamic-island" class="ios27-capsule px-3 py-1.5 flex items-center gap-2.5 text-xs text-white shadow-2xl ios27-spring">
+          <!-- Logo (Verilen orijinal vektör logo, yanıp sönen nokta kaldırıldı) -->
+          <a href="/" class="flex items-center gap-1 shrink-0 active:scale-95 transition-transform" title="afet.live">
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-5 sm:h-5.5 w-auto select-none pointer-events-none" />
+          </a>
 
           <!-- Divider -->
           <span class="h-3.5 w-px bg-white/20"></span>
 
           <!-- Spotlight Search Trigger -->
-          <button id="btn-trigger-spotlight" type="button" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-[10.5px] font-semibold transition-all">
+          <button id="btn-trigger-spotlight" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer">
             ${Icons.search('w-3.5 h-3.5')}
             <span class="hidden sm:inline">Ara</span>
             <kbd class="hidden sm:inline text-[9px] px-1 rounded bg-black/40 text-gray-400 font-mono">⌘K</kbd>
           </button>
 
-          <!-- Seismic Counter Badge -->
-          <button id="btn-island-seismic" type="button" class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-bold">
-            <span id="island-seismic-badge">${this.seismicCount} Deprem</span>
-          </button>
-        </div>
+          <!-- Divider -->
+          <span class="h-3.5 w-px bg-white/20"></span>
 
-        <!-- Province Dropdown Menu (Hidden by default) -->
-        <div id="island-province-dropdown" class="hidden absolute top-12 left-1/2 -translate-x-1/2 w-64 max-h-60 overflow-y-auto ios27-glass rounded-2xl p-2 border border-white/15 shadow-2xl z-50">
-          <input
-            id="input-filter-province"
-            type="text"
-            placeholder="İl ara (Örn: İstanbul)..."
-            class="w-full px-2.5 py-1.5 mb-1.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs outline-none"
-          />
-          <div id="province-items-list" class="space-y-0.5">
-            ${this.provinces
-              .map(
-                (p) => `
-              <button data-prov="${p}" class="btn-select-prov w-full px-2.5 py-1.5 rounded-xl text-left text-xs text-gray-200 hover:bg-white/10 hover:text-white transition-colors">
-                ${p}
-              </button>
-            `
-              )
-              .join('')}
-          </div>
+          <!-- Son Depremler Trigger (60 deprem -> Son Depremler) -->
+          <button id="btn-island-seismic" type="button" class="px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 hover:text-white text-[10.5px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-1.5">
+            ${Icons.seismic('w-3.5 h-3.5 text-rose-400')}
+            <span id="island-seismic-badge">Son Depremler</span>
+          </button>
         </div>
 
         <!-- Spotlight Search Panel (Hidden by default) -->
@@ -368,7 +340,7 @@ export class HeaderHUD {
               placeholder="Toplanma alanı, hastane veya eczane ara..."
               class="w-full pl-9 pr-8 py-2.5 rounded-2xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-400 text-xs outline-none focus:border-cyan-400"
             />
-            <button id="btn-close-spotlight" class="absolute right-2.5 text-gray-400 hover:text-white">
+            <button id="btn-close-spotlight" class="absolute right-2.5 text-gray-400 hover:text-white cursor-pointer">
               ${Icons.close('w-4 h-4')}
             </button>
           </div>
@@ -380,27 +352,33 @@ export class HeaderHUD {
            2. BOTTOM CENTER: iOS 27 FLOATING SPATIAL GLASS DOCK
            ========================================================= -->
       <div class="fixed bottom-3.5 sm:bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none">
-        <div id="ios27-dock" class="ios27-dock px-3.5 py-2 flex items-center gap-3 text-white shadow-2xl">
+        <div id="ios27-dock" class="ios27-dock px-3.5 py-2 flex items-center gap-2.5 text-white shadow-2xl">
           <!-- 1. Locate Me / Map -->
-          <button id="btn-dock-locate" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all" title="Konumuma Odaklan">
+          <button id="btn-dock-locate" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer" title="Konumuma Odaklan">
             ${Icons.crosshair('w-5 h-5')}
           </button>
 
-          <!-- 2. Big SOS Trigger (Hold-to-confirm) -->
-          <button id="btn-dock-sos" type="button" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40">
+          <!-- 2. Big SOS Trigger -->
+          <button id="btn-dock-sos" type="button" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer">
             <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>S.O.S</span>
           </button>
 
-          <!-- 3. BitChat Messenger -->
-          <button id="btn-dock-bitchat" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-cyan-300 hover:text-white transition-all relative" title="BitChat Kriz Odası">
+          <!-- 3. Hissettim Butonu (SOS Yanında) -->
+          <button id="btn-dock-felt" type="button" class="px-3.5 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer" title="Depremi Hissettim Bildirimi">
+            ${Icons.activity('w-4 h-4 text-amber-400')}
+            <span>Hissettim</span>
+          </button>
+
+          <!-- 4. BitChat Messenger -->
+          <button id="btn-dock-bitchat" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-cyan-300 hover:text-white transition-all relative cursor-pointer" title="BitChat Kriz Odası">
             ${Icons.messages('w-5 h-5')}
             <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-obsidian-950"></span>
           </button>
 
-          <!-- 4. Control Center Menu Button -->
-          <button id="btn-dock-menu" type="button" class="px-3 py-2 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-bold text-white flex items-center gap-1.5 border border-white/10 transition-all">
-            <span class="text-sm">🎛️</span>
+          <!-- 5. Control Center Menu Button -->
+          <button id="btn-dock-menu" type="button" class="px-3 py-2 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-bold text-white flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer" title="Afet Kontrol Merkezi">
+            <span class="text-cyan-400">${Icons.grid('w-4 h-4')}</span>
             <span class="hidden sm:inline">Kontrol Merkezi</span>
           </button>
         </div>
@@ -415,26 +393,28 @@ export class HeaderHUD {
       >
         <!-- Sheet Header -->
         <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
-          <div class="flex items-center gap-2">
-            <span class="text-lg">🎛️</span>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-cyan-400">
+              ${Icons.grid('w-4 h-4')}
+            </div>
             <div>
               <h3 class="text-sm sm:text-base font-black text-white tracking-tight">Afet Kontrol Merkezi</h3>
               <p class="text-[10.5px] text-gray-400">Tüm sivil savunma, radar ve hayatta kalma araçları</p>
             </div>
           </div>
-          <button id="btn-close-bento" class="p-1.5 rounded-xl bg-white/5 text-gray-400 hover:text-white">
+          <button id="btn-close-bento" class="p-1.5 rounded-xl bg-white/5 text-gray-400 hover:text-white cursor-pointer">
             ${Icons.close('w-4 h-4')}
           </button>
         </div>
 
         <!-- Quick Filter Input -->
         <div class="relative shrink-0">
-          <span class="absolute left-3 top-2.5 text-gray-400 text-xs">🔎</span>
+          <span class="absolute left-3 top-2.5 text-gray-400">${Icons.search('w-3.5 h-3.5')}</span>
           <input
             id="input-filter-bento-tools"
             type="text"
             placeholder="Araçlarda ara (CPR, turnike, pusula, sel, KBRN)..."
-            class="w-full pl-8 pr-3 py-2 rounded-2xl bg-white/[0.05] border border-white/10 text-white placeholder-gray-500 text-xs outline-none focus:border-cyan-400"
+            class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white/[0.05] border border-white/10 text-white placeholder-gray-500 text-xs outline-none focus:border-cyan-400"
           />
         </div>
 
@@ -455,9 +435,11 @@ export class HeaderHUD {
                     id="${t.id}"
                     type="button"
                     title="${t.title}"
-                    class="tool-bento-btn p-2.5 rounded-2xl ios27-glass-card flex flex-col items-center text-center gap-1.5 transition-all ios27-tap-bounce group"
+                    class="tool-bento-btn p-2.5 rounded-2xl ios27-glass-card flex flex-col items-center text-center gap-1.5 transition-all ios27-tap-bounce group cursor-pointer"
                   >
-                    <span class="text-xl group-hover:scale-110 transition-transform">${t.emoji}</span>
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 group-hover:scale-110 transition-transform text-white">
+                      ${t.icon('w-4 h-4')}
+                    </div>
                     <span class="text-[11px] font-bold text-gray-200 group-hover:text-white truncate max-w-full">${t.label}</span>
                   </button>
                 `
@@ -477,30 +459,6 @@ export class HeaderHUD {
   private bindEvents(): void {
     const q = <T extends HTMLElement>(sel: string) => this.container.querySelector(sel) as T | null;
 
-    // Island Province selector
-    q('#btn-island-province')?.addEventListener('click', () => {
-      const dropdown = q('#island-province-dropdown');
-      dropdown?.classList.toggle('hidden');
-    });
-
-    q<HTMLInputElement>('#input-filter-province')?.addEventListener('input', (e) => {
-      const query = (e.target as HTMLInputElement).value.toLowerCase();
-      this.container.querySelectorAll<HTMLButtonElement>('.btn-select-prov').forEach((btn) => {
-        const prov = (btn.getAttribute('data-prov') || '').toLowerCase();
-        btn.classList.toggle('hidden', !prov.includes(query));
-      });
-    });
-
-    this.container.querySelectorAll<HTMLButtonElement>('.btn-select-prov').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const prov = btn.getAttribute('data-prov') || '';
-        this.selectedProvince = prov;
-        this.callbacks.onSelectProvince(prov);
-        q('#island-province-dropdown')?.classList.add('hidden');
-        this.setSelectedProvince(prov);
-      });
-    });
-
     // Spotlight search
     q('#btn-trigger-spotlight')?.addEventListener('click', () => this.toggleSearch());
     q('#btn-close-spotlight')?.addEventListener('click', () => this.toggleSearch(false));
@@ -513,6 +471,7 @@ export class HeaderHUD {
     // Dock Buttons
     q('#btn-dock-locate')?.addEventListener('click', () => this.callbacks.onLocateMe());
     q('#btn-dock-sos')?.addEventListener('click', () => this.callbacks.onToggleSOS());
+    q('#btn-dock-felt')?.addEventListener('click', () => this.callbacks.onToggleFelt());
     q('#btn-dock-bitchat')?.addEventListener('click', () => this.callbacks.onToggleCrisis());
     q('#btn-dock-menu')?.addEventListener('click', () => this.toggleControlCenter());
     q('#btn-close-bento')?.addEventListener('click', () => this.toggleControlCenter(false));

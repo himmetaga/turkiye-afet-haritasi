@@ -36,7 +36,7 @@ export class NearestPointsHUD {
     this.onSelectPoint = onSelectPoint;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'absolute bottom-20 sm:bottom-22 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
     parent.appendChild(this.container);
   }
 
@@ -76,7 +76,7 @@ export class NearestPointsHUD {
     // 1. Kapalı / Dock Buton Çubuğu (Sol altta şık 3 parçalı buton seti)
     if (this.isCollapsed) {
       this.container.className =
-        'absolute bottom-3 sm:bottom-6 left-3 right-auto sm:left-4 z-30 flex items-center pointer-events-auto transition-all box-border';
+        'absolute bottom-20 sm:bottom-22 left-3 right-auto sm:left-4 z-30 flex items-center pointer-events-auto transition-all box-border';
 
       this.container.innerHTML = `
         <div class="flex items-center p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-1 sm:gap-1.5 transition-all">
@@ -147,7 +147,7 @@ export class NearestPointsHUD {
 
     // 2. Açık Çekmece Durumu
     this.container.className =
-      'absolute bottom-3 sm:bottom-6 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'absolute bottom-20 sm:bottom-22 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all border border-white/10 max-h-[80vh] flex flex-col">

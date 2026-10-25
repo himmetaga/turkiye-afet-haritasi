@@ -407,6 +407,64 @@ export const Icons = {
       <path d="M6 2v20"></path>
       <path d="M3 2h6"></path>
     </svg>
+  `,
+  grid: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+    </svg>
+  `,
+  heartPulse: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+      <path d="M3.22 12H9.5l1.5-3 3 6 1.5-3h5.28"></path>
+    </svg>
+  `,
+  stethoscope: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path>
+      <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path>
+      <circle cx="20" cy="10" r="2"></circle>
+    </svg>
+  `,
+  flashlight: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"></path>
+      <path d="m2 10 10-4 6 6-4 10-12-12Z"></path>
+    </svg>
+  `,
+  radiation: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="2"></circle>
+      <path d="M12 2v4"></path>
+      <path d="m4.93 4.93 2.83 2.83"></path>
+      <path d="M2 12h4"></path>
+      <path d="m4.93 19.07 2.83-2.83"></path>
+      <path d="M12 22v-4"></path>
+      <path d="m19.07 19.07-2.83-2.83"></path>
+      <path d="M22 12h-4"></path>
+      <path d="m19.07 4.93-2.83 2.83"></path>
+    </svg>
+  `,
+  fileText: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
+  `,
+  scale: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+      <path d="M7 21h10"></path>
+      <path d="M12 3v18"></path>
+      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+    </svg>
   `
 };
 
