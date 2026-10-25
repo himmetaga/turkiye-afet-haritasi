@@ -86,6 +86,11 @@ export class MapEngine {
         resolve();
       });
 
+      // Safety timeout: don't block UI if tile network is slow or offline
+      setTimeout(() => {
+        resolve();
+      }, 3000);
+
       this.map.on('click', (e) => {
         const features = this.map?.queryRenderedFeatures(e.point, {
           layers: ['assembly-core', 'assembly-glow', 'facility-core', 'fault-lines-core']

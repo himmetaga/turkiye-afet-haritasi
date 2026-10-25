@@ -13,10 +13,10 @@
   "theme_color": "#090a0f",
   "orientation": "portrait-primary",
   "shortcuts": [
+    { "name": "3000 Hz Kurtarma Düdüğü", "short_name": "Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "BitChat P2P Kriz Odası", "short_name": "BitChat", "url": "/?mod=kriz", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
     { "name": "Gece Sismograf Nöbeti", "short_name": "Gece Nöbeti", "url": "/?mod=gece-nobeti", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Bina Sismik Risk Kartı", "short_name": "Bina Riski", "url": "/?mod=bina-risk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Çevrimdışı QR Durum Paketi", "short_name": "QR Durum", "url": "/?mod=qr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Afet Düdüğü", "short_name": "Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
+    { "name": "Çevrimdışı QR Güvendeyim", "short_name": "QR Durum", "url": "/?mod=qr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
   ],
   "icons": [
     {

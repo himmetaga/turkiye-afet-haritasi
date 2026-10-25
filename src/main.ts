@@ -52,6 +52,13 @@ import { OfflineMapPackModal } from './ui/OfflineMapPackModal';
 import { FieldCampStatusModal } from './ui/FieldCampStatusModal';
 import { InfantFeedingSafetyModal } from './ui/InfantFeedingSafetyModal';
 import { OfflinePTTWalkieTalkieModal } from './ui/OfflinePTTWalkieTalkieModal';
+import { TacticalCompassModal } from './ui/TacticalCompassModal';
+import { OpticalSARBeaconModal } from './ui/OpticalSARBeaconModal';
+import { CPRCoachModal } from './ui/CPRCoachModal';
+import { BuildingDamageAssessmentModal } from './ui/BuildingDamageAssessmentModal';
+import { WaterDisinfectionModal } from './ui/WaterDisinfectionModal';
+import { CBRNSurvivalModal } from './ui/CBRNSurvivalModal';
+import { CivilDefenseVaultModal } from './ui/CivilDefenseVaultModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -114,6 +121,13 @@ class DisasterAtlasApp {
   private campStatusModal!: FieldCampStatusModal;
   private infantFeedingModal!: InfantFeedingSafetyModal;
   private pttWalkieModal!: OfflinePTTWalkieTalkieModal;
+  private tacticalCompassModal!: TacticalCompassModal;
+  private sarBeaconModal!: OpticalSARBeaconModal;
+  private cprCoachModal!: CPRCoachModal;
+  private damageAssessmentModal!: BuildingDamageAssessmentModal;
+  private waterDisinfectionModal!: WaterDisinfectionModal;
+  private cbrnSurvivalModal!: CBRNSurvivalModal;
+  private civilVaultModal!: CivilDefenseVaultModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -152,6 +166,16 @@ class DisasterAtlasApp {
     const appEl = document.getElementById('app')!;
     const mapContainer = document.getElementById('map-container')!;
     appEl.querySelectorAll('header').forEach((el) => el.remove());
+
+    // Instant loader fadeout safeguard
+    setTimeout(() => {
+      const el = document.getElementById('initial-loader');
+      if (el) {
+        el.style.opacity = '0';
+        el.style.visibility = 'hidden';
+        setTimeout(() => el.remove(), 400);
+      }
+    }, 1800);
 
     this.notificationToast = new OfflineNotificationToast(appEl);
 
@@ -199,7 +223,14 @@ class DisasterAtlasApp {
       onTogglePsychFirstAid: () => this.psychFirstAidModal.show(),
       onToggleCampStatus: () => this.campStatusModal.show(),
       onToggleInfantFeeding: () => this.infantFeedingModal.show(),
-      onTogglePTTWalkie: () => this.pttWalkieModal.show()
+      onTogglePTTWalkie: () => this.pttWalkieModal.show(),
+      onToggleTacticalCompass: () => this.tacticalCompassModal.show(),
+      onToggleSARBeacon: () => this.sarBeaconModal.show(),
+      onToggleCPRCoach: () => this.cprCoachModal.show(),
+      onToggleDamageAssessment: () => this.damageAssessmentModal.show(),
+      onToggleWaterDisinfection: () => this.waterDisinfectionModal.show(),
+      onToggleCBRN: () => this.cbrnSurvivalModal.show(),
+      onToggleCivilVault: () => this.civilVaultModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -316,6 +347,13 @@ class DisasterAtlasApp {
 
     this.infantFeedingModal = new InfantFeedingSafetyModal(appEl);
     this.pttWalkieModal = new OfflinePTTWalkieTalkieModal(appEl);
+    this.tacticalCompassModal = new TacticalCompassModal(appEl, this.userCoords);
+    this.sarBeaconModal = new OpticalSARBeaconModal(appEl);
+    this.cprCoachModal = new CPRCoachModal(appEl);
+    this.damageAssessmentModal = new BuildingDamageAssessmentModal(appEl);
+    this.waterDisinfectionModal = new WaterDisinfectionModal(appEl);
+    this.cbrnSurvivalModal = new CBRNSurvivalModal(appEl);
+    this.civilVaultModal = new CivilDefenseVaultModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -342,6 +380,17 @@ class DisasterAtlasApp {
 
     // 2. Start 3D WebGL Map
     await this.mapEngine.init(mapContainer);
+
+    // Dismiss initial loader smoothly as soon as map canvas is active
+    const dismissLoader = () => {
+      const initialLoader = document.getElementById('initial-loader');
+      if (initialLoader) {
+        initialLoader.style.opacity = '0';
+        initialLoader.style.visibility = 'hidden';
+        setTimeout(() => initialLoader.remove(), 400);
+      }
+    };
+    dismissLoader();
 
     // 3. Map Event Listeners
     this.mapEngine.onAssemblyPointClick((point) => {
@@ -614,6 +663,7 @@ class DisasterAtlasApp {
     this.qrPackModal?.setUserCoords(coords);
     this.iceGenerator?.setData(coords, this.assemblyPoints);
     this.emergencySMS?.setCoords(coords);
+    this.tacticalCompassModal?.setCoords(coords);
     this.updateBuildingRiskContext();
 
     this.mapEngine.setUserLocation(coords, 0);

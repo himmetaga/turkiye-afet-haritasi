@@ -14,8 +14,8 @@
 ## 📌 Dil Seçimi / Language Selection
 - [🇹🇷 Türkçe Dokümantasyon](#-türkçe-afetlive--türkiye-afet-ve-acil-durum-atlası)
   - [1. Genel Bakış ve Misyon](#1-genel-bakış-ve-misyon)
-  - [2. Sistem ve Yazılım Mimarisi](#2-sistem-ve-yazılım-mimarisi)
-  - [3. Faydaya Göre Modül Kataloğu (33 Araç)](#3-faydaya-göre-modül-kataloğu-33-araç)
+  - [2. Sistem ve Yazılım Mimarisi (8 Sütun & iOS 27)](#2-sistem-ve-yazılım-mimarisi-8-ana-mimari-sütun--ios-27-spatial-glass)
+  - [3. Faydaya Göre Modül Kataloğu (40 Araç)](#3-faydaya-göre-modül-kataloğu-40-araç)
   - [4. Veri Kaynakları & Doğruluk](#4-veri-kaynakları--doğruluk)
   - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
   - [6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği](#6-manipülasyon-önleme--hukuki-sorumluluk-güvenliği)
@@ -45,203 +45,238 @@ Bu hayati gereksinim doğrultusunda **afet.live**, **"Sıfır Sunucu Bağımlıl
 
 ---
 
-## 2. Sistem ve Yazılım Mimarisi
+## 2. Sistem ve Yazılım Mimarisi (8 Ana Mimari Sütun & iOS 27 Spatial Glass)
 
-afet.live mimarisi, yüksek performans, ultra düşük pil tüketimi ve kesintisiz çevrimdışı güvenilirlik sağlamak üzere 4 ana katmandan oluşur:
+afet.live; sıfır sunucu bağımlılığı, ultra düşük pil sarfiyatı, enkaz altı donanım otomasyonu ve bilişsel yükü sıfırlayan **iOS 27 Spatial Neo-Glassmorphism** arayüzü üzerine 8 ana sütunda inşa edilmiştir:
 
 ```mermaid
 graph TD
-    subgraph Presentation ["1. Sunum & Arayüz Katmanı (UI/UX)"]
-        A[HeaderHUD & Fayda Odaklı 4 Kategorili Menü]
-        B[Sabit BitChat Kriz FAB Butonu]
-        C[3B Vektör Harita Motoru - MapLibre GL]
-        D[NearestPointsHUD - En Yakın Noktalar]
-        E[33 Modüler Afet Modalı & HUD]
+    subgraph UI ["1. iOS 27 Sade Arayüz & Bilişsel Yük Yönetimi"]
+        A[Dinamik Ada - Dynamic Island Kapsülü]
+        B[Yüzen Cam Dock - Floating Spatial Dock]
+        C[Bento Grid Kontrol Merkezi & Canlı Filtreleme]
+        D[Hold-to-Confirm: 3sn Kazara Basma Koruması]
+        E[OLED Ekstrem Güç Kalkanı: Pitch-Black 15-30Hz]
     end
 
-    subgraph StateAndCompute ["2. Durum, Hesaplama & Algoritma Katmanı"]
-        F[GeoMath: Haversine & Rota Yönü]
-        G[Sismik STA/LTA Algoritması - 100Hz İvmeölçer]
-        H[Erken Uyarı: P & S Dalga Yayılım Modeli]
-        I[START Sahra Triyaj Karar Ağacı]
-        J[Web Audio API DSP: 2.9kHz / 3.5kHz / 18.5kHz]
-        K[Su Dezenfeksiyon & Klorlama Hesaplayıcı]
+    subgraph Hardware ["2. Enkaz Altı Donanım Otomasyonu & Sensörler"]
+        F[3.5 - 4.2 kHz Geofon Sismik Rezonans Sentezi]
+        G[Pik Darbeli Optik LED SOS: 10ms Flaş - %95 Pil Koruması]
+        H[Ortam Işığı ALS: 0 Lux Enkaz Çökme Doğrulaması]
+        I[Barometrik Kat & Göçük Deplasman Analitiği]
+        J[Taktik Manyetometre Pusula & Yapısal Deformasyon]
+        K[Bilinç Yoklaması Titreşimi & Dead-Man Kara Kutu]
     end
 
-    subgraph OfflineAndP2P ["3. Çevrimdışı & Dağıtık Ağ Katmanı (P2P Mesh)"]
-        L[Service Worker & CacheStorage - Workbox PWA]
-        M[Nostr Protocol: wss://relay.damus.io - wss://nos.lol]
-        N[WebRTC DataChannel: Tarayıcılar Arası Doğrudan Veri]
-        O[BroadcastChannel: Sekmeler Arası Yerel Veri Yolu]
-        P[İnternetsiz Hava Boşluğu QR Kod Paketi]
+    subgraph Network ["3. Altyapısız İletişim & Hibrit Mesh Ağı"]
+        L[DNS Tünelleme - Captive Portal Bypass: a3f2.sos.afet.live]
+        M[Store-and-Forward DTN: Fiziksel İnsan Kurye Veri Ağı]
+        N[Ultrasonik Yakın Alan Akustik Chirp: 18-20 kHz]
+        O[LoRa & Meshtastic Donanım Köprüsü: 433/868 MHz]
+        P[Nostr & WebRTC DataChannel P2P: BitChat Kriz Odası]
+        Q[Dinamik Wi-Fi Hotspot SSID: SOS_A-RH+_1KISI_BILINCLI]
     end
 
-    subgraph CivicTelemetry ["4. Kamu Açık Veri & Telemetri Katmanı"]
-        Q[AFAD 81 İl Toplanma Alanları - 27.331 Saha]
-        R[MTA Türkiye Diri Fay Hatları Veritabanı]
-        S[Kandilli Rasathanesi & AFAD Canlı Deprem Akışı]
-        T[Sağlık Bakanlığı Acil Servisleri - 1.226 Hastane]
-        U[Günlük Canlı Nöbetçi Eczaneler]
-        V[GloFAS Nehir Debisi & Yağış Radarı - ECMWF]
-        W[Open-Meteo AQI, Asbest ve Zehirli Gaz Radarı]
-        X[Türk Kızılay 22 Bölge Kan Merkezi & Donör Matrisi]
-        Y[TRAC & PMR 446 Acil Telsiz Frekans Kataloğu]
+    subgraph Intelligence ["4. Karar Destek, Triyaj & Hukuki Koruma"]
+        R[110 BPM Sahra CPR Metronomu & Ezilme Sendromu Kılavuzu]
+        S[START Sahra Triyaj Motoru & Turnike 120 Dk Zamanlayıcısı]
+        T[Bina Hasar Tespiti, X-Çatlak Analizi & DASK 15 Gün Süre]
+        U[WHO WASH Su Dezenfeksiyonu & Klorlama Dozajlayıcı]
+        V[KBRN, Radyasyon & Nükleer Serpinti Sığınağı Kılavuzu]
+        W[Mülkiyet Kasası & Çevrimdışı Verifiable Credentials]
+        X[P2P İhtiyaç & Barter Takas Defteri]
     end
 
-    Presentation --> StateAndCompute
-    StateAndCompute --> OfflineAndP2P
-    OfflineAndP2P --> CivicTelemetry
+    UI --> Hardware
+    Hardware --> Network
+    Network --> Intelligence
 ```
 
-### Temel Mimari Prensipleri:
-1. **Zero-Lag & GPU-Accelerated Rendering:** Harita motoru 60 FPS WebGL ile çalışır; 27 binden fazla nokta kümeleme (clustering) ve ekran dışı culling algoritmalarıyla düşük donanımlı telefonları dahi kastırmadan akıcı çalışır.
-2. **AudioWorklet / Web Audio DSP:** Afet düdüğü basit bir ses dosyası oynatmaz; tarayıcının Web Audio API osilatörleri üzerinden insan kulağının en duyarlı olduğu 2.9 kHz frekansını matematiksel olarak sentezler ve ekran kilitlendiğinde dahi çalmaya devam eder.
-3. **Decentralized Nostr & WebRTC Mesh:** Hücresel operatör kuleleri çöktüğünde veya bant daraltması uygulandığında, BitChat protokolü sansürlenemeyen açık Nostr röleleri üzerinden şifreli afet mesajlaşması sağlar; internet tamamen kesildiğinde ise telefonlar arasında QR kod tabanlı hava boşluğu (air-gapped) veri alışverişine geçer.
+### 🏛️ 8 Ana Mimari Sütun
+
+#### Sütun 1: Dağıtım ve Altyapısız İletişim
+- **Sunucusuz ve Statik Çekirdek:** Uygulamanın tüm mantıksal katmanları sıfır sunucu taraflı hesaplama (client-side execution) yapacak şekilde derlenmiştir; Cloudflare Edge ve GitHub Pages üzerinden global CDN ağına dağıtılır. İlk saniyelerde 10 milyon eşzamanlı giriş olsa bile sistem sıfır maliyetle kesintisiz ayakta kalır.
+- **Offline-First Service Worker & IndexedDB:** PWA `Cache-First` kuralıyla tüm static asset'ler, fontlar, ses sentezleyiciler ve vektör harita karoları tek seferde önbelleğe yazılır; uçak modunda veya baz istasyonları tamamen yokken dahi 1 milisaniye gecikme olmadan çalışır.
+- **Captive Portal & DNS Tünelleme (Walled Garden Bypass):** Dış internete çıkışı kapalı veya şifreli sahra Wi-Fi ağlarında UDP 53 (DNS) portunun açık kalmasından yararlanarak, enkaz koordinatı ve hayati durum verilerini Base64 formatında DNS sorgularına gömerek (`a3f2.sos.afet.live`) dış dünyaya aktarır.
+- **Store-and-Forward DTN (Delay-Tolerant Networking) Taşıyıcı Modeli:** Enkaz altından BLE ile sağılan paketler, bölgeden geçen sivillerin ve sahra araçlarının cihazlarında yerel kuyruğa alınır (Data Mule); internet olan ilk sahra çadırına veya Starlink terminaline ulaştırılır.
+- **Ultrasonik Yakın Alan Akustik Veri Aktarımı (18 kHz – 20 kHz):** Bluetooth yongası fiziksel darbeyle bozulmuş veya anteni kırılmış cihazlarda, dahili hoparlör ve mikrofon üzerinden insan kulağının duymadığı ses dalgalarıyla kimlik, kan grubu ve konum telemetrisi aktarılır.
+- **LoRa & Meshtastic Donanım Köprüsü:** Web Bluetooth API ve Web Serial üzerinden 433/868 MHz harici LoRa telsiz modüllerine bağlanarak menzili 15 kilometreye çıkarır.
+- **WebRTC P2P Yerel Ağ Kümelenmesi:** Dış kablosu kopmuş yerel yönlendiricilerde (Wi-Fi router) cihazlar mDNS üzerinden birbirini bulup doğrudan WebRTC DataChannel ile mesajlaşır.
+
+#### Sütun 2: Erken Uyarı, Sensör Fiziği ve Algoritmik Karar Katmanı
+- **P-Dalgası Diferansiyel İvmeölçer Analizi:** `DeviceMotionEvent` API ile 100 Hz frekansta ivme verisi okunur; yıkıcı ana sarsıntıyı getiren S dalgası bölgeye ulaşmadan 3 ila 45 saniye önce kaçış ve yaşam üçgeni payı kazandırır.
+- **FFT Tabanlı Sahte Sarsıntı Filtreleme:** Cihazda yerel çalışan Hızlı Fourier Dönüşümü (FFT) ile sarsıntı frekans spektrumu analiz edilir; adımlama ve masa çarpması gibi 5-15 Hz titreşimler elenerek yalnızca gerçek sismik frekanslarda (0.5 – 5 Hz) alarm verilir.
+- **Ortam Işığı Sensörü (ALS) ile Enkaz Doğrulama Korelasyonu:** Şiddetli darbe ivmesinde dahili ortam ışık sensörünün 0 lux (mutlak karanlık) verip vermediği kontrol edilir; cebinde yere düşen telefon ile tavanı çöken enkazı anında ayrıştırarak yardım sinyalinin güvenilirlik puanını %99'a çıkarır.
+- **Barometrik Kat ve Göçük Deplasman Analitiği:** Dahili barometre (hava basıncı sensörü) verileri hPa cinsinden sürekli izlenerek deprem anındaki son GPS rakımı ile hava basıncı irtifası karşılaştırılır; kazazedenin zemin seviyesinden kaç metre aşağıda/yukarıda olduğu santimetre hassasiyetinde hesaplanır.
+- **Manyetometre (Manyetik Pusula) Yapısal Deformasyon Tespiti:** Binanın kolonlarındaki betonarme donatı demirlerinin manyetik alan sapmaları analiz edilerek enkaz tavanındaki beton kütlesinin eğilme yönü ve güvenli sürünme vektörü belirlenir.
+- **Bölgesel Sensör Konsensüsü:** Aynı GeoHash hücresindeki en az 10 cihazın eşzamanlı mikro-sarsıntı üretmesi durumunda yerel ağa alarm yayını yapılır.
+
+#### Sütun 3: Enkaz Altı Donanım Otomasyonu ve Hayat İkaz Protokolleri
+- **Akustik-Sismik Dinleme Frekansı Modülatörü:** Hoparlör, arama kurtarma sismik yer mikrofonlarının (geofon ve akustik dinleme probları) en iyi yakaladığı 3.5 kHz – 4.2 kHz frekans bandında kesikli rezonans darbeleri üretir; ses dalgalarının beton kütlelerden soğurulmasını minimize ederek 10-15 metre derinlikten duyulmasını sağlar.
+- **Pik Darbeli Optik LED Sinyalleme (High-Intensity SOS Pulse):** Bataryayı hızla tüketen sürekli flaş yerine her 5 saniyede bir 10 milisaniyelik ultra yüksek lümenli S-O-S optik darbeleri atar; bataryayı günlerce korurken gece dronları ve termal kameraların tespitini sağlar.
+- **Dinamik Wi-Fi Hotspot Beaconing:** Wi-Fi kartını yerel erişim noktası moduna geçirip SSID'yi dinamik olarak `SOS_[KanGrubu]_[KişiSayısı]_[BilinçDurumu]_[Pil]` şeklinde şifresiz yayınlar; enkaz üstündeki görevlinin Wi-Fi tarama ekranında kazazede durumunu anında görmesini sağlar.
+- **BLE Raw Advertising Telemetri Paketi:** Standart 31 baytlık BLE reklam paketleri içine enlem, boylam, irtifa ve batarya yüzdesi gömülerek telefon kilitli ve SIM kartsız olsa bile 500 ms aralıklarla sinyal fırlatır.
+- **Haptik Geri Bildirimli Bilinç Yoklaması:** Her 45 dakikada bir cihazı 2 saniye hafifçe titreterek dokunma veya ses bekler; tepki alınamadığında telemetri paketindeki durumu "Bilinç Kapalı / Kritik" statüsüne yükselterek ekiplerin önceliğini değiştirir.
+- **Kara Kutu Bellek Dökümü (Dead-Man Buffer):** Batarya %1 seviyesine indiği an; son ivme kayıtlarını, enkaz derinliğini ve çevre telemetrilerini yerel kalıcı hafızanın korunan sektörüne mühürler; cihaz kapansa dahi kurtarma ekiplerinin durumu okuyabilmesini sağlar.
+
+#### Sütun 4: Çevrimdışı CBS, 3D Haritalama ve Kaçış Navigasyonu
+- **PMTiles Tabanlı Vektör Karo Mimarisi:** Tüm il veya bölge haritası tek bir `.pmtiles` arşivi olarak sunulur; HTTP Range Request mantığını yerel IndexedDB üzerinde taklit ederek eski cihazlarda dahi sıfır donmayla 60 FPS akar.
+- **GPU Hızlandırmalı 3D WebGL Arazi ve Bina Render:** MapLibre GL WebGL katmanıyla binalar 3 boyutlu yükseklik ve yapı malzemesi verileriyle ekrana basılır; dar sokak silüetleri ve viyadük altları 3 boyutta taranabilir.
+- **Yerel A* Çevrimdışı Rota Motoru:** Harici sunucuya gitmeden cihaz üzerinde yerel çalışan yol ağı grafı ile en yakın toplanma alanına ve sahra hastanesine güvenli yürüyüş rotasını milisaniyeler içinde çizer.
+- **Dinamik Tehlike Çemberi Çizimi:** "Çöken Bina", "Yarık Yol", "Gaz Sızıntısı Kokusu", "Kopan Yüksek Gerilim Hattı" pinleri etrafına otomatik 50 metrelik güvenlik çemberi örerek rotayı güvenli yan sokaklara saptırır.
+- **Su Kaynakları ve Yangın Hidrantları Katmanı:** Aktif artezyen kuyuları, yangın hidrantları, pınarlar ve sarnıçların debi ve içilebilirlik durum bilgisi haritada gösterilir.
+
+#### Sütun 5: Sahra Lojistiği, Triyaj ve Çevrimdışı Kaynak Yönetimi
+- **Dijital START Triyaj Motoru:** Solunum, nabız ve mental duruma göre 30 saniyede karar veren adım adım dijital protokol (Siyah: Eks, Kırmızı: Hayati Tehlike, Sarı: Ağır Yaralı, Yeşil: Hafif Yaralı); yaralılara taranabilir benzersiz QR kodlar atar.
+- **Çapraz İkmal ve İhtiyaç Takas Defteri (P2P Barter Ledger):** Para ve bankacılık sisteminin çöktüğü toplanma alanlarında ihtiyaç fazlası malzemeleri ve acil ihtiyaçları yerel veritabanında tutar; cihazlar birbirinin Bluetooth alanına girdiğinde otomatik çapraz eşleştirme bildirimi üretir.
+- **Sahra Eczanesi ve Soğuk Zincir İzleme:** İnsülin, aşı ve antibiyotik sahra dolaplarının kalan buz aküsü süresi ve stok durumunu takip eder.
+- **Organik Gönüllü Ekip Oluşturucu (Ad-Hoc Task Force):** Sivilleri yetkinlik formlarına göre ("İş makinesi operatörü", "Hemşire", "İnşaat ustası", "Dağcı", "Tercüman") 5-6 kişilik organize timlere böler.
+- **Kadavra ve Sahra Morgu İzolasyon Katmanı:** Geçici defin noktaları, sahra morgları ve tıbbi atık çukurlarının koordinatları sivil haritada "Karantinalı Sağlık Alanı" olarak işaretlenir.
+
+#### Sütun 6: Bilişsel Yük, Arayüz Felsefesi ve Batarya Yönetimi
+- **Sıfır Panik Arayüzü (iOS 27 Spatial Neo-Glassmorphism):** Karmaşık menüler ve 35'ten fazla dağınık buton ekranı terk etmiştir. Üstte ortalanmış **iOS 27 Dinamik Ada (Dynamic Island)** kapsülü, altta **Yüzen Cam Dock (Floating Spatial Dock)** ve tek dokunuşla açılan **Bento Grid Kontrol Merkezi** ile tek elle ve eldivenle kullanılabilir devasa dokunma alanları sunulur.
+- **Kazara Basma Korumalı Kritik Eylemler (Hold-to-Confirm):** S.O.S ve kritik acil eylemler 3 saniye basılı tutma mekaniğiyle tetiklenerek cep sürtünmelerinden kaynaklanan sahte ihbarları önler.
+- **OLED Ekstrem Güç Kalkanı (Pitch-Black):** Acil modda tüm DOM elementleri saf siyaha (`#000000`) dönüştürülür; ekran yenileme hızı 15-30 Hz bandına çekilerek OLED pikseller kapatılır ve telefonun açık kalma süresi 3 güne kadar uzatılır.
+- **Uyarlanabilir Donanım Uykusu (Wake-Lock Cycling):** Arka plan sensör dinleyicileri 500 ms dinleme / 4500 ms derin uyku döngüsüne girerek batarya ısınmasını engeller.
+
+#### Sütun 7: Adli Kanıt Zinciri, Mülkiyet ve Hukuki Koruma
+- **Donanım İmzalı Delil Kayıtçısı:** Çekilen çatlak ve hasar fotoğrafları cihazın Secure Enclave donanım anahtarıyla imzalanır; son bilinen GPS koordinatı, ivme doğrulaması ve UTC zamanı geri döndürülemez şekilde mühürlenerek DASK, kasko ve ceza davalarında yasal delil niteliği kazandırılır.
+- **Mülkiyet ve Hak Sahipliği Kasası:** Tapu senetleri, kira kontratları, ruhsatlar ve kimlik kayıtları asimetrik şifrelemeyle (Ed25519) güvenli hafızada saklanır; belediye arşivleri yıkılsa dahi tek bir çevrimdışı QR kod ile ispatlanır.
+- **Otomatik Enkaz Yağma ve Güvenlik Alarmları:** Tahliye edilen ev veya dükkanda bırakılan yedek telefon ivmeölçer ve mikrofondan kapı zorlama, cam kırılması ve ayak seslerini dinleyen yerel bir nöbetçiye dönüşür; şüpheli harekette çevredeki kolluk BLE ağına ikaz atar.
+
+#### Sütun 8: Veri Güvenliği, Kriptografi ve Açık Kaynak Standartları
+- **Sıfır Bilgi İspatı ile Kimlik Doğrulama (ZKP-Based Anonymity):** TC kimlik, e-posta veya telefon kaydetmeye gerek kalmadan deterministik kriptografik açık anahtarlarla (Public Key) anonim kimlikleme yapılır.
+- **Uçtan Uca Şifreli Acil Sağlık Kapsülü (E2EE Medical Capsule):** Kan grubu, kronik hastalıklar ve acil irtibatlar yalnızca kurtarma ekiplerinin elindeki resmi master anahtarlarla çözülebilecek şekilde asimetrik şifrelenir.
+- **Uluslararası CAP ve GeoJSON Standartları:** Üretilen tüm telemetriler AFAD, AKUT, Kızılay, INSARAG ve UN OCHA sistemlerine Common Alerting Protocol (CAP v1.2) ve GeoJSON standartlarında doğrudan aktarılabilir formattadır.
+- **Tamamen Açık Kaynak Kod Tabanı:** Tüm algoritmalar, Service Worker mimarisi ve kriptografik mekanizmalar GitHub üzerinde açık kaynak lisansıyla (MIT) bağımsız güvenlik denetimine açıktır.
 
 ---
 
-## 3. Faydaya Göre Modül Kataloğu (33 Araç)
+## 3. Faydaya Göre Modül Kataloğu (40 Araç)
 
-afet.live menüsü, afet esnasında kafa karışıklığını önlemek amacıyla **faydasına göre 4 ana kategoride** düzenlenmiştir. Ana ekranda ise yalnızca en kritik aksiyonlar (**AFET DÜDÜĞÜ & S.O.S**, **BitChat Kriz Butonu** ve **En Yakın Güvenlik Segmentleri**) yer alır:
+afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **iOS 27 Bento Grid Kontrol Merkezi** içinde 4 ana kategoride yapılandırılmıştır. Ekranın ana görünümünde yalnızca **Dinamik Ada (İl Seçimi & Canlı Sayaç)** ve alttaki **Yüzen Cam Dock** yer alır:
 
-### 🚨 Kategori 1: Acil Müdahale & S.O.S (9 Araç)
+### 🚨 Kategori 1: Acil Müdahale & S.O.S (12 Araç)
 1. **Afet Düdüğü & Akustik Enkaz Sinyali (2.9 kHz + 3.5 kHz Geofon + 18.5 kHz K9 Arama Köpeği):**
    - **2.9 kHz SOS Düdüğü:** Beton ve moloz yığınlarını delip geçen, insan kulağının en hassas olduğu akustik frekansta aralıksız çalar.
-   - **3.5 kHz Geofon Sonar Darbesi:** AFAD ve uluslararası INSARAG arama kurtarma ekiplerinin sismik dinleme mikrofonları için optimize edilmiş, her 15 saniyede 3 darbe ve titreşim yayan, cihaz pilini günlerce koruyan darbe modu.
+   - **3.5 kHz Geofon Sonar Darbesi:** AFAD ve uluslararası INSARAG arama kurtarma ekiplerinin sismik dinleme mikrofonları için optimize edilmiş kesikli rezonans darbeleri.
    - **18.5 kHz K9 Arama Köpeği Çağrısı:** İnsan kulağını yormayan ancak enkaz köpeklerinin kilometrelerce uzaktan duyabildiği ultrasonik frekans.
    - **Kamera LED Flaşörü & Ekran Strobosu:** Gece arama kurtarma dronları ve termal kameralar için senkronize donanım flaşı.
    - **Screen WakeLock:** Telefon ekranının kilitlenmesini veya uyku moduna geçmesini engelleyerek kesintisiz sinyal yayar.
-2. **Ultra Pil Tasarrufu (72 Saat Hayatta Kalma OLED Saf Siyah Modu):**
+2. **Pik Darbeli Optik LED Sinyalleme & Geofon Rezonans Vericisi:**
+   - 10 milisaniyelik ultra yüksek lümenli kamera LED flaş darbeleriyle bataryayı %95 oranında korurken gece operasyonu yapan kurtarma ekiplerine ışık sinyali yayar.
+   - Web Audio API ile 3.8 kHz sismik dinleme tonu ve tam ekran stroboskopik kılavuz desteği sunar.
+3. **110 BPM Sahra CPR Koçu & Ezilme (Crush) Sendromu Klinik Rehberi:**
+   - Uluslararası AHA/ERC resüsitasyon standartlarına uygun 110 BPM sesli metronom, görsel nabız halkası ve haptik titreşim desteği.
+   - 30 göğüs basısı / 2 suni solunum faz sayacı ve döngü takibi.
+   - Enkaz altından kurtarılan kazazedelerde potasyum toksisitesi ve akut böbrek yetmezliğini önleyen hayati Crush Sendromu klinik müdahale direktifleri (damar yolu açılmadan kontrolsüz su vermeme kuralı).
+4. **Ultra Pil Tasarrufu (72 Saat Hayatta Kalma OLED Saf Siyah Modu):**
    - 72 saatlik altın saatlerde telefon pilini koruyan OLED pitch-black (`#000000`) ekran mimarisi. Siyah piksellerin organik diyotlarını tamamen kapatarak ekran tüketimini %75 azaltır.
    - WebGL harita animasyonlarını, arka plan GPS takibini ve CSS filtrelerini askıya alarak işlemciyi uyutur.
-   - Cihaz pil seviyesi (`navigator.getBattery()`) tahmini, kalan saat projeksiyonu ve tek dokunuşla çalışan minimal S.O.S düğmeleri sunar.
-3. **Akustik Enkaz Dinleme Radarı (Web Audio API Spektrum Analizi & Otomatik Düdük):**
-   - Kazazedenin bağırmasına veya enerji harcamasına gerek kalmadan enkaz dışındaki arama kurtarma ekiplerinin vuruşlarını dinleyen mikrofon tabanlı akustik analizör.
-   - `AnalyserNode` FFT frekans ve desibel ölçümü; belirlenen ses eşiği aşıldığında tam ses seviyesinde 2.9 kHz S.O.S düdüğünü otomatik olarak devreye sokar.
-4. **Afet Triyaj Asistanı (START Sahra Protokolü):**
+5. **Akustik Enkaz Dinleme Radarı (Web Audio API Spektrum Analizi & Otomatik Düdük):**
+   - Kazazedenin bağırmasına veya enerji harcamasına gerek kalmadan enkaz dışındaki kurtarma ekiplerinin vuruşlarını dinleyen mikrofon tabanlı akustik analizör.
+   - `AnalyserNode` FFT frekans ve desibel ölçümü; belirlenen ses eşiği aşıldığında tam ses seviyesinde 2.9 kHz S.O.S düdüğünü otomatik devreye sokar.
+6. **Afet Triyaj Asistanı (START Sahra Protokolü):**
    - Uluslararası Simple Triage and Rapid Treatment (START) standardı.
-   - 15 saniyelik solunum, kapiller geri dolum (dolaşım) ve bilinç kontrolleriyle kazazedeyi Kırmızı (Acil Turnike/Hava Yolu), Sarı (Gecikebilir), Yeşil (Hafif Yaralı) ve Siyah (Eks) olarak sınıflandırır.
-   - Sahra müdahale talimatları üretir ve tek tıkla BitChat acil enkaz kanalına aktarır.
-5. **Turnike Güvenlik Zamanlayıcısı (120 Dk Protokolü & Alın Damgası):**
+   - 15 saniyelik solunum, kapiller geri dolum (dolaşım) ve bilinç kontrolleriyle kazazedeyi Kırmızı, Sarı, Yeşil ve Siyah olarak sınıflandırır.
+7. **Turnike Güvenlik Zamanlayıcısı (120 Dk Protokolü & Alın Damgası):**
    - Akut atardamar kanamalarında doku kangrenini ve uzuv kaybını önleyen kesin sahra kronometresi.
-   - 45. ve 90. dakikalarda iskemi uyarısı ve sesli sinyal verir; 120. dakikada geri dönüşsüz hasar eşiğini bildirir.
-   - Sağlık ekipleri için yüksek kontrastlı alın damgası formatı üretir (Örn: `T: 14:35 - SAĞ BACAK`).
-6. **Tek Tuşla Acil Durum SMS & İhbar Hatları:**
+   - 45. ve 90. dakikalarda iskemi uyarısı ve sesli sinyal verir; sağlık ekipleri için yüksek kontrastlı alın damgası formatı üretir (Örn: `T: 14:35 - SAĞ BACAK`).
+8. **Tek Tuşla Acil Durum SMS & İhbar Hatları:**
    - 3G/4G/5G veri bağlantısı koptuğunda, 2G hücresel baz istasyonlarının sinyal kuyruğundan iletilebilen yüksek öncelikli SMS.
    - Kullanıcının kesin GPS koordinatlarını, Google Maps linkini ve durumunu içeren mesajı tek tuşla hazır SMS uygulamasına yükler.
    - 112 Acil Çağrı, 122 AFAD, 187 Doğalgaz Kaçağı ve 186 Elektrik Arıza hızlı arama butonlarını barındırır.
-7. **BitChat Dağıtık P2P Afet Ağı & Nostr Kriz Odası:**
-   - Merkezi sunucu, üyelik veya GSM numarası gerektirmez.
-   - Açık Nostr röleleri (`wss://relay.damus.io`, `wss://nos.lol`) üzerinden merkeziyetsiz şifreli mesajlaşma.
-   - WebRTC DataChannel ile telefondan telefona doğrudan P2P veri aktarımı.
+9. **BitChat Dağıtık P2P Afet Ağı & Nostr Kriz Odası:**
+   - Merkezi sunucu, üyelik veya GSM numarası gerektirmez; açık Nostr röleleri (`wss://relay.damus.io`, `wss://nos.lol`) ve WebRTC DataChannel ile telefondan telefona doğrudan P2P veri aktarımı sağlar.
    - **Acil Sıfırlama (Emergency Wipe):** Tehlike anında cihazdaki tüm mesaj ve kimlik verilerini tek tıkla kalıcı olarak siler.
-   - **Ana Ekran Sabit FAB İkonu:** Ekranı kapatmadan canlı ağ/peer durumunu gösteren küçük, zarif yüzen buton.
-8. **İnternetsiz Bas-Konuş Telsiz (PTT) & Sesli S.O.S Anons Döngüsü:**
-   - Altyapı ve baz istasyonları çöktüğünde telefon mikrofonunu ve hoparlörünü taktik telsize dönüştürür.
-   - 4 taktik PMR kanalı (Kanal 1 Genel, Kanal 2 Tıbbi, Kanal 8 Arama Kurtarma, Kanal 16 Kriz Masası).
-   - Bas-konuş (Push-to-Talk) ses kaydı, Web Audio API susturucu gürültü patlaması (squelch burst), Roger Beep (1200/1500 Hz) ve 1750 Hz röle tonları.
-   - **Otomatik Enkaz S.O.S Anons Döngüsü:** Kazazedenin sesini bir kez kaydedip, her 45 saniyede bir tam sesle otomatik tekrar ederek enkaz dışındaki arama kurtarma ekiplerine ses duyurmasını sağlar.
-   - Ses paketlerini BitChat P2P ağı üzerinden yakındaki cihazlara telsiz yayını olarak iletir.
-9. **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):**
-   - Baz istasyonları çöktüğünde kullanılan PMR 446 lisanssız el telsizi kanalları (Kanal 1 Genel Çağrı, Kanal 8 Arama Kurtarma).
-   - TRAC (Türkiye Radyo Amatörleri Cemiyeti) 145.500 MHz VHF / 433.500 MHz UHF acil röle frekansları.
-   - Hayati alt ton kapatma kuralı (CTCSS/DCS: 0) ve Web Audio telsiz bip / 1750 Hz röle ton testleri.
+10. **İnternetsiz Bas-Konuş Telsiz (PTT) & Sesli S.O.S Anons Döngüsü:**
+    - Altyapı ve baz istasyonları çöktüğünde telefon mikrofonunu ve hoparlörünü taktik telsize dönüştürür (PMR 1, 2, 8, 16 kanalları).
+    - **Otomatik Enkaz S.O.S Anons Döngüsü:** Kazazedenin sesini bir kez kaydedip, her 45 saniyede bir tam sesle otomatik tekrar ederek enkaz dışına ses duyurur.
+11. **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):**
+    - PMR 446 lisanssız el telsizi kanalları (Kanal 1 Genel, Kanal 8 Arama Kurtarma) ve TRAC 145.500 MHz VHF / 433.500 MHz UHF acil röle frekansları.
+12. **Gece Sismograf Nöbeti (Başucu Deprem Alarmı):**
+    - Cihaz şarjdayken veya komodinde sabitken mikro-ivme sarsıntılarını izleyen ve eşik aşıldığında siren çalan başucu güvenlik nöbetçisi.
 
 ---
 
-### 📡 Kategori 2: Erken Uyarı & Çevre Radarları (6 Araç)
-10. **Canlı Sel & Taşkın Erken Uyarı Radarı (GloFAS & Open-Meteo):**
+### 📡 Kategori 2: Taktik Navigasyon, Radarlar & Erken Uyarı (7 Araç)
+13. **Taktik Kerteriz Pusulası & Barometrik Kat Analitiği (AR HUD):**
+    - Donanım manyetometre (manyetik pusula) ile kullanıcının baktığı yönü hesaplar; en yakın toplanma alanına olan kerteriz açısını ve dönülmesi gereken yönü (`⤾ SAĞA 38° DÖNÜN`) sesli ve görsel bildirir.
+    - Dahili barometre (hava basıncı sensörü) verilerini milibar/hPa cinsinden izleyerek deprem anındaki son GPS rakımı ile mevcut hava basıncı irtifasını karşılaştırır; kazazedenin zemin seviyesinden kaç metre aşağıda/yukarıda olduğunu ve binanın tahmini kaçıncı katının çöktüğünü gösterir.
+14. **Canlı Sel & Taşkın Erken Uyarı Radarı (GloFAS & Open-Meteo):**
     - Kullanıcının koordinatına özel anlık yağış oranı ($mm/saat$) ve Avrupa Komisyonu GloFAS nehir debisi ($m^3/s$) analizleri.
-    - 4 seviyeli taşkın risk indeksi (Normal, Dikkat, Yüksek, Kritik).
-    - 15 cm (ayak bileği) ve 30 cm (araç sürükleme) kuralı, gizli rögar kapakları ve sel suyunda kaçak elektrik tehlike direktifleri.
-11. **Enkaz Tozu, Yangın & Hava Kalitesi Radarı (Open-Meteo):**
-    - Avrupa Çevre Ajansı (AQI) hava kalitesi indeksi, PM2.5 ince toz, PM10 kaba toz, Karbonmonoksit (CO), $NO_2$, $SO_2$ ve Ozon değerleri.
-    - Enkaz yıkıntılarından kalkan asbest lifleri ve silika tozuna karşı N95/FFP2 maske hayati uyarısı.
-    - Çadırlarda ve kapalı alanlarda çalıştırılan benzinli jeneratörlerin sebep olduğu zehirlenmelere karşı CO ikazı.
-12. **Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara, Ege & Akdeniz):**
-    - Kandilli Rasathanesi ve ODTÜ Kıyı ve Deniz Mühendisliği tsunami protokolleri.
-    - Kıyı şeridinde deniz tabanı depremleri sonrası "Kıyıdan en az 500 metre iç kesime veya +15 metre yüksekliğe tırman" direktifi.
-    - Deniz suyunun aniden çekilmesinin tsunami dalgasının ilk göstergesi olduğu hayati kaçış sinyali.
-    - Kullanıcının konumuna göre en yakın yüksek kotlu AFAD toplanma alanına tek tıkla rota yönlendirmesi.
-13. **Sismik Erken Uyarı & P/S Dalgası Simülasyonu:**
-    - Birincil (P dalgası: $6-7\text{ km/s}$) ve ikincil yıkıcı (S dalgası: $3.5-4\text{ km/s}$) yayılım sürelerini anlık hesaplar.
-    - Kullanıcının deprem merkez üssüne olan mesafesine göre yıkıcı sarsıntı gelmeden önceki kaçış ve hayat üçgeni kurma süresini (saniye cinsinden) gösterir.
-14. **Kalibre Edilebilir Cihaz Sismografı (STA/LTA Algoritması):**
-    - Akıllı telefonun dahili donanım jiroskop ve ivmeölçerini kullanarak mikrosarsıntıları analiz eder.
-    - STA/LTA (Short-Term Average / Long-Term Average) sismolojik algoritmasıyla zemin gürültüsünü filtreler.
-    - Gerçek zamanlı yerçekimi ivmesi ($m/s^2$ ve Gal birimi) ile Mercalli şiddet skalası tahminleri.
-15. **Depremi Hissettim Bildirimi:**
+    - 4 seviyeli taşkın risk indeksi (Normal, Dikkat, Yüksek, Kritik); 15 cm ve 30 cm sürüklenme kuralı.
+15. **Enkaz Tozu, Yangın & Hava Kalitesi Radarı (Open-Meteo):**
+    - AQI hava kalitesi, PM2.5, PM10, Karbonmonoksit (CO), $NO_2$, $SO_2$ ve Ozon değerleri; asbest lifleri ve silika tozuna karşı N95/FFP2 maske uyarısı.
+16. **Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara, Ege & Akdeniz):**
+    - Kıyı şeridi deniz tabanı depremleri sonrası "Kıyıdan en az 500 m iç kesime veya +15 m yüksekliğe tırman" direktifi ve yüksek kotlu toplanma rotası.
+17. **Sismik Erken Uyarı & P/S Dalgası Simülasyonu:**
+    - Birincil (P dalgası) ve ikincil (S dalgası) yayılım sürelerini hesaplayarak yıkıcı dalga gelmeden önceki kaçış payını gösterir.
+18. **Kalibre Edilebilir Cihaz Sismografı (STA/LTA Algoritması):**
+    - Donanım jiroskop ve ivmeölçer ile mikrosarsıntı analizi, zemin gürültüsü filtreleme ve Mercalli şiddet skalası tahmini.
+19. **Depremi Hissettim Bildirimi:**
     - USGS "Did You Feel It?" standartlarına uygun Mercalli I-X ölçeğinde sarsıntı geri bildirimi.
-    - Sivil halkın hissettiği şiddeti doğrudan harita telemetrisine aktarma imkanı.
 
 ---
 
-### 🎒 Kategori 3: Hazırlık & Aile Güvenliği (9 Araç)
-16. **Çevrimdışı Vektör Harita Paketleri (İl & Bölge Bazlı Offline Cache İndirme):**
-    - İnternet ve elektrik kesintisi öncesinde toplanma alanları, hastane ve nöbetçi eczane verilerini tarayıcının yerel `CacheStorage` belleğine indirme imkanı.
-    - Marmara, Ege, Akdeniz, İç Anadolu, Doğu ve Güneydoğu bölgesel paketleri; cihaz hafızası (`navigator.storage.estimate`) izleme desteği.
-17. **Türk Kızılay Kan Bağış Merkezleri & Donör Eşleşme Portalı:**
-    - Türkiye genelinde 22 doğrulanmış Kızılay Bölge Kan Merkezi (Marmara, Orta Anadolu, Ege, Doğu Anadolu, Güneydoğu vb.).
-    - 8 kan grubu için interaktif verici-alıcı uyumluluk matrisi (0- evrensel verici, AB+ evrensel alıcı).
-    - BitChat ağı üzerinden doğrulanmış acil kan ihtiyacı çağrısı yayımlama.
-18. **Afet İlaç & Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi):**
-    - Deprem ve tahliye esnasında kaybolan kronik ilaçların sahra eczanelerinden temini için çevrimdışı reçete pasaportu.
-    - Ticari marka (Beloc, Lantus, Ventolin vb.) arandığında eşdeğer etken maddeleri (*Metoprolol*, *İnsülin Glarjin*, *Salbutamol*) gösterir.
-    - Elektriksiz ortamda insülin için Toprak Çömlek (Zeer Pot) buharlaşmalı soğuk zincir koruma rehberi içerir.
-19. **Ev İçi Deprem Tehlike Avı (Yapısal Olmayan Risk Denetimi & Ev Puanı):**
-    - Deprem yaralanmalarının %70'ini oluşturan mobilya devrilmelerine karşı oda bazlı interaktif denetim.
-    - Gardırop, kombi, mutfak dolap mandalları ve kaçış koridoru denetlenerek %0-100 Ev Güvenlik Puanı (A-B-C-D Seviyesi) ve DIY sabitleme raporu üretir.
-20. **Afet Sahra İhtiyaç & Yardım Masası (P2P Dağıtım & Çadırkent Koordinasyonu):**
-    - Çadırkentlerde ve sahra bölgelerinde bebek maması, bez, kadın hijyen kiti, içme suyu, kışlık bot, uyku tulumu ve jeneratör gibi acil ihtiyaçları veya eldeki fazla malzemeyi kategorize eder.
-    - GPS koordinatları ve çadır numarasıyla standart sahra yardım pusulası üretir; tek tıkla BitChat P2P ağına yayınlar veya SMS/WhatsApp için kopyalar.
-21. **Pati & Evcil Hayvan Afet Güvenliği (Pati Pasaportu & HayTAP Tahliye Rehberi):**
-    - Afet anında kedi, köpek ve can dostlarımız için 15 haneli mikroçip, sahip telefonu ve tıbbi notları içeren Dijital Pati Pasaportu ve Tasma Künyesi.
-    - 7 günlük mama, katlanır su kabı, taşıma kafesi (box) ve hayvan ilk yardım kiti içeren Pati Afet Çantası kontrol listesi.
-    - HayTAP ve AFAD onaylı enkaz altı hayvan kurtarma, kaçmayı önleyen tahliye protokolleri ve acil hayvan kurtarma ihbar hatları.
-22. **72 Saatlik Afet Çantası & Eksik Malzeme Takibi:**
-    - Su, gıda, ilk yardım, hijyen, araç-gereç ve resmi evrak kategorilerinde kişiselleştirilebilir kontrol listesi.
-    - Eksik malzemeleri filtreleyip tek dokunuşla aile fertlerine SMS veya WhatsApp ile gönderebilme.
-23. **Bina ve Zemin Sismik Ön Değerlendirme Kartı:**
-    - Kullanıcının koordinatına en yakın MTA aktif diri fay hattının adı, mesafesi ve yıllık kayma hızı.
-    - Bina yapım yılı (1999 öncesi / 2000-2018 / 2018 sonrası deprem yönetmelikleri) ve zemin sınıfı analizi.
-24. **Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE):**
-    - Telefon ekranı kilitli ve şifreliyken dahi arama kurtarma ekiplerinin görebileceği tıbbi duvar kağıdı oluşturur.
-    - Kan grubu, kronik hastalıklar, alerjiler, acil aranacak kişi (ICE) numarası ve en yakın toplanma alanını şık bir görselde birleştirip telefon galerisine indirir.
+### 🛡️ Kategori 3: Sivil Savunma, Hukuk & Sahra Lojistiği (11 Araç)
+20. **Bina Çatlak & Yapısal Hasar Tespit Değerlendiricisi (DASK Kanıt Tutanağı):**
+    - Deprem sonrası kolon, kiriş ve perde duvarlarda oluşan çatlakları FEMA ATC-20 standartlarına göre analiz eder:
+      - **Kritik X-Tipi Kesme Çatlağı:** Kolonda 45 derece çapraz yarık (Derhal acil tahliye uyarısı).
+      - **Kiriş Ayrılması:** Birleşim bölgelerinde ezilme ve donatı demirlerinin açığa çıkması (Yıkılma tehlikesi).
+      - **Yüzeysel Sıva Çatlağı:** Taşıyıcı olmayan duvarlarda ince kılcal çatlaklar.
+    - GPS koordinatı, ivme doğrulaması ve UTC zaman damgasıyla imzalanmış resmi **DASK & Kasko Hasar Tespit Tutanağı** metni üretir.
+21. **Sahra Su Arıtma & Klorlama Dozajlayıcısı (WHO WASH Standardı):**
+    - Dünya Sağlık Örgütü (WHO WASH) ve UNICEF standartlarına uygun kolera, dizanteri ve tifo önleyici sahra dezenfeksiyon hesaplayıcısı.
+    - 1 Litre, 5 Litre, 10 Litre ve 19L Damacana için ev tipi çamaşır suyu (%4-5 katkısız sodyum hipoklorit NaOCl damla sayısı) veya klor tableti hesabı.
+    - Bulanık/tortulu su modu (ön filtreleme kuralı) ve zorunlu 30 dakikalık klor temas süresi geri sayım sayacı.
+22. **KBRN, Radyasyon & Nükleer Serpinti Sığınağı Kılavuzu:**
+    - Nükleer patlama, serpinti veya kimyasal/biyolojik sızıntı anında hayatta kalma protokolleri.
+    - Radyasyon soğurma yarı-değer kalınlıkları (1 cm Kurşun = 6 cm Çelik = 20 cm Beton = 30 cm Toprak = 100 cm Ahşap).
+    - İlk 48 saatlik iç sığınak (Shelter-in-Place) hava geçirmez bantlama ve ters orantı kuralı ($I_2 = I_1 \times (t_1/t_2)^{1.2}$).
+    - Yaşa göre Potasyum İyodür (KI) tiroid koruma dozaj tablosu ve kontamine kıyafetlerin çıkarılması adımları.
+23. **Sivil Savunma Evrak Kasası, P2P Barter Defteri & DASK 15 Gün Süre Takibi:**
+    - **Çevrimdışı Mülkiyet Kasası:** Tapu senedi, kira kontratı, araç ruhsatı ve kimlik evraklarını yerel güvenli belleğe kaydeder.
+    - **P2P İhtiyaç & Barter Takas Defteri:** Bankacılık sistemi çöktüğünde eldeki fazla malzemeler (bebek maması, kışlık mont) ile acil ihtiyaçları listeler ve çapraz eşleştirir.
+    - **DASK 15 Günlük Yasal İhbar Süre Takibi:** Afet anından itibaren işleyen kasko ve DASK yasal başvuru süre sayacı.
+24. **Türk Kızılay Kan Bağış Merkezleri & Donör Eşleşme Portalı:**
+    - 22 Kızılay Bölge Kan Merkezi, 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
+25. **Afet İlaç & Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi):**
+    - Kronik ilaçlar için sahra eşdeğer etken madde rehberi ve Zeer Pot buharlaşmalı soğuk zincir koruma kılavuzu.
+26. **Çevrimdışı Vektör Harita Paketleri (İl & Bölge Bazlı Offline Cache İndirme):**
+    - Toplanma alanları, hastane ve eczaneleri tarayıcının yerel `CacheStorage` belleğine tek tıkla indirme.
+27. **Afet Sahra İhtiyaç & Yardım Masası (P2P Dağıtım & Çadırkent Koordinasyonu):**
+    - Acil ihtiyaç ve malzeme pusulası üretip BitChat P2P ağına yayınlama.
+28. **Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji):**
+    - Çadırkentlerin sıcak yemek, içilebilir su, WC ve jeneratör insani koşullarını puanlama ve bildirme masası.
+29. **Apartman Girişi & Asansör Acil Durum Afişi (A4 Formatı):**
+    - En yakın 3 toplanma alanı ve hastaneleri QR kodlu, doğrudan yazdırılabilir (Ctrl+P / PDF) A4 bina afişi olarak hazırlar.
+30. **Çevrimdışı QR Güvendeyim Durum Paketi:**
+    - Sıfır internet ve şebeke ortamında cihazlar arasında QR kod taramasıyla durum ve telemetri aktarımı.
 
 ---
 
-### 📋 Kategori 4: Bilgilendirme, Rehberler & Sahra (9 Araç)
-25. **Psikolojik İlk Yardım & Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi):**
-    - Deprem ve afet anında tetiklenen panik atak, donakalma ve hiperventilasyona karşı sesli ve görsel animasyonlu 4-4-4-4 Kutu Nefes egzersizi (Al, Tut, Ver, Bekle).
-    - 5-4-3-2-1 Duyusal Topraklanma tekniği (Gör, Dokun, Duy, Kokla, Tat) ve travma geçiren afetzedelere ve çocuklara nasıl yaklaşılacağına dair klinik sahra yönergeleri.
-26. **Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji):**
-    - Çadırkentlerin ve toplanma alanlarının anlık insani yaşam koşullarını (sıcak yemek/çorba, içilebilir su, seyyar tuvalet/WC, çadır kapasitesi, jeneratör ve güvenlik) takip ve puanlama masası.
-    - Standart sahra karne raporu oluşturarak tek tıkla BitChat P2P kriz ağına yayınlama veya SMS ile sahra koordinasyon birimlerine bildirme.
-27. **Afet Bebek ve Çocuk Beslenme Rehberi (UNICEF & DSÖ Standartları):**
-    - Çadırkentlerde steril su eksikliği nedeniyle yaşanan ölümcül bebek ishali ve dizanteriyi önleme kılavuzu.
-    - Biberon ve emzik yerine steril kaşık veya küçük bardakla besleme (cup-feeding) kuralı.
-    - Şok yaşayan annelerde ten tene temas ve relaktasyon (yeniden süt getirme) teknikleri; formül mamalar için 70°C kaynamış su hazırlama ve saklama direktifleri.
-28. **Çadırkent Kış Isınma Güvenliği & Karbonmonoksit (CO) Zehirlenme Testi:**
-    - Çadırkent ve konteynerlerde soba ve katalitik ısıtıcılardan kaynaklanan ölümcül karbonmonoksit gazına karşı interaktif 6 belirti risk testi.
-    - Çadır kumaşı ve yataklardan 100 cm mesafe kuralı, sürekli 5 cm açık tepe havalandırma kuralı, uykuda soba söndürme kuralı ve çadır içinde jeneratör çalıştırmama direktifi.
-    - Galvaniz baca geçiş sacı (flanş) standartları ve zehirlenmede açık havaya çıkarma ilk yardım adımları.
-29. **Afet, Enkaz & İlkyardım Hayatta Kalma Rehberi:**
-    - **Kapalı Alanda:** Merdiven tuzağı uyarısı (deprem anında merdivenlere koşmama kuralı), hayat üçgeni, şalter ve vanaların kapatılması.
-    - **Enkaz Altında:** Oksijen koruma, 3 vuruş uluslararası akustik dinleme kodu ("TAK - TAK - TAK"), kesinlikle kibrit/çakmak yakmama kuralı (gaz patlaması önleme).
-    - **Açık Alanda & Araçta:** Kontak anahtarını üzerinde bırakma kuralı (itfaiye ve ambulans geçişi için), cephe kaplamaları ve cam yağmurundan korunma.
-    - **Sel & Yangın:** 30 cm sel suyu sürüklenme riski, yangında zemine paralel sürünme direktifi.
-    - **İlk Yardım & Crush Sendromu:** Enkazdan çıkan kazazedeye damar yolu açılmadan önce kontrolsüz su vermeme kuralı (ani böbrek iflası ve potasyum zehirlenmesi önleme), turnike uygulama ve zaman kaydı.
-    - **Temiz Su & Salgın Hastalık Önleme:** Şebeke sularını kaynatma protokolü, acil su klorlama formülü (1 litre berrak suya 3 damla, bulanık suya 5-6 damla kokusuz saf çamaşır suyu damlatıp 30 dk bekleme), sahra tuvaletlerinin su kaynaklarından 50 m uzağa kurulması, kireç dökme kuralı, kolera, tifo ve uyuz salgınlarına karşı korunma kuralları.
-30. **Apartman Girişi & Asansör Acil Durum Afişi (A4 Formatı):**
-    - Bina yöneticileri ve site sakinleri için tek tıkla binanın etrafındaki en yakın 3 AFAD toplanma alanını, acil servis hastanelerini ve nöbetçi eczaneleri harita kroki ve QR koduyla derleyen, doğrudan yazdırılabilir (Ctrl+P / PDF) A4 afişi.
-31. **Aile Afet Buluşma Kartı (Story 9:16 Formatı):**
-    - Aile bireyleriyle sosyal medyada (WhatsApp, Telegram, Instagram Story) paylaşılabilen, acil buluşma noktasını ve irtibat kişisini içeren görsel afet kartı üretici.
-32. **Deprem Tatbikat Simülatörü:**
-    - P ve S dalgası siren sesleriyle desteklenen interaktif deprem tatbikatı.
-    - Sarsıntı süresince Çök-Kapan-Tutun zamanlayıcısı ve sarsıntı bitiminde tahliye yönergeleri.
-33. **Çevrimdışı QR Güvendeyim Durum Paketi:**
-    - İnternet ve hücresel şebekenin tamamen çöktüğü durumlarda, cihazlar arasında hava boşluğu (air-gap) ile veri aktarımı.
-    - Aile bireylerinin durumunu, koordinatlarını ve pil seviyesini QR kod taratarak kaydedebilme.
+### 🎒 Kategori 4: Hazırlık, Aile Güvenliği & Rehberler (10 Araç)
+31. **72 Saatlik Afet Çantası & Eksik Malzeme Takibi:**
+    - Su, gıda, ilk yardım, hijyen ve evrak kontrol listesi; eksikleri aile fertlerine SMS/WhatsApp ile iletme.
+32. **Bina ve Zemin Sismik Ön Değerlendirme Kartı:**
+    - En yakın diri fay hattı mesafesi, bina yapım yılı ve zemin sınıfı analizi.
+33. **Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE):**
+    - Ekran kilitliyken görülebilecek kan grubu, alerji ve acil irtibat tıbbi duvar kağıdı oluşturucu.
+34. **Ev İçi Deprem Tehlike Avı (Yapısal Olmayan Risk Denetimi & Ev Puanı):**
+    - Mobilya sabitleme denetimi ile %0-100 Ev Güvenlik Puanı ve DIY sabitleme raporu.
+35. **Pati & Evcil Hayvan Afet Güvenliği (Pati Pasaportu & HayTAP Tahliye Rehberi):**
+    - Can dostlarımız için dijital pati pasaportu, hayvan ilk yardım çantası ve enkaz tahliye rehberi.
+36. **Psikolojik İlk Yardım & Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi):**
+    - Sesli ve animasyonlu 4-4-4-4 Kutu Nefes egzersizi ve 5-4-3-2-1 duyusal topraklanma rehberi.
+37. **Afet Bebek ve Çocuk Beslenme Rehberi (UNICEF & DSÖ Standartları):**
+    - Biberon yerine steril kaşıkla besleme, relaktasyon teknikleri ve 70°C kaynamış su kuralları.
+38. **Çadırkent Kış Isınma Güvenliği & Karbonmonoksit (CO) Zehirlenme Testi:**
+    - Çadırkent sobaları için 6 belirti zehirlenme testi, 100 cm mesafe kuralı ve açık tepe havalandırma direktifleri.
+39. **Afet, Enkaz & İlkyardım Hayatta Kalma Rehberi:**
+    - Kapalı alanda, enkaz altında, açık alanda hayatta kalma; 3 vuruş akustik dinleme kodu ve temiz su protokolleri.
+40. **Aile Afet Buluşma Kartı & Deprem Tatbikat Simülatörü:**
+    - Sosyal medyada paylaşılabilir 9:16 Aile Buluşma Kartı ve siren sesleriyle Çök-Kapan-Tutun simülatörü.
 
 ---
 
