@@ -351,33 +351,33 @@ export class HeaderHUD {
       <!-- =========================================================
            2. BOTTOM CENTER: iOS 27 FLOATING SPATIAL GLASS DOCK
            ========================================================= -->
-      <div class="fixed bottom-3.5 sm:bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none">
-        <div id="ios27-dock" class="ios27-dock px-3.5 py-2 flex items-center gap-2.5 text-white shadow-2xl">
+      <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none max-w-[96vw]">
+        <div id="ios27-dock" class="ios27-dock px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-center gap-1.5 sm:gap-2.5 text-white shadow-2xl">
           <!-- 1. Locate Me / Map -->
-          <button id="btn-dock-locate" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer" title="Konumuma Odaklan">
-            ${Icons.crosshair('w-5 h-5')}
+          <button id="btn-dock-locate" type="button" class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Konumuma Odaklan">
+            ${Icons.crosshair('w-4.5 h-4.5 sm:w-5 sm:h-5')}
           </button>
 
           <!-- 2. Big SOS Trigger -->
-          <button id="btn-dock-sos" type="button" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer">
+          <button id="btn-dock-sos" type="button" class="px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer shrink-0">
             <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>S.O.S</span>
           </button>
 
           <!-- 3. Hissettim Butonu (SOS Yanında) -->
-          <button id="btn-dock-felt" type="button" class="px-3.5 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer" title="Depremi Hissettim Bildirimi">
+          <button id="btn-dock-felt" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="Depremi Hissettim Bildirimi">
             ${Icons.activity('w-4 h-4 text-amber-400')}
             <span>Hissettim</span>
           </button>
 
           <!-- 4. BitChat Messenger -->
-          <button id="btn-dock-bitchat" type="button" class="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-cyan-300 hover:text-white transition-all relative cursor-pointer" title="BitChat Kriz Odası">
-            ${Icons.messages('w-5 h-5')}
+          <button id="btn-dock-bitchat" type="button" class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-cyan-300 hover:text-white transition-all relative cursor-pointer shrink-0" title="BitChat Kriz Odası">
+            ${Icons.messages('w-4.5 h-4.5 sm:w-5 sm:h-5')}
             <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-obsidian-950"></span>
           </button>
 
           <!-- 5. Control Center Menu Button -->
-          <button id="btn-dock-menu" type="button" class="px-3 py-2 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-bold text-white flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer" title="Afet Kontrol Merkezi">
+          <button id="btn-dock-menu" type="button" class="px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-bold text-white flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer shrink-0" title="Afet Kontrol Merkezi">
             <span class="text-cyan-400">${Icons.grid('w-4 h-4')}</span>
             <span class="hidden sm:inline">Kontrol Merkezi</span>
           </button>
@@ -389,7 +389,7 @@ export class HeaderHUD {
            ========================================================= -->
       <div
         id="ios27-bento-sheet"
-        class="fixed inset-x-2 sm:inset-x-auto sm:right-6 sm:bottom-20 bottom-20 sm:w-[480px] max-h-[82vh] ios27-glass rounded-3xl p-4 sm:p-5 border border-white/15 shadow-2xl z-50 flex flex-col gap-3.5 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
+        class="fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[500px] max-h-[80vh] ios27-glass rounded-3xl p-4 sm:p-5 border border-white/15 shadow-2xl z-50 flex flex-col gap-3.5 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
       >
         <!-- Sheet Header -->
         <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">

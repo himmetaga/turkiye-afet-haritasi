@@ -52,7 +52,7 @@ export class MapEngine {
           showZoom: true,
           visualizePitch: true
         }),
-        'bottom-right'
+        'top-right'
       );
 
       this.map.on('error', (e) => {

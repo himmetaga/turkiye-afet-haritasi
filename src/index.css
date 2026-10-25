@@ -198,15 +198,15 @@ button.hud-control:active {
 }
 
 /* MapLibre Canvas overrides */
-.maplibregl-ctrl-bottom-right {
-  bottom: 24px !important;
-  right: 20px !important;
+.maplibregl-ctrl-top-right {
+  top: 14px !important;
+  right: 14px !important;
 }
 
 @media (max-width: 639px) {
-  .maplibregl-ctrl-bottom-right {
-    bottom: 50px !important;
-    right: 12px !important;
+  .maplibregl-ctrl-top-right {
+    top: 52px !important;
+    right: 10px !important;
   }
 }
 

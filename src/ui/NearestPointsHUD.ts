@@ -3,6 +3,8 @@ import { Icons } from './icons';
 import { getBearingDirectionText } from '../utils/geoMath';
 import { voiceGuide } from '../services/voiceGuideService';
 import { isAfterClosingHours } from '../utils/pharmacySchedule';
+import { bindPressAndHold } from './pressAndHold';
+import { syncCurrentRegionOffline, isOfflineProtected } from '../services/offlineSyncService';
 
 export type HUDCategory = 'assembly' | 'hospitals' | 'pharmacies';
 
@@ -27,16 +29,24 @@ function formatDutyDate(dateStr?: string): string {
 export class NearestPointsHUD {
   private container: HTMLElement;
   private onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void;
+  private getCenterCoords?: () => [number, number];
   private currentData: NearestHUDData = { assembly: [], hospitals: [], pharmacies: [] };
   private activeCategory: HUDCategory = 'assembly';
   private isCollapsed = true;
   private contextTitle = 'En Yakın Güvenlik Noktaları';
+  private isOfflineProtected = isOfflineProtected();
+  private isSyncing = false;
 
-  constructor(parent: HTMLElement, onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void) {
+  constructor(
+    parent: HTMLElement,
+    onSelectPoint: (point: AssemblyPoint | EmergencyFacility) => void,
+    getCenterCoords?: () => [number, number]
+  ) {
     this.onSelectPoint = onSelectPoint;
+    this.getCenterCoords = getCenterCoords;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-20 sm:bottom-22 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border max-w-[96vw]';
     parent.appendChild(this.container);
   }
 
@@ -73,23 +83,25 @@ export class NearestPointsHUD {
         ? 'bg-cyan-400'
         : 'bg-amber-400';
 
-    // 1. Kapalı / Dock Buton Çubuğu (Sol altta şık 3 parçalı buton seti)
+    // 1. Kapalı / Dock Buton Çubuğu (Ortalanmış, simetrik 4 parçalı modern spatial cam pill seti)
     if (this.isCollapsed) {
       this.container.className =
-        'absolute bottom-20 sm:bottom-22 left-3 right-auto sm:left-4 z-30 flex items-center pointer-events-auto transition-all box-border';
+        'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border max-w-[96vw]';
+
+      const isReady = this.isOfflineProtected;
 
       this.container.innerHTML = `
-        <div class="flex items-center p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-1 sm:gap-1.5 transition-all">
+        <div class="flex items-center p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-0.5 sm:gap-1.5 transition-all">
           <!-- Toplanma Butonu -->
           <button
             id="btn-collapsed-assembly"
             type="button"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
             title="En Yakın Toplanma Alanları"
           >
-            ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform')}
-            <span class="text-xs">Toplanma</span>
-            <span class="px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">
+            ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0')}
+            <span class="text-[10.5px] sm:text-xs">Toplanma</span>
+            <span class="px-1 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[9px] sm:text-[10px] font-bold">
               ${this.currentData.assembly.length}
             </span>
           </button>
@@ -98,12 +110,12 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-hospitals"
             type="button"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
             title="En Yakın Hastaneler"
           >
-            ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform')}
-            <span class="text-xs">Hastaneler</span>
-            <span class="px-1.5 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold">
+            ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0')}
+            <span class="text-[10.5px] sm:text-xs">Hastane</span>
+            <span class="px-1 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[9px] sm:text-[10px] font-bold">
               ${this.currentData.hospitals.length}
             </span>
           </button>
@@ -112,13 +124,36 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-pharmacies"
             type="button"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
             title="Bugünün Nöbetçi Eczaneleri"
           >
-            ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform')}
-            <span class="text-xs">Eczaneler</span>
-            <span class="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold">
+            ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0')}
+            <span class="text-[10.5px] sm:text-xs">Eczane</span>
+            <span class="px-1 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] sm:text-[10px] font-bold">
               ${this.currentData.pharmacies.length}
+            </span>
+          </button>
+
+          <!-- Çevrimdışı Kaydet Butonu -->
+          <button
+            id="btn-sync-offline"
+            type="button"
+            class="relative overflow-hidden flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl ${
+              isReady
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                : 'bg-white/5 hover:bg-white/10 border border-white/5 text-gray-200 hover:text-white'
+            } text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
+            title="${isReady ? 'Çevrimdışı Harita Aktif' : 'Çevrimdışı Harita ve Bilgileri Kaydet (Tıkla / Basılı Tut)'}"
+          >
+            <div
+              id="sync-progress-fill"
+              class="absolute inset-0 bg-emerald-500/25 origin-left scale-x-0 transition-transform duration-75 pointer-events-none"
+            ></div>
+            <span class="relative z-10 shrink-0">
+              ${isReady ? Icons.checkCircle('w-3.5 h-3.5 text-emerald-400') : Icons.offlineCloud('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform')}
+            </span>
+            <span id="sync-subtext" class="relative z-10 text-[10.5px] sm:text-xs font-semibold">
+              ${isReady ? 'Kayıtlı' : 'Kaydet'}
             </span>
           </button>
         </div>
@@ -142,12 +177,57 @@ export class NearestPointsHUD {
         this.render();
       });
 
+      // Bind Offline Save Button
+      const syncBtn = this.container.querySelector('#btn-sync-offline') as HTMLElement;
+      const progressFill = this.container.querySelector('#sync-progress-fill') as HTMLElement;
+      const syncText = this.container.querySelector('#sync-subtext') as HTMLElement;
+
+      if (syncBtn) {
+        const executeSync = async () => {
+          if (this.isSyncing) return;
+          this.isSyncing = true;
+          if (syncText) syncText.textContent = 'İndiriliyor';
+          const center = this.getCenterCoords ? this.getCenterCoords() : ([29.0, 41.0] as [number, number]);
+          const result = await syncCurrentRegionOffline(center, (p) => {
+            if (syncText) syncText.textContent = `%${p.progress}`;
+          });
+          this.isSyncing = false;
+          if (result.success) {
+            this.isOfflineProtected = true;
+            this.render();
+          } else {
+            if (syncText) syncText.textContent = 'Tekrar';
+          }
+        };
+
+        bindPressAndHold(syncBtn, {
+          durationMs: 700,
+          onProgress: (ratio) => {
+            if (progressFill) progressFill.style.transform = `scaleX(${ratio})`;
+            if (syncText && !this.isSyncing) {
+              syncText.textContent = ratio > 0 ? `%${Math.round(ratio * 100)}` : (this.isOfflineProtected ? 'Kayıtlı' : 'Kaydet');
+            }
+          },
+          onComplete: executeSync,
+          onCancel: () => {
+            if (progressFill) progressFill.style.transform = 'scaleX(0)';
+          }
+        });
+
+        syncBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!this.isSyncing && !this.isOfflineProtected) {
+            executeSync();
+          }
+        });
+      }
+
       return;
     }
 
-    // 2. Açık Çekmece Durumu
+    // 2. Açık Çekmece Durumu - Ortalanmış ve Dock üstünde simetrik
     this.container.className =
-      'absolute bottom-20 sm:bottom-22 left-3 right-3 sm:right-auto sm:left-4 sm:w-[420px] max-w-[calc(100vw-24px)] sm:max-w-[420px] z-30 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[440px] max-w-[460px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all border border-white/10 max-h-[80vh] flex flex-col">
@@ -204,7 +284,7 @@ export class NearestPointsHUD {
             }"
           >
             ${Icons.hospital('w-3.5 h-3.5 text-cyan-400')}
-            <span class="truncate">Hastaneler</span>
+            <span class="truncate">Hastane</span>
             <span class="text-[10px] font-mono px-1 rounded ${
               this.activeCategory === 'hospitals' ? 'bg-cyan-500/30 text-cyan-200 font-bold' : 'bg-white/10 text-gray-400'
             }">
@@ -222,7 +302,7 @@ export class NearestPointsHUD {
             }"
           >
             ${Icons.pill('w-3.5 h-3.5 text-amber-400')}
-            <span class="truncate">Eczaneler</span>
+            <span class="truncate">Eczane</span>
             <span class="text-[10px] font-mono px-1 rounded ${
               this.activeCategory === 'pharmacies' ? 'bg-amber-500/30 text-amber-200 font-bold' : 'bg-white/10 text-gray-400'
             }">

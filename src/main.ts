@@ -234,9 +234,13 @@ class DisasterAtlasApp {
       onToggleCivilVault: () => this.civilVaultModal.show()
     });
 
-    this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
-      this.focusPoint(point);
-    });
+    this.nearestHUD = new NearestPointsHUD(
+      appEl,
+      (point) => {
+        this.focusPoint(point);
+      },
+      () => this.userCoords
+    );
 
     this.detailHUD = new PointDetailHUD(appEl, {
       onRoute: (point) => this.routeToPoint(point),
