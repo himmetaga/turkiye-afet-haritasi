@@ -37,7 +37,11 @@ export interface ParsedDeepLink {
     | 'tsunami'
     | 'dalga'
     | 'kan'
-    | 'kizilay';
+    | 'kizilay'
+    | 'turnike'
+    | 'ilac'
+    | 'recete'
+    | 'tehlike-avi';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -97,7 +101,11 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'tsunami',
       'dalga',
       'kan',
-      'kizilay'
+      'kizilay',
+      'turnike',
+      'ilac',
+      'recete',
+      'tehlike-avi'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

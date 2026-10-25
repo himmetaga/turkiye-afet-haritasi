@@ -30,6 +30,9 @@ export interface HeaderHUDCallbacks {
   onToggleAirQuality: () => void;
   onToggleTsunami: () => void;
   onToggleBlood: () => void;
+  onToggleTourniquet: () => void;
+  onToggleMedPassport: () => void;
+  onToggleHazardHunt: () => void;
 }
 
 export interface SearchResultItem {
@@ -67,6 +70,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     accentClass: 'text-rose-400',
     tools: [
       { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
+      { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)', rgb: '239, 68, 68', icon: Icons.timer },
       { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
       { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', icon: Icons.messages },
       { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
@@ -94,6 +98,8 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     accentClass: 'text-amber-400',
     tools: [
       { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
+      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Etken Madde Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
+      { id: 'btn-open-hazard-hunt', label: 'Tehlike Avı', title: 'Ev İçi Deprem Güvenlik Denetimi & Sabitleme Skoru', rgb: '245, 158, 11', icon: Icons.home },
       { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack },
       { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
@@ -532,6 +538,9 @@ export class HeaderHUD {
       'btn-open-ice': () => this.callbacks.onToggleICE(),
       'btn-open-guide': () => this.callbacks.onToggleGuide(),
       'btn-open-triage': () => this.callbacks.onToggleTriage(),
+      'btn-open-tourniquet': () => this.callbacks.onToggleTourniquet(),
+      'btn-open-med-passport': () => this.callbacks.onToggleMedPassport(),
+      'btn-open-hazard-hunt': () => this.callbacks.onToggleHazardHunt(),
       'btn-open-air-quality': () => this.callbacks.onToggleAirQuality(),
       'btn-open-tsunami': () => this.callbacks.onToggleTsunami(),
       'btn-open-blood': () => this.callbacks.onToggleBlood(),

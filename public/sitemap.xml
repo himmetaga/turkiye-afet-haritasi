@@ -126,6 +126,24 @@
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://afet.live/?mod=turnike</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=ilac</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://afet.live/?mod=tehlike-avi</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
 
   <!-- 81 İl Toplanma Alanı & Deprem Haritası -->
   <url><loc>https://afet.live/?il=adana</loc><lastmod>2026-10-24</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
