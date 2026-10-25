@@ -1,5 +1,6 @@
 import { seismicSensorNode, SeismicNodeStatus, AccelerationSample } from '../services/seismicSensorNode';
 import { Icons } from './icons';
+import { soundSynthesizer } from '../services/soundSynthesizer';
 
 export class SeismographModal {
   private container: HTMLElement;
@@ -294,9 +295,7 @@ export class SeismographModal {
     this.container.querySelector('#btn-close-seismo')?.addEventListener('click', () => this.hide());
     this.container.querySelector('#btn-seismo-wakelock')?.addEventListener('click', () => this.toggleWakeLock());
     this.container.querySelector('#btn-seismo-siren-test')?.addEventListener('click', () => {
-      import('../services/soundSynthesizer').then(({ soundSynthesizer }) => {
-        soundSynthesizer.playEarlyWarningSiren(1.5);
-      });
+      soundSynthesizer.playEarlyWarningSiren(1.5);
     });
 
     this.container.querySelectorAll('.sens-btn').forEach((btn) => {

@@ -30,12 +30,15 @@ export interface BitChatIdentity {
 const STORAGE_IDENTITY_KEY = 'afet_bitchat_identity_v2';
 const STORAGE_SK_KEY = 'afet_bitchat_sk_v2';
 const STORAGE_MESSAGES_KEY = 'afet_bitchat_messages_v1';
+const STORAGE_OUTBOX_KEY = 'afet_bitchat_outbox_v1';
 const BROADCAST_CHANNEL_NAME = 'afet_bitchat_mesh_bus';
 
 const DEFAULT_RELAYS = [
   'wss://nos.lol',
   'wss://relay.primal.net',
-  'wss://relay.damus.io'
+  'wss://relay.damus.io',
+  'wss://relay.snort.social',
+  'wss://nostr.mom'
 ];
 
 type MessageListener = (msg: BitChatMessage) => void;
@@ -45,6 +48,7 @@ class BitChatService {
   private secretKey: Uint8Array;
   private identity: BitChatIdentity;
   private messages: BitChatMessage[] = [];
+  private outboxQueue: string[] = [];
   private broadcastChannel: BroadcastChannel | null = null;
   private messageListeners: Set<MessageListener> = new Set();
   private statusListeners: Set<StatusListener> = new Set();
@@ -59,9 +63,46 @@ class BitChatService {
     this.secretKey = this.loadOrCreateSecretKey();
     this.identity = this.loadOrCreateIdentity();
     this.loadCachedMessages();
+    this.loadOutboxQueue();
     this.initBroadcastChannel();
     // Start listening to Nostr relays immediately in background
     this.connectRelays();
+  }
+
+  private loadOutboxQueue(): void {
+    try {
+      const stored = localStorage.getItem(STORAGE_OUTBOX_KEY);
+      if (stored) {
+        this.outboxQueue = JSON.parse(stored) || [];
+      }
+    } catch {}
+  }
+
+  private saveOutboxQueue(): void {
+    try {
+      localStorage.setItem(STORAGE_OUTBOX_KEY, JSON.stringify(this.outboxQueue));
+    } catch {}
+  }
+
+  private flushOutbox(): void {
+    if (this.outboxQueue.length === 0 || this.connectedRelays === 0) return;
+    const remaining: string[] = [];
+    for (const rawEvent of this.outboxQueue) {
+      let sentAny = false;
+      this.sockets.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          try {
+            ws.send(rawEvent);
+            sentAny = true;
+          } catch {}
+        }
+      });
+      if (!sentAny) {
+        remaining.push(rawEvent);
+      }
+    }
+    this.outboxQueue = remaining;
+    this.saveOutboxQueue();
   }
 
   private loadOrCreateSecretKey(): Uint8Array {
@@ -207,6 +248,7 @@ class BitChatService {
         clearTimeout(timeout);
         this.connectedRelays++;
         this.notifyStatus();
+        this.flushOutbox();
 
         // Subscribe to disaster messages with tag 'afet-live'
         const subId = `afet-sub-${Math.random().toString(36).slice(2, 6)}`;
@@ -384,40 +426,34 @@ class BitChatService {
     // 5. Local append & broadcast to other tabs/windows
     this.handleIncomingMessage(message, true);
 
-    // 6. Publish to Nostr relays via valid BIP-340 Schnorr signed event
-    if (this.connectedRelays > 0) {
-      try {
-        const eventTemplate = {
-          kind: 1,
-          created_at: Math.floor(now / 1000),
-          tags: [
-            ['t', 'afet-live'],
-            ['channel', this.activeChannel],
-            ['disaster_type', type],
-            ['alias', this.identity.alias],
-            ['city', meta?.city || ''],
-            ['district', meta?.district || ''],
-            ['nonce', String(pow.nonce), String(pow.difficulty)],
-            ['client', 'afet.live-bitchat']
-          ],
-          content: message.text
-        };
+    // 6. Sign via BIP-340 Schnorr and persist in Store-and-Forward Outbox
+    try {
+      const eventTemplate = {
+        kind: 1,
+        created_at: Math.floor(now / 1000),
+        tags: [
+          ['t', 'afet-live'],
+          ['channel', this.activeChannel],
+          ['disaster_type', type],
+          ['alias', this.identity.alias],
+          ['city', meta?.city || ''],
+          ['district', meta?.district || ''],
+          ['nonce', String(pow.nonce), String(pow.difficulty)],
+          ['client', 'afet.live-bitchat']
+        ],
+        content: message.text
+      };
 
-        const finalized = finalizeEvent(eventTemplate, this.secretKey);
-        // Use verified event id as authoritative message id
-        message.id = finalized.id;
-        const nostrEvent = ['EVENT', finalized];
+      const finalized = finalizeEvent(eventTemplate, this.secretKey);
+      message.id = finalized.id;
+      const nostrPayload = JSON.stringify(['EVENT', finalized]);
 
-        this.sockets.forEach((ws) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            try {
-              ws.send(JSON.stringify(nostrEvent));
-            } catch {}
-          }
-        });
-      } catch (err) {
-        console.warn('Nostr publish error:', err);
-      }
+      this.outboxQueue.push(nostrPayload);
+      if (this.outboxQueue.length > 50) this.outboxQueue = this.outboxQueue.slice(-50);
+      this.saveOutboxQueue();
+      this.flushOutbox();
+    } catch (err) {
+      console.warn('Nostr sign/publish error:', err);
     }
 
     // 7. Send over WebRTC DataChannel if peer is active

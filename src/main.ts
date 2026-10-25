@@ -1200,60 +1200,101 @@ class DisasterAtlasApp {
   }
 
   private handleSearch(input: string): void {
-    const query = input.trim().toLowerCase();
+    const trNorm = (str: string) =>
+      (str || '')
+        .toLocaleLowerCase('tr-TR')
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .trim();
+
+    const query = trNorm(input);
     if (query.length < 2) {
       this.headerHUD.clearSearchResults();
       this.syncOptimizedMapData();
       return;
     }
 
-    const matchedAssembly: SearchResultItem[] = [];
+    interface ScoredResult {
+      item: SearchResultItem;
+      score: number;
+    }
+
+    const scored: ScoredResult[] = [];
+
+    // 1. Search Assembly Points
     for (const p of this.assemblyPoints) {
-      if (
-        p.name.toLowerCase().includes(query) ||
-        p.district.toLowerCase().includes(query) ||
-        p.city.toLowerCase().includes(query)
-      ) {
+      const nameNorm = trNorm(p.name);
+      const distNorm = trNorm(p.district);
+      const cityNorm = trNorm(p.city);
+
+      let matchScore = 0;
+      if (nameNorm.startsWith(query)) matchScore = 120;
+      else if (nameNorm.includes(query)) matchScore = 80;
+      else if (distNorm.startsWith(query)) matchScore = 60;
+      else if (distNorm.includes(query)) matchScore = 40;
+      else if (cityNorm.startsWith(query)) matchScore = 30;
+      else if (cityNorm.includes(query)) matchScore = 20;
+
+      if (matchScore > 0) {
         const distKm = haversineDistanceMeters(this.userCoords, p.coordinates) / 1000;
-        matchedAssembly.push({
-          id: p.id,
-          name: p.name,
-          category: 'assembly',
-          district: p.district,
-          city: p.city,
-          distanceKm: distKm,
-          raw: p
+        const proximityBonus = Math.max(0, 50 - distKm * 2);
+        scored.push({
+          score: matchScore + proximityBonus,
+          item: {
+            id: p.id,
+            name: p.name,
+            category: 'assembly',
+            district: p.district,
+            city: p.city,
+            distanceKm: distKm,
+            raw: p
+          }
         });
-        if (matchedAssembly.length >= 15) break;
       }
     }
 
-    const matchedFacilities: SearchResultItem[] = [];
+    // 2. Search Facilities (Hospitals & Pharmacies)
     for (const f of this.facilities) {
-      if (
-        f.name.toLowerCase().includes(query) ||
-        f.district.toLowerCase().includes(query) ||
-        f.city.toLowerCase().includes(query)
-      ) {
+      const nameNorm = trNorm(f.name);
+      const distNorm = trNorm(f.district);
+      const cityNorm = trNorm(f.city);
+
+      let matchScore = 0;
+      if (nameNorm.startsWith(query)) matchScore = 130;
+      else if (nameNorm.includes(query)) matchScore = 85;
+      else if (distNorm.startsWith(query)) matchScore = 60;
+      else if (distNorm.includes(query)) matchScore = 40;
+      else if (cityNorm.startsWith(query)) matchScore = 30;
+      else if (cityNorm.includes(query)) matchScore = 20;
+
+      if (matchScore > 0) {
         const distKm = haversineDistanceMeters(this.userCoords, f.coordinates) / 1000;
-        matchedFacilities.push({
-          id: f.id,
-          name: f.name,
-          category: f.category === 'hospital' ? 'hospital' : 'pharmacy',
-          district: f.district,
-          city: f.city,
-          distanceKm: distKm,
-          raw: f
+        const proximityBonus = Math.max(0, 50 - distKm * 2);
+        scored.push({
+          score: matchScore + proximityBonus,
+          item: {
+            id: f.id,
+            name: f.name,
+            category: f.category === 'hospital' ? 'hospital' : 'pharmacy',
+            district: f.district,
+            city: f.city,
+            distanceKm: distKm,
+            raw: f
+          }
         });
-        if (matchedFacilities.length >= 10) break;
       }
     }
 
-    const combined = [...matchedAssembly, ...matchedFacilities]
-      .sort((a, b) => (a.distanceKm || 9999) - (b.distanceKm || 9999))
-      .slice(0, 8);
+    const sortedResults = scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((s) => s.item);
 
-    this.headerHUD.renderSearchResults(combined, (selected) => {
+    this.headerHUD.renderSearchResults(sortedResults, (selected) => {
       this.focusPoint(selected);
     });
   }

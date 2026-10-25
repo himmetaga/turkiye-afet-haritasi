@@ -3,6 +3,8 @@ import { saveEarthquakesToDB, getEarthquakesFromDB } from './storageService';
 
 const PRIMARY_API = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live?limit=60';
 const SECONDARY_API = 'https://api.orhanaydogdu.com.tr/deprem/afad/live?limit=60';
+const TERTIARY_EMSC_API = 'https://www.seismicportal.eu/fdsnws/event/1/query?format=json&limit=50&minlat=35&maxlat=43&minlon=25&maxlon=45';
+const QUATERNARY_USGS_API = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=2.2&minlatitude=35&maxlatitude=43&minlongitude=25&maxlongitude=45&limit=50';
 const TIMEOUT_MS = 5000;
 
 const BASELINE_EARTHQUAKES: Earthquake[] = [
@@ -90,16 +92,88 @@ function parseOrhanAydogdu(json: any): Earthquake[] {
   });
 }
 
+function parseGeoJsonEarthquakes(json: any, sourceName: string): Earthquake[] {
+  if (!json || !Array.isArray(json.features)) return [];
+  return json.features
+    .map((feat: any, idx: number) => {
+      const props = feat.properties || {};
+      const geom = feat.geometry || {};
+      const coords = geom.coordinates || [0, 0];
+      const lon = Number(coords[0]);
+      const lat = Number(coords[1]);
+      const depth = Math.abs(Number(coords[2] ?? props.depth ?? 10));
+      const mag = Number(props.mag || props.mag_b || 0);
+      const timeMs = props.time
+        ? typeof props.time === 'number'
+          ? props.time
+          : new Date(props.time).getTime()
+        : Date.now();
+      const loc = (props.flynn_region || props.place || props.title || 'Türkiye Bölgesi').trim();
+      const d = new Date(timeMs);
+      const dateStr = d.toISOString().replace('T', ' ').slice(0, 19);
+
+      return {
+        id: feat.id || `${sourceName}-${idx}-${timeMs}`,
+        title: `${loc} (M${mag.toFixed(1)})`,
+        location: loc,
+        mag: Number(mag.toFixed(1)),
+        depth: Number(depth.toFixed(1)),
+        coordinates: [lon, lat] as [number, number],
+        date: dateStr,
+        timestamp: timeMs
+      };
+    })
+    .filter(
+      (eq: Earthquake) =>
+        !isNaN(eq.coordinates[0]) &&
+        !isNaN(eq.coordinates[1]) &&
+        eq.coordinates[0] >= 25 &&
+        eq.coordinates[0] <= 45 &&
+        eq.coordinates[1] >= 35 &&
+        eq.coordinates[1] <= 43
+    );
+}
+
 export async function fetchLiveEarthquakes(): Promise<{ earthquakes: Earthquake[]; isOffline: boolean; cachedTime?: number }> {
   try {
+    // 1. Birincil: Kandilli Rasathanesi
     let res = await fetchWithTimeout(PRIMARY_API).catch(() => null);
-    if (!res || !res.ok) {
-      res = await fetchWithTimeout(SECONDARY_API).catch(() => null);
-    }
-
     if (res && res.ok) {
       const data = await res.json();
       const list = parseOrhanAydogdu(data);
+      if (list.length > 0) {
+        await saveEarthquakesToDB(list);
+        return { earthquakes: list, isOffline: false };
+      }
+    }
+
+    // 2. İkincil: AFAD Deprem Dairesi
+    res = await fetchWithTimeout(SECONDARY_API).catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json();
+      const list = parseOrhanAydogdu(data);
+      if (list.length > 0) {
+        await saveEarthquakesToDB(list);
+        return { earthquakes: list, isOffline: false };
+      }
+    }
+
+    // 3. Üçüncül: EMSC (Avrupa-Akdeniz Sismoloji Merkezi)
+    res = await fetchWithTimeout(TERTIARY_EMSC_API).catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json();
+      const list = parseGeoJsonEarthquakes(data, 'emsc');
+      if (list.length > 0) {
+        await saveEarthquakesToDB(list);
+        return { earthquakes: list, isOffline: false };
+      }
+    }
+
+    // 4. Dördüncül: USGS Küresel Deprem Ağı
+    res = await fetchWithTimeout(QUATERNARY_USGS_API).catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json();
+      const list = parseGeoJsonEarthquakes(data, 'usgs');
       if (list.length > 0) {
         await saveEarthquakesToDB(list);
         return { earthquakes: list, isOffline: false };
