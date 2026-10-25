@@ -325,6 +325,7 @@ class DisasterAtlasApp {
     this.tsunamiModal = new TsunamiRadarModal(appEl, this.userCoords, this.assemblyPoints, (point) => {
       this.focusPoint(point);
     });
+    this.tsunamiModal.setEarthquakes(this.earthquakes);
     this.bloodCenterModal = new BloodCenterModal(
       appEl,
       this.userCoords,
@@ -685,6 +686,9 @@ class DisasterAtlasApp {
       this.earthquakes = earthquakes;
       this.mapEngine.setEarthquakes(earthquakes);
       this.headerHUD.updateSeismicCount(earthquakes.length);
+      if (this.tsunamiModal) {
+        this.tsunamiModal.setEarthquakes(earthquakes);
+      }
       if (isOffline) {
         this.headerHUD.setOnlineState(false);
       } else {
