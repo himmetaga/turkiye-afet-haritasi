@@ -141,6 +141,9 @@ class DisasterAtlasApp {
   private cbrnSurvivalModal!: CBRNSurvivalModal;
   private civilVaultModal!: CivilDefenseVaultModal;
 
+  private alertedEarthquakeIds = new Set<string>();
+  private seismicPollTimer: any = null;
+
   constructor() {
     this.mapEngine = new MapEngine();
 
@@ -498,6 +501,25 @@ class DisasterAtlasApp {
       initialLoader.style.visibility = 'hidden';
       setTimeout(() => initialLoader.remove(), 400);
     }
+
+    // 9. Live Seismic Stream Polling (every 20s foreground, 50s background)
+    const startSeismicPolling = () => {
+      clearInterval(this.seismicPollTimer);
+      const interval = document.hidden ? 50000 : 20000;
+      this.seismicPollTimer = setInterval(() => {
+        if (navigator.onLine) {
+          this.loadEarthquakeData();
+        }
+      }, interval);
+    };
+
+    startSeismicPolling();
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        this.loadEarthquakeData();
+      }
+      startSeismicPolling();
+    });
   }
 
   private async loadAssemblyData(): Promise<void> {
@@ -665,8 +687,43 @@ class DisasterAtlasApp {
       this.headerHUD.updateSeismicCount(earthquakes.length);
       if (isOffline) {
         this.headerHUD.setOnlineState(false);
+      } else {
+        this.headerHUD.setOnlineState(true);
       }
+      this.evaluateAutomaticEarlyWarning(earthquakes);
     } catch {}
+  }
+
+  private evaluateAutomaticEarlyWarning(earthquakes: Earthquake[]): void {
+    if (!earthquakes || earthquakes.length === 0) return;
+    const now = Date.now();
+
+    for (const eq of earthquakes) {
+      if (this.alertedEarthquakeIds.has(eq.id)) continue;
+
+      // Only consider recent events (last 120 seconds)
+      const ageSeconds = (now - eq.timestamp) / 1000;
+      if (ageSeconds > 120 || ageSeconds < -10) {
+        this.alertedEarthquakeIds.add(eq.id);
+        continue;
+      }
+
+      // Distance and wave travel time
+      const distKm = haversineDistanceMeters(this.userCoords, eq.coordinates) / 1000;
+      const hypoDist = Math.sqrt(distKm * distKm + (eq.depth || 10) ** 2);
+      const sTravelTime = hypoDist / 3.8; // S-wave velocity ~3.8 km/s
+
+      // If S-wave has not arrived yet, or arrived less than 20 seconds ago
+      const sWaveEta = sTravelTime - ageSeconds;
+      if (sWaveEta > -20) {
+        const isDangerous = eq.mag >= 4.5 || (eq.mag >= 3.8 && distKm <= 120);
+        if (isDangerous) {
+          this.alertedEarthquakeIds.add(eq.id);
+          earlyWarningEngine.startWarning(eq, eq.timestamp);
+          break;
+        }
+      }
+    }
   }
 
   /**

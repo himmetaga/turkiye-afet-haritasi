@@ -31,6 +31,8 @@ class EarlyWarningEngine {
   private soundEnabled = true;
   private lastBeepSec = -1;
 
+  private wakeLock: any = null;
+
   public setUserCoordinates(coords: [number, number]): void {
     this.userCoords = coords;
   }
@@ -48,9 +50,50 @@ class EarlyWarningEngine {
     return () => this.listeners.delete(listener);
   }
 
+  private async acquireWakeLock(): Promise<void> {
+    if ('wakeLock' in navigator) {
+      try {
+        this.wakeLock = await (navigator as any).wakeLock.request('screen');
+      } catch {}
+    }
+  }
+
+  private releaseWakeLock(): void {
+    if (this.wakeLock) {
+      try {
+        this.wakeLock.release();
+      } catch {}
+      this.wakeLock = null;
+    }
+  }
+
+  private triggerHapticAlarm(): void {
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate([400, 150, 400, 150, 800]);
+      } catch {}
+    }
+  }
+
+  private speakWarning(protocolText: string): void {
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(`Dikkat! Deprem uyarısı. ${protocolText}`);
+        utterance.lang = 'tr-TR';
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } catch {}
+    }
+  }
+
   public startWarning(eq: Earthquake, originTimeMs = Date.now()): void {
     this.activeEarthquake = eq;
     this.originTimestamp = originTimeMs;
+
+    this.acquireWakeLock();
+    this.triggerHapticAlarm();
 
     if (this.soundEnabled) {
       soundSynthesizer.playEarlyWarningSiren(3.5);
@@ -60,8 +103,8 @@ class EarlyWarningEngine {
       clearInterval(this.timer);
     }
 
-    this.tick();
-    this.timer = window.setInterval(() => this.tick(), 250);
+    this.tick(true);
+    this.timer = window.setInterval(() => this.tick(false), 250);
   }
 
   public dismiss(): void {
@@ -71,6 +114,14 @@ class EarlyWarningEngine {
     }
     this.activeEarthquake = null;
     this.lastBeepSec = -1;
+
+    this.releaseWakeLock();
+    if ('speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate(0); } catch {}
+    }
 
     const idleStatus: EarlyWarningStatus = {
       isActive: false,
@@ -102,7 +153,7 @@ class EarlyWarningEngine {
     };
   }
 
-  private tick(): void {
+  private tick(isFirst = false): void {
     if (!this.activeEarthquake) return;
 
     const elapsedSec = Math.max(0, (Date.now() - this.originTimestamp) / 1000);
@@ -145,6 +196,10 @@ class EarlyWarningEngine {
     } else if (mmiValue >= 4) {
       intensityLevel = 'moderate';
       protocolText = 'Hissedilir sarsıntı bekleniyor. Sağlam bir masa altına çökün.';
+    }
+
+    if (isFirst && this.soundEnabled && (intensityLevel === 'strong' || intensityLevel === 'severe')) {
+      this.speakWarning(protocolText);
     }
 
     // Auto-dismiss after wave passes + 45 seconds of shaking
