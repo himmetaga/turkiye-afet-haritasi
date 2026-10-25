@@ -45,6 +45,12 @@ import { HomeHazardHuntModal } from './ui/HomeHazardHuntModal';
 import { FieldAidCoordinationModal } from './ui/FieldAidCoordinationModal';
 import { PetDisasterSafetyModal } from './ui/PetDisasterSafetyModal';
 import { TentHeatingSafetyModal } from './ui/TentHeatingSafetyModal';
+import { UltraBatterySaverModal } from './ui/UltraBatterySaverModal';
+import { PsychologicalFirstAidModal } from './ui/PsychologicalFirstAidModal';
+import { AcousticDebrisListenerModal } from './ui/AcousticDebrisListenerModal';
+import { OfflineMapPackModal } from './ui/OfflineMapPackModal';
+import { FieldCampStatusModal } from './ui/FieldCampStatusModal';
+import { InfantFeedingSafetyModal } from './ui/InfantFeedingSafetyModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -99,6 +105,12 @@ class DisasterAtlasApp {
   private fieldAidModal!: FieldAidCoordinationModal;
   private petSafetyModal!: PetDisasterSafetyModal;
   private tentHeatingModal!: TentHeatingSafetyModal;
+  private batterySaverModal!: UltraBatterySaverModal;
+  private psychFirstAidModal!: PsychologicalFirstAidModal;
+  private acousticListenerModal!: AcousticDebrisListenerModal;
+  private offlineMapModal!: OfflineMapPackModal;
+  private campStatusModal!: FieldCampStatusModal;
+  private infantFeedingModal!: InfantFeedingSafetyModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -177,7 +189,13 @@ class DisasterAtlasApp {
       onToggleHazardHunt: () => this.hazardHuntModal.show(),
       onToggleFieldAid: () => this.fieldAidModal.show(),
       onTogglePetSafety: () => this.petSafetyModal.show(),
-      onToggleTentHeating: () => this.tentHeatingModal.show()
+      onToggleTentHeating: () => this.tentHeatingModal.show(),
+      onToggleBatterySaver: () => this.batterySaverModal.show(),
+      onToggleAcousticListener: () => this.acousticListenerModal.show(),
+      onToggleOfflineMapPack: () => this.offlineMapModal.show(),
+      onTogglePsychFirstAid: () => this.psychFirstAidModal.show(),
+      onToggleCampStatus: () => this.campStatusModal.show(),
+      onToggleInfantFeeding: () => this.infantFeedingModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -270,6 +288,29 @@ class DisasterAtlasApp {
 
     this.petSafetyModal = new PetDisasterSafetyModal(appEl);
     this.tentHeatingModal = new TentHeatingSafetyModal(appEl);
+
+    this.batterySaverModal = new UltraBatterySaverModal(
+      appEl,
+      () => this.whistleModal.show(),
+      () => this.openSOSModal()
+    );
+
+    this.psychFirstAidModal = new PsychologicalFirstAidModal(appEl);
+
+    this.acousticListenerModal = new AcousticDebrisListenerModal(appEl, () => {
+      this.whistleModal.show();
+    });
+
+    this.offlineMapModal = new OfflineMapPackModal(appEl);
+
+    this.campStatusModal = new FieldCampStatusModal(appEl, (text) => {
+      this.crisisHUD.show();
+      bitChatService.broadcastMessage(text, 'chat', {
+        coordinates: this.userCoords
+      });
+    });
+
+    this.infantFeedingModal = new InfantFeedingSafetyModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -555,7 +596,18 @@ class DisasterAtlasApp {
         'pati': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
         'evcil-hayvan': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
         'isinma-guvenligi': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live',
-        'soba': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live'
+        'soba': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live',
+        'pil-tasarrufu': 'Ultra Pil Tasarrufu (72 Saat OLED Modu) — afet.live',
+        'batarya': 'Ultra Pil Tasarrufu (72 Saat OLED Modu) — afet.live',
+        'psikolojik-yardim': 'Afet Psikolojik İlk Yardım & Kutu Nefesi — afet.live',
+        'nefes': 'Afet Psikolojik İlk Yardım & Kutu Nefesi — afet.live',
+        'enkaz-dinleme': 'Akustik Enkaz Dinleme ve Otomatik S.O.S — afet.live',
+        'akustik-radar': 'Akustik Enkaz Dinleme ve Otomatik S.O.S — afet.live',
+        'harita-indir': 'Çevrimdışı Harita İndir & Önbellek — afet.live',
+        'cevrimdisi-harita': 'Çevrimdışı Harita İndir & Önbellek — afet.live',
+        'sahra-durumu': 'Toplanma Alanı Sahra Karnesi — afet.live',
+        'altyapi': 'Toplanma Alanı Sahra Karnesi — afet.live',
+        'bebek-besleme': 'Afet Dönemi Bebek Besleme & Relaktasyon — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
@@ -639,6 +691,29 @@ class DisasterAtlasApp {
         case 'isinma-guvenligi':
         case 'soba':
           this.tentHeatingModal.show();
+          break;
+        case 'pil-tasarrufu':
+        case 'batarya':
+          this.batterySaverModal.show();
+          break;
+        case 'psikolojik-yardim':
+        case 'nefes':
+          this.psychFirstAidModal.show();
+          break;
+        case 'enkaz-dinleme':
+        case 'akustik-radar':
+          this.acousticListenerModal.show();
+          break;
+        case 'harita-indir':
+        case 'cevrimdisi-harita':
+          this.offlineMapModal.show();
+          break;
+        case 'sahra-durumu':
+        case 'altyapi':
+          this.campStatusModal.show();
+          break;
+        case 'bebek-besleme':
+          this.infantFeedingModal.show();
           break;
         case 'canta':
           this.bagHUD.show();

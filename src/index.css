@@ -433,3 +433,22 @@ button.hud-control:active {
     margin: 0 !important;
   }
 }
+
+/* 72-Hour Ultra Battery Saver (OLED True Black #000000 & Resource Minimizer) */
+html.ultra-battery-saver,
+html.ultra-battery-saver body,
+html.ultra-battery-saver #app {
+  background-color: #000000 !important;
+  color: #e5e7eb !important;
+}
+
+html.ultra-battery-saver #map-container {
+  filter: grayscale(100%) brightness(0.25) contrast(1.1);
+  pointer-events: none;
+}
+
+html.ultra-battery-saver * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+

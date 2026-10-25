@@ -36,6 +36,12 @@ export interface HeaderHUDCallbacks {
   onToggleFieldAid: () => void;
   onTogglePetSafety: () => void;
   onToggleTentHeating: () => void;
+  onToggleBatterySaver: () => void;
+  onToggleAcousticListener: () => void;
+  onToggleOfflineMapPack: () => void;
+  onTogglePsychFirstAid: () => void;
+  onToggleCampStatus: () => void;
+  onToggleInfantFeeding: () => void;
 }
 
 export interface SearchResultItem {
@@ -74,6 +80,8 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     tools: [
       { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
       { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)', rgb: '239, 68, 68', icon: Icons.timer },
+      { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve Otomatik S.O.S Tetikleyici', rgb: '168, 85, 247', icon: Icons.mic },
+      { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Ultra Pil Tasarrufu ve 72 Saat Hayatta Kalma Modu (OLED)', rgb: '16, 185, 129', icon: Icons.battery },
       { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
       { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Afet Ağı (P2P Mesh, Nostr ve Çevrimdışı Kriz Odası)', rgb: '34, 211, 238', icon: Icons.messages },
       { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Çevrimdışı Telsiz ve Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
@@ -100,6 +108,9 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Önlem & Planlama',
     accentClass: 'text-amber-400',
     tools: [
+      { id: 'btn-open-offline-map', label: 'Harita İndir', title: 'İlçe Bazlı Çevrimdışı Vektör Harita Paketi İndir', rgb: '6, 182, 212', icon: Icons.download },
+      { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Afet Psikolojik İlk Yardım ve 4-4-4-4 Kutu Nefesi Egzersizi', rgb: '59, 130, 246', icon: Icons.brain },
+      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Sıcak Yemek, Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', icon: Icons.tent },
       { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Afet Çadırkent İhtiyaç ve Malzeme Dağıtım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
       { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Pati ve Evcil Hayvan Afet Güvenliği, Çanta ve Tahliye Rehberi', rgb: '251, 146, 60', icon: Icons.paw },
       { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
@@ -118,6 +129,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Eğitim & Rehber',
     accentClass: 'text-emerald-400',
     tools: [
+      { id: 'btn-open-infant-feeding', label: 'Bebek Besleme', title: 'Afet Dönemi Güvenli Bebek Besleme ve Relaktasyon Rehberi', rgb: '244, 114, 182', icon: Icons.baby },
       { id: 'btn-open-tent-heating', label: 'Çadır Isınma', title: 'Çadırkent Kış Isınma ve Karbonmonoksit (CO) Zehirlenme Güvenliği', rgb: '239, 68, 68', icon: Icons.flame },
       { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
       { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
@@ -547,9 +559,15 @@ export class HeaderHUD {
       'btn-open-tourniquet': () => this.callbacks.onToggleTourniquet(),
       'btn-open-med-passport': () => this.callbacks.onToggleMedPassport(),
       'btn-open-hazard-hunt': () => this.callbacks.onToggleHazardHunt(),
+      'btn-open-acoustic-listener': () => this.callbacks.onToggleAcousticListener(),
+      'btn-open-battery-saver': () => this.callbacks.onToggleBatterySaver(),
+      'btn-open-offline-map': () => this.callbacks.onToggleOfflineMapPack(),
+      'btn-open-psych-firstaid': () => this.callbacks.onTogglePsychFirstAid(),
+      'btn-open-camp-status': () => this.callbacks.onToggleCampStatus(),
       'btn-open-field-aid': () => this.callbacks.onToggleFieldAid(),
       'btn-open-pet-safety': () => this.callbacks.onTogglePetSafety(),
       'btn-open-tent-heating': () => this.callbacks.onToggleTentHeating(),
+      'btn-open-infant-feeding': () => this.callbacks.onToggleInfantFeeding(),
       'btn-open-air-quality': () => this.callbacks.onToggleAirQuality(),
       'btn-open-tsunami': () => this.callbacks.onToggleTsunami(),
       'btn-open-blood': () => this.callbacks.onToggleBlood(),
