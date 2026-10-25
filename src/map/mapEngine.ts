@@ -33,15 +33,19 @@ export class MapEngine {
   private onFacilityClickCallback?: (facility: EmergencyFacility) => void;
   private onMapClickCallback?: (coords: [number, number]) => void;
 
-  public async init(container: HTMLElement): Promise<void> {
+  public async init(
+    container: HTMLElement,
+    initialCenter: [number, number] = [35.2433, 38.9637],
+    initialZoom = 6
+  ): Promise<void> {
     return new Promise((resolve) => {
       this.map = new maplibregl.Map({
         container,
         style: MAP_STYLE_DARK,
-        center: [29.03367, 40.98527],
-        zoom: 15,
-        pitch: 52,
-        bearing: -15,
+        center: initialCenter,
+        zoom: initialZoom,
+        pitch: initialZoom > 10 ? 52 : 30,
+        bearing: initialZoom > 10 ? -15 : 0,
         maxPitch: 75,
         attributionControl: false
       });
@@ -225,9 +229,9 @@ export class MapEngine {
       id: 'assembly-glow',
       type: 'circle',
       source: 'assembly-points',
-      minzoom: 8.5,
+      minzoom: 6.0,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 14, 18, 18, 28],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6.0, 3, 10, 8, 14, 18, 18, 28],
         'circle-color': '#10B981',
         'circle-blur': 0.65,
         'circle-opacity': 0.6
@@ -238,11 +242,11 @@ export class MapEngine {
       id: 'assembly-core',
       type: 'circle',
       source: 'assembly-points',
-      minzoom: 8.5,
+      minzoom: 6.0,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8.5, 4, 14, 8.5, 18, 12],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6.0, 2, 10, 5, 14, 8.5, 18, 12],
         'circle-color': '#10B981',
-        'circle-stroke-width': 2,
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': '#FFFFFF',
         'circle-opacity': 0.98
       }
@@ -252,7 +256,7 @@ export class MapEngine {
       id: 'assembly-label',
       type: 'symbol',
       source: 'assembly-points',
-      minzoom: 12.5,
+      minzoom: 10.5,
       layout: {
         'text-field': ['get', 'name'],
         'text-size': 11,
@@ -902,6 +906,28 @@ export class MapEngine {
       coords.push([lon + dLon, lat + dLat]);
     }
     return coords;
+  }
+
+  public onMoveEnd(callback: () => void): void {
+    if (!this.map) return;
+    this.map.on('moveend', callback);
+  }
+
+  public getCenter(): [number, number] {
+    if (!this.map) return [29.0, 41.0];
+    const c = this.map.getCenter();
+    return [c.lng, c.lat];
+  }
+
+  public getBounds(): { minLon: number; minLat: number; maxLon: number; maxLat: number } | null {
+    if (!this.map) return null;
+    const b = this.map.getBounds();
+    return {
+      minLon: b.getWest(),
+      minLat: b.getSouth(),
+      maxLon: b.getEast(),
+      maxLat: b.getNorth()
+    };
   }
 
   public getMapInstance(): maplibregl.Map | null {

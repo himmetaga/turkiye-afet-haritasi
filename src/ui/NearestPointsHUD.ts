@@ -86,22 +86,22 @@ export class NearestPointsHUD {
     // 1. Kapalı / Dock Buton Çubuğu (Ortalanmış, simetrik 4 parçalı modern spatial cam pill seti)
     if (this.isCollapsed) {
       this.container.className =
-        'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border max-w-[96vw]';
+        'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border w-[96vw] sm:w-[500px] max-w-[520px]';
 
       const isReady = this.isOfflineProtected;
 
       this.container.innerHTML = `
-        <div class="flex items-center p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-0.5 sm:gap-1.5 transition-all">
+        <div class="w-full flex items-center justify-between p-1 sm:p-1.5 rounded-2xl bg-obsidian-950/85 hover:bg-obsidian-950/95 border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl gap-0.5 sm:gap-1.5 transition-all">
           <!-- Toplanma Butonu -->
           <button
             id="btn-collapsed-assembly"
             type="button"
-            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
+            class="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-0.5 sm:px-2 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="En Yakın Toplanma Alanları"
           >
             ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[10.5px] sm:text-xs">Toplanma</span>
-            <span class="px-1 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[9px] sm:text-[10px] font-bold">
+            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Toplanma</span>
+            <span class="px-1 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
               ${this.currentData.assembly.length}
             </span>
           </button>
@@ -110,12 +110,12 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-hospitals"
             type="button"
-            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
+            class="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-0.5 sm:px-2 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="En Yakın Hastaneler"
           >
             ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[10.5px] sm:text-xs">Hastane</span>
-            <span class="px-1 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[9px] sm:text-[10px] font-bold">
+            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Hastane</span>
+            <span class="px-1 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
               ${this.currentData.hospitals.length}
             </span>
           </button>
@@ -124,25 +124,25 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-pharmacies"
             type="button"
-            class="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
+            class="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-0.5 sm:px-2 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="Bugünün Nöbetçi Eczaneleri"
           >
             ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[10.5px] sm:text-xs">Eczane</span>
-            <span class="px-1 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] sm:text-[10px] font-bold">
+            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Eczane</span>
+            <span class="px-1 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
               ${this.currentData.pharmacies.length}
             </span>
           </button>
 
-          <!-- Çevrimdışı Kaydet Butonu -->
+          <!-- Çevrimdışı Kaydet Butonu (Tam Simetrik 4. Eşit Kolon) -->
           <button
             id="btn-sync-offline"
             type="button"
-            class="relative overflow-hidden flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 rounded-xl ${
+            class="relative overflow-hidden flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-0.5 sm:px-2 rounded-xl ${
               isReady
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                 : 'bg-white/5 hover:bg-white/10 border border-white/5 text-gray-200 hover:text-white'
-            } text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group shrink-0"
+            } text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="${isReady ? 'Çevrimdışı Harita Aktif' : 'Çevrimdışı Harita ve Bilgileri Kaydet (Tıkla / Basılı Tut)'}"
           >
             <div
@@ -152,8 +152,11 @@ export class NearestPointsHUD {
             <span class="relative z-10 shrink-0">
               ${isReady ? Icons.checkCircle('w-3.5 h-3.5 text-emerald-400') : Icons.offlineCloud('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform')}
             </span>
-            <span id="sync-subtext" class="relative z-10 text-[10.5px] sm:text-xs font-semibold">
+            <span id="sync-subtext" class="relative z-10 text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">
               ${isReady ? 'Kayıtlı' : 'Kaydet'}
+            </span>
+            <span class="relative z-10 px-1 py-0.2 rounded-md ${isReady ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/20 text-cyan-300'} font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
+              ${isReady ? 'OK' : 'PWA'}
             </span>
           </button>
         </div>
@@ -227,7 +230,7 @@ export class NearestPointsHUD {
 
     // 2. Açık Çekmece Durumu - Ortalanmış ve Dock üstünde simetrik
     this.container.className =
-      'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[440px] max-w-[460px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-xl transition-all border border-white/10 max-h-[80vh] flex flex-col">

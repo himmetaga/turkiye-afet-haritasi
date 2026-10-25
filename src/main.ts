@@ -64,6 +64,8 @@ import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 import { multiHazardEngine } from './services/multiHazardEngine';
 
+const CACHED_COORDS_KEY = 'turkiye_afet_user_coords';
+
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
   private assemblyPoints: AssemblyPoint[] = [];
@@ -71,7 +73,8 @@ class DisasterAtlasApp {
   private faultLines: FaultLine[] = [];
   private facilities: EmergencyFacility[] = [];
   private obstacles: ObstaclePoint[] = [];
-  private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul (Yoğurtçu Parkı çevresi)
+  private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul
+  private hasCachedLocation = false;
   private selectedPoint: AssemblyPoint | null = null;
   private selectedProvince = '';
   private onlyDutyPharmacies = true;
@@ -132,6 +135,25 @@ class DisasterAtlasApp {
 
   constructor() {
     this.mapEngine = new MapEngine();
+
+    // Check cached location to immediately load on startup without double jump
+    try {
+      const saved = localStorage.getItem(CACHED_COORDS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === 2 && !isNaN(parsed[0]) && !isNaN(parsed[1])) {
+          if (parsed[0] >= 25 && parsed[0] <= 45 && parsed[1] >= 35 && parsed[1] <= 43) {
+            this.userCoords = [parsed[0], parsed[1]];
+            this.hasCachedLocation = true;
+          }
+        }
+      }
+    } catch {}
+
+    if (this.deepLink.coords) {
+      this.userCoords = this.deepLink.coords;
+      this.hasCachedLocation = true;
+    }
   }
 
   public async bootstrap(): Promise<void> {
@@ -381,8 +403,18 @@ class DisasterAtlasApp {
       onClose: () => {}
     });
 
-    // 2. Start 3D WebGL Map
-    await this.mapEngine.init(mapContainer);
+    // 2. Start 3D WebGL Map directly at userCoords (No double-fly jump on startup)
+    const startZoom = this.hasCachedLocation ? 15.5 : 6;
+    await this.mapEngine.init(mapContainer, this.userCoords, startZoom);
+
+    // Dynamic Viewport Sync: harita kaydırıldığında ekrandaki toplanma alanlarını ve acil tesisleri anında yükle
+    let moveEndTimer: any = null;
+    this.mapEngine.onMoveEnd(() => {
+      clearTimeout(moveEndTimer);
+      moveEndTimer = setTimeout(() => {
+        this.syncOptimizedMapData();
+      }, 200);
+    });
 
     // Dismiss initial loader smoothly as soon as map canvas is active
     const dismissLoader = () => {
@@ -433,9 +465,8 @@ class DisasterAtlasApp {
       this.loadEarthquakeData()
     ]);
 
-    // 5. Place user marker & immediate calculations (Site açılışında konuma ortalanır)
+    // 5. Place user marker & immediate calculations (Site açılışında doğru konuma yerleşir, gereksiz uçuş yapmaz)
     this.mapEngine.setUserLocation(this.userCoords, 0);
-    this.mapEngine.flyTo(this.userCoords, 15.5, 52, -15);
     this.updateUserContextCalculations('En Yakın Güvenlik Noktaları');
     this.updateBuildingRiskContext();
 
@@ -586,8 +617,8 @@ class DisasterAtlasApp {
   }
 
   /**
-   * Telefon şarjını ve mobil GPU'yu korumak amacıyla kullanıcının aktif ilindeki veya
-   * en fazla 45 km yarıçapındaki toplanma alanlarını hesaplar.
+   * Telefon şarjını ve mobil GPU'yu korumak amacıyla kullanıcının aktif ilindeki,
+   * yakınındaki (45 km) ve mevcut harita görüş alanındaki toplanma alanlarını hesaplar.
    */
   private getBatteryOptimizedPoints(): AssemblyPoint[] {
     if (this.selectedProvince) {
@@ -605,22 +636,54 @@ class DisasterAtlasApp {
       return this.assemblyPoints.filter((p) => norm(p.city) === target);
     }
 
-    const MAX_DISTANCE_M = 45_000; // 45 km yarıçap
-    const [uLon, uLat] = this.userCoords;
-    const nearby = this.assemblyPoints.filter((p) => {
-      const [lon, lat] = p.coordinates;
-      if (Math.abs(lon - uLon) > 0.55 || Math.abs(lat - uLat) > 0.45) return false;
-      return haversineDistanceMeters(this.userCoords, p.coordinates) <= MAX_DISTANCE_M;
-    });
+    if (this.assemblyPoints.length === 0) return [];
 
-    if (nearby.length < 30 && this.assemblyPoints.length > 0) {
-      return findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 200).map((r) => r.point);
+    const pointMap = new Map<string, AssemblyPoint>();
+
+    // 1. Kullanıcının yakınındaki (45 km) toplanma alanları
+    const MAX_DISTANCE_M = 45_000;
+    const [uLon, uLat] = this.userCoords;
+    for (const p of this.assemblyPoints) {
+      const [lon, lat] = p.coordinates;
+      if (Math.abs(lon - uLon) <= 0.55 && Math.abs(lat - uLat) <= 0.45) {
+        if (haversineDistanceMeters(this.userCoords, p.coordinates) <= MAX_DISTANCE_M) {
+          pointMap.set(p.id, p);
+          if (pointMap.size >= 800) break;
+        }
+      }
     }
-    return nearby.slice(0, 1200);
+
+    // 2. Haritanın aktif görüş alanındaki toplanma alanları (Viewport Bounds)
+    const bounds = this.mapEngine.getBounds();
+    if (bounds) {
+      const minLon = bounds.minLon - 0.05;
+      const maxLon = bounds.maxLon + 0.05;
+      const minLat = bounds.minLat - 0.05;
+      const maxLat = bounds.maxLat + 0.05;
+
+      for (const p of this.assemblyPoints) {
+        if (pointMap.has(p.id)) continue;
+        const [lon, lat] = p.coordinates;
+        if (lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat) {
+          pointMap.set(p.id, p);
+          if (pointMap.size >= 1600) break;
+        }
+      }
+    }
+
+    // Yetersiz nokta varsa en yakınları tamamla
+    if (pointMap.size < 30) {
+      const fallbackNearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 100);
+      for (const r of fallbackNearest) {
+        pointMap.set(r.point.id, r.point);
+      }
+    }
+
+    return Array.from(pointMap.values());
   }
 
   /**
-   * Telefon şarjını korumak için kullanıcının konumuna 40 km mesafedeki hastane ve eczaneleri filtreler.
+   * Telefon şarjını korumak için kullanıcının konumuna ve harita görüş alanına göre hastane ve eczaneleri filtreler.
    */
   private getBatteryOptimizedFacilities(): EmergencyFacility[] {
     if (this.selectedProvince) {
@@ -638,18 +701,48 @@ class DisasterAtlasApp {
       return this.facilities.filter((f) => norm(f.city) === target);
     }
 
-    const MAX_DISTANCE_M = 40_000; // 40 km yarıçap
-    const [uLon, uLat] = this.userCoords;
-    const nearby = this.facilities.filter((f) => {
-      const [lon, lat] = f.coordinates;
-      if (Math.abs(lon - uLon) > 0.5 || Math.abs(lat - uLat) > 0.4) return false;
-      return haversineDistanceMeters(this.userCoords, f.coordinates) <= MAX_DISTANCE_M;
-    });
+    if (this.facilities.length === 0) return [];
 
-    if (nearby.length < 20 && this.facilities.length > 0) {
-      return this.facilities.slice(0, 200);
+    const facMap = new Map<string, EmergencyFacility>();
+
+    // 1. Kullanıcı çevresi (40 km)
+    const MAX_DISTANCE_M = 40_000;
+    const [uLon, uLat] = this.userCoords;
+    for (const f of this.facilities) {
+      const [lon, lat] = f.coordinates;
+      if (Math.abs(lon - uLon) <= 0.5 && Math.abs(lat - uLat) <= 0.4) {
+        if (haversineDistanceMeters(this.userCoords, f.coordinates) <= MAX_DISTANCE_M) {
+          facMap.set(f.id, f);
+          if (facMap.size >= 500) break;
+        }
+      }
     }
-    return nearby.slice(0, 800);
+
+    // 2. Harita görüş alanı
+    const bounds = this.mapEngine.getBounds();
+    if (bounds) {
+      const minLon = bounds.minLon - 0.05;
+      const maxLon = bounds.maxLon + 0.05;
+      const minLat = bounds.minLat - 0.05;
+      const maxLat = bounds.maxLat + 0.05;
+
+      for (const f of this.facilities) {
+        if (facMap.has(f.id)) continue;
+        const [lon, lat] = f.coordinates;
+        if (lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat) {
+          facMap.set(f.id, f);
+          if (facMap.size >= 1000) break;
+        }
+      }
+    }
+
+    if (facMap.size < 20) {
+      for (const f of this.facilities.slice(0, 100)) {
+        facMap.set(f.id, f);
+      }
+    }
+
+    return Array.from(facMap.values());
   }
 
   private syncOptimizedMapData(): void {
@@ -661,7 +754,17 @@ class DisasterAtlasApp {
   }
 
   private applyVerifiedLocation(coords: [number, number], source: string, flyTo = true): void {
+    try {
+      localStorage.setItem(CACHED_COORDS_KEY, JSON.stringify(coords));
+    } catch {}
+
+    const distM = haversineDistanceMeters(this.userCoords, coords);
+    const currentZoom = this.mapEngine.getMapInstance()?.getZoom() || 6;
+    // Yalnızca kullanıcı önceki konumdan belirgin uzaksa (> 180m) veya harita henüz uzaktaysa uçuş yap
+    const shouldFly = flyTo && (distM > 180 || currentZoom < 11);
+
     this.userCoords = coords;
+    this.hasCachedLocation = true;
     earlyWarningEngine.setUserCoordinates(coords);
     this.feltModal.setUserCoords(coords);
     this.crisisHUD.setUserLocation(coords);
@@ -672,7 +775,7 @@ class DisasterAtlasApp {
     this.updateBuildingRiskContext();
 
     this.mapEngine.setUserLocation(coords, 0);
-    if (flyTo) {
+    if (shouldFly) {
       this.mapEngine.flyTo(coords, 15.5, 52, -15);
     }
     this.updateUserContextCalculations(source ? `${source} · En Yakın Noktalar` : 'En Yakın Güvenlik Noktaları');
@@ -910,6 +1013,10 @@ class DisasterAtlasApp {
           } catch {}
         },
         async () => {
+          // Eğer daha önceden doğrulanmış kayıtlı GPS konumu varsa, kaba IP konumuyla ezme
+          if (this.hasCachedLocation) {
+            return;
+          }
           try {
             const res = await fetch('https://ipapi.co/json/');
             if (res.ok) {
@@ -935,12 +1042,12 @@ class DisasterAtlasApp {
 
   private updateUserContextCalculations(label?: string): void {
     const assemblyResults = this.assemblyPoints.length > 0
-      ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 3)
+      ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 15)
       : [];
 
     const hospitalsList = this.facilities.filter((f) => f.category === 'hospital');
     const hospitalResults = hospitalsList.length > 0
-      ? findNearestAssemblyPoints(this.userCoords, hospitalsList as any, 3)
+      ? findNearestAssemblyPoints(this.userCoords, hospitalsList as any, 15)
       : [];
 
     const activePharmacies = filterPharmaciesBySchedule(
@@ -948,7 +1055,7 @@ class DisasterAtlasApp {
       this.onlyDutyPharmacies
     );
     const pharmacyResults = activePharmacies.length > 0
-      ? findNearestAssemblyPoints(this.userCoords, activePharmacies as any, 3)
+      ? findNearestAssemblyPoints(this.userCoords, activePharmacies as any, 15)
       : [];
 
     this.nearestHUD.updateAll(

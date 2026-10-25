@@ -353,33 +353,33 @@ export class HeaderHUD {
            ========================================================= -->
       <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none max-w-[96vw]">
         <div id="ios27-dock" class="ios27-dock px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-center gap-1.5 sm:gap-2.5 text-white shadow-2xl">
-          <!-- 1. Locate Me / Map -->
-          <button id="btn-dock-locate" type="button" class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Konumuma Odaklan">
+          <!-- Left Wing 1: Locate Me / Map -->
+          <button id="btn-dock-locate" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Konumuma Odaklan">
             ${Icons.crosshair('w-4.5 h-4.5 sm:w-5 sm:h-5')}
           </button>
 
-          <!-- 2. Big SOS Trigger -->
-          <button id="btn-dock-sos" type="button" class="px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer shrink-0">
+          <!-- Left Wing 2: Hissettim Butonu -->
+          <button id="btn-dock-felt" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="Depremi Hissettim Bildirimi">
+            ${Icons.activity('w-4 h-4 text-amber-400')}
+            <span class="text-[11px] sm:text-xs">Hissettim</span>
+          </button>
+
+          <!-- DEAD CENTER HERO: Big SOS Trigger -->
+          <button id="btn-dock-sos" type="button" class="px-3.5 sm:px-4.5 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer shrink-0">
             <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>S.O.S</span>
           </button>
 
-          <!-- 3. Hissettim Butonu (SOS Yanında) -->
-          <button id="btn-dock-felt" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="Depremi Hissettim Bildirimi">
-            ${Icons.activity('w-4 h-4 text-amber-400')}
-            <span>Hissettim</span>
+          <!-- Right Wing 1: BitChat Messenger Pill (Matches Hissettim Pill symmetrically) -->
+          <button id="btn-dock-bitchat" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="BitChat Kriz Odası">
+            ${Icons.messages('w-4 h-4 text-cyan-400')}
+            <span class="text-[11px] sm:text-xs">BitChat</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
           </button>
 
-          <!-- 4. BitChat Messenger -->
-          <button id="btn-dock-bitchat" type="button" class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-cyan-300 hover:text-white transition-all relative cursor-pointer shrink-0" title="BitChat Kriz Odası">
-            ${Icons.messages('w-4.5 h-4.5 sm:w-5 sm:h-5')}
-            <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-obsidian-950"></span>
-          </button>
-
-          <!-- 5. Control Center Menu Button -->
-          <button id="btn-dock-menu" type="button" class="px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-bold text-white flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer shrink-0" title="Afet Kontrol Merkezi">
-            <span class="text-cyan-400">${Icons.grid('w-4 h-4')}</span>
-            <span class="hidden sm:inline">Kontrol Merkezi</span>
+          <!-- Right Wing 2: Control Center Menu Square (Matches Locate Square symmetrically) -->
+          <button id="btn-dock-menu" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Afet Kontrol Merkezi">
+            ${Icons.grid('w-4.5 h-4.5 sm:w-5 sm:h-5 text-cyan-400')}
           </button>
         </div>
       </div>
