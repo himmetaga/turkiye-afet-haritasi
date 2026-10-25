@@ -1,3 +1,5 @@
+import { antiManipulationService } from './antiManipulationService';
+
 export interface FeltReport {
   id: string;
   intensity: number; // 1 to 10
@@ -48,6 +50,20 @@ class FeltReportsService {
   }
 
   public submitReport(report: Omit<FeltReport, 'id' | 'timestamp' | 'timeString' | 'intensityRoman' | 'intensityColor'>): FeltReport {
+    // Sahte ve otomatik spam bildirim engeli
+    const rate = antiManipulationService.checkRateLimit('felt');
+    if (!rate.allowed) {
+      throw new Error(`Yeni bir hissettim bildirimi göndermek için lütfen ${rate.waitSeconds} saniye bekleyin.`);
+    }
+
+    let cleanComment = report.comment;
+    if (cleanComment) {
+      const heuristic = antiManipulationService.analyzeTextSafety(cleanComment);
+      if (heuristic.isSuspicious && heuristic.warningMessage) {
+        cleanComment = `${cleanComment} [${heuristic.warningMessage}]`;
+      }
+    }
+
     const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][report.intensity - 1] || 'V';
     const colors = [
       '#64748B', // I

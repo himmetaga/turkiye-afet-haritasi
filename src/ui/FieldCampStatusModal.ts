@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 
 export interface CampInfrastructureReport {
   campName: string;
@@ -201,6 +202,14 @@ export class FieldCampStatusModal {
           </div>
         </div>
 
+        <!-- Anti-Manipulation & Legal Notice -->
+        <div class="px-3.5 py-2 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
+          <span class="shrink-0 text-sm">🏕️</span>
+          <p class="leading-snug">
+            <strong>Sahra Karnesi Doğruluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Çadırkent durum karneleri sahadaki gözlemleri yansıtır. Resmi tahliye ve güvenlik kararları için lütfen mülki amirlik ve AFAD anonslarını esas alınız.
+          </p>
+        </div>
+
         <!-- Footer Actions -->
         <div class="p-3.5 sm:p-4 border-t border-white/10 bg-black/30 flex items-center justify-between gap-2 shrink-0">
           <button
@@ -270,7 +279,24 @@ export class FieldCampStatusModal {
 
     q<HTMLButtonElement>('#btn-broadcast-camp-status')?.addEventListener('click', (e) => {
       if (this.onBroadcast) {
+        // Anti-manipulation rate limiting
+        const rateCheck = antiManipulationService.checkRateLimit('aid');
+        if (!rateCheck.allowed) {
+          alert(`⏱️ Çok sık sahra karnesi güncellendi. Lütfen ${rateCheck.waitSeconds} saniye bekleyin.`);
+          return;
+        }
+
         const text = this.formatSummaryText();
+        const safety = antiManipulationService.analyzeTextSafety(text);
+        if (safety.isSuspicious) {
+          const proceed = confirm(
+            `⚠️ Doğrulama Uyarısı:\nKarnede teyitsiz veya panik yaratabilecek bir ifade tespit edildi: "${safety.detectedKeyword}"\n${
+              safety.warningMessage || ''
+            }\n\nYine de bu durumu ağa aktarmak istiyor musunuz?`
+          );
+          if (!proceed) return;
+        }
+
         this.onBroadcast(text);
         const btn = e.currentTarget as HTMLButtonElement;
         const original = btn.innerHTML;

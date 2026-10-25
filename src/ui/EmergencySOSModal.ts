@@ -150,6 +150,11 @@ export class EmergencySOSModal {
               <span>WhatsApp İlet</span>
             </a>
           </div>
+
+          <!-- Civil Emergency Disclaimer -->
+          <p class="text-[10px] text-gray-500 text-center pt-2 border-t border-white/5 leading-snug">
+            ⚠️ <strong>Yasal Sorumluluk Reddi:</strong> Bu uygulama sivil bir harita/rehber arayüzüdür. Resmi 112 Acil Çağrı Merkezi veya AFAD yerine geçmez. Asılsız ihbar ve manipülasyon yasal sorumluluk doğurur.
+          </p>
         </div>
       </div>
     `;

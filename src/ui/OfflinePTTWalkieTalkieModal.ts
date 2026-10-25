@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { bitChatService } from '../services/bitChatService';
+import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 
 interface RadioTransmission {
   id: string;
@@ -133,6 +134,14 @@ export class OfflinePTTWalkieTalkieModal {
 
   private async startRecording(): Promise<void> {
     if (this.isRecording) return;
+
+    // Rate-limiting check (prevent frequency jamming & abuse)
+    const rateCheck = antiManipulationService.checkRateLimit('sos');
+    if (!rateCheck.allowed) {
+      alert(`⏱️ Telsiz Frekans Güvenliği: Mandala tekrar basmak için lütfen ${rateCheck.waitSeconds} saniye bekleyin (Kanal kilitlenmesini ve kötüye kullanımı önleme kuralı).`);
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.playSquelchSound();
@@ -437,6 +446,14 @@ export class OfflinePTTWalkieTalkieModal {
             </div>
             <div id="ptt-transmissions-feed" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
           </div>
+        </div>
+
+        <!-- Anti-Manipulation & Legal Disclaimer Footer -->
+        <div class="p-3 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
+          <span class="shrink-0 text-sm">📡</span>
+          <p class="leading-tight">
+            <strong>Hukuki Sorumluluk & Telsiz Disiplini:</strong> Bu modül yerel eşler (P2P Mesh / WebRTC) arasında sivil ses aktarımı ve telsiz simülasyonudur. PMR446 donanımı veya AFAD / 112 acil telsiz rölelerinin yerine geçmez. Asılsız acil çağrı ve taciz yayınları TCK m. 217/A ve Elektronik Haberleşme Kanunu uyarınca suçtur.
+          </p>
         </div>
       </div>
     `;

@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { bitChatService, BitChatMessage } from '../services/bitChatService';
+import { LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 
 export class CrisisChatHUD {
   private container: HTMLElement;
@@ -121,6 +122,15 @@ export class CrisisChatHUD {
           </button>
         </div>
 
+        <!-- Hukuki Sorumluluk Reddi & Teyit Uyarısı -->
+        <div class="px-3.5 py-1.5 bg-amber-500/10 border-b border-amber-500/20 text-[10.5px] text-amber-200/90 flex items-center justify-between gap-1 flex-shrink-0">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="font-bold text-amber-300 flex-shrink-0">⚖️ Sivil Teyit Ağı:</span>
+            <span class="truncate">Resmi 112/AFAD yerine geçmez. Şebeke varsa önce 112 aranmalıdır.</span>
+          </div>
+          <button id="btn-show-legal-disclaimer" type="button" class="text-amber-300 hover:text-white underline flex-shrink-0 text-[10px] font-semibold cursor-pointer">Şartlar</button>
+        </div>
+
         <!-- Channel Tabs -->
         <div class="flex items-center gap-1.5 p-2 bg-white/[0.02] border-b border-white/5 overflow-x-auto text-xs no-scrollbar flex-shrink-0">
           ${channels
@@ -199,9 +209,12 @@ export class CrisisChatHUD {
           `
               : messages
                   .map((m) => {
+                    const rep = bitChatService.getMessageReputation(m.id);
                     const isSOS = m.type === 'sos';
                     const isSafe = m.type === 'safe';
-                    const cardBorder = isSOS
+                    const cardBorder = rep.isDisputed
+                      ? 'border-rose-500/40 bg-rose-950/20'
+                      : isSOS
                       ? 'border-rose-500/50 bg-rose-500/15 shadow-glow-rose animate-pulse'
                       : isSafe
                       ? 'border-emerald-500/30 bg-emerald-500/5'
@@ -214,16 +227,50 @@ export class CrisisChatHUD {
                         ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">P2P</span>'
                         : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Mesh</span>';
 
+                    const powBadge = m.powDifficulty
+                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 font-mono" title="Anti-Spam Proof-of-Work: ${m.powDifficulty}-bit">🛡️ PoW</span>`
+                      : '';
+
+                    const proxBadge = m.proximityBadge
+                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded border ${m.proximityClass || 'bg-gray-500/15 text-gray-300 border-gray-500/25'} font-medium">${m.proximityBadge}</span>`
+                      : '';
+
+                    const verifiedBadge = rep.isVerified
+                      ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">✓ Teyitli Saha</span>'
+                      : '';
+
+                    const disputedBanner = rep.isDisputed
+                      ? `
+                      <div class="p-1.5 mb-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-[10.5px] text-rose-200 font-semibold flex items-center gap-1.5">
+                        <span>⚠️</span>
+                        <span>Bu ihbar/mesaj topluluk tarafından asılsız veya teyitsiz olarak işaretlendi.</span>
+                      </div>
+                    `
+                      : '';
+
+                    const warningBanner = m.warningNotice
+                      ? `
+                      <div class="p-1.5 mb-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10.5px] text-amber-200">
+                        ${m.warningNotice}
+                      </div>
+                    `
+                      : '';
+
                     const timeAgo = this.formatTimeAgo(m.timestamp);
 
                     return `
-                    <div class="p-3 rounded-xl border ${cardBorder} text-xs">
-                      <div class="flex items-center justify-between gap-1 mb-1">
-                        <div class="flex items-center gap-1.5 min-w-0">
+                    <div class="p-3 rounded-xl border ${cardBorder} text-xs transition-all ${rep.isDisputed ? 'opacity-70 hover:opacity-100' : ''}">
+                      ${disputedBanner}
+                      ${warningBanner}
+                      <div class="flex items-center justify-between gap-1 mb-1.5">
+                        <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
                           <span class="font-bold truncate ${isSOS ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
                             ${m.senderName}
                           </span>
                           ${transportBadge}
+                          ${powBadge}
+                          ${proxBadge}
+                          ${verifiedBadge}
                           ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${m.district})</span>` : ''}
                         </div>
                         <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono flex-shrink-0">
@@ -232,6 +279,34 @@ export class CrisisChatHUD {
                         </div>
                       </div>
                       <p class="text-gray-200 leading-relaxed font-normal">${m.text}</p>
+
+                      <!-- Topluluk Konsensüsü & Teyit Butonları -->
+                      <div class="flex items-center justify-end gap-2 mt-2 pt-1.5 border-t border-white/5 text-[10.5px]">
+                        <button
+                          type="button"
+                          class="btn-verify-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                            rep.userVoted === 'verify'
+                              ? 'bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/40'
+                              : 'bg-white/5 text-gray-400 hover:text-emerald-300'
+                          } transition-all cursor-pointer"
+                          data-id="${m.id}"
+                          title="Bu bilginin doğruluğunu teyit et"
+                        >
+                          <span>✓</span><span>Teyit Et (${rep.verifications})</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-flag-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                            rep.userVoted === 'flag'
+                              ? 'bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40'
+                              : 'bg-white/5 text-gray-400 hover:text-rose-300'
+                          } transition-all cursor-pointer"
+                          data-id="${m.id}"
+                          title="Asılsız veya manipülatif ihbar olarak bildir"
+                        >
+                          <span>⚠️</span><span>Asılsız Bildir (${rep.flags})</span>
+                        </button>
+                      </div>
                     </div>
                   `;
                   })
@@ -283,14 +358,18 @@ export class CrisisChatHUD {
 
     const doSend = async () => {
       if (input && input.value.trim()) {
-        const bat = await this.getBatteryPercent();
-        await bitChatService.broadcastMessage(input.value, 'chat', {
-          city: this.currentCity,
-          district: this.currentDistrict,
-          coordinates: this.userCoords,
-          batteryLevel: bat
-        });
-        input.value = '';
+        try {
+          const bat = await this.getBatteryPercent();
+          await bitChatService.broadcastMessage(input.value, 'chat', {
+            city: this.currentCity,
+            district: this.currentDistrict,
+            coordinates: this.userCoords,
+            batteryLevel: bat
+          });
+          input.value = '';
+        } catch (err: any) {
+          alert(err.message || 'Mesaj gönderilemedi.');
+        }
       }
     };
 
@@ -301,32 +380,68 @@ export class CrisisChatHUD {
 
     // 1-Click Safe Beacon
     this.container.querySelector('#btn-broadcast-safe')?.addEventListener('click', async () => {
-      const bat = await this.getBatteryPercent();
-      await bitChatService.broadcastMessage(
-        'Durumum iyi, ailemle birlikte güvendeyiz.',
-        'safe',
-        {
-          city: this.currentCity,
-          district: this.currentDistrict,
-          coordinates: this.userCoords,
-          batteryLevel: bat
-        }
-      );
+      try {
+        const bat = await this.getBatteryPercent();
+        await bitChatService.broadcastMessage(
+          'Durumum iyi, ailemle birlikte güvendeyiz.',
+          'safe',
+          {
+            city: this.currentCity,
+            district: this.currentDistrict,
+            coordinates: this.userCoords,
+            batteryLevel: bat
+          }
+        );
+      } catch (err: any) {
+        alert(err.message || 'Durum bildirilemedi.');
+      }
     });
 
     // 1-Click SOS Beacon
     this.container.querySelector('#btn-broadcast-help')?.addEventListener('click', async () => {
-      const bat = await this.getBatteryPercent();
-      await bitChatService.broadcastMessage(
-        `🚨 ACİL İMDAT / ENKAZ ÇAĞRISI: Konum [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}], acil kurtarma ve sağlık ekibi yönlendirin!`,
-        'sos',
-        {
-          city: this.currentCity,
-          district: this.currentDistrict,
-          coordinates: this.userCoords,
-          batteryLevel: bat
+      try {
+        const bat = await this.getBatteryPercent();
+        await bitChatService.broadcastMessage(
+          `🚨 ACİL İMDAT / ENKAZ ÇAĞRISI: Konum [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}], acil kurtarma ve sağlık ekibi yönlendirin!`,
+          'sos',
+          {
+            city: this.currentCity,
+            district: this.currentDistrict,
+            coordinates: this.userCoords,
+            batteryLevel: bat
+          }
+        );
+      } catch (err: any) {
+        alert(err.message || 'İmdat çağrısı gönderilemedi.');
+      }
+    });
+
+    // Topluluk Konsensüsü & Teyit Butonları
+    this.container.querySelectorAll('.btn-verify-msg').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        if (id) {
+          bitChatService.voteMessage(id, 'verify');
+          this.render();
         }
-      );
+      });
+    });
+
+    this.container.querySelectorAll('.btn-flag-msg').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        if (id) {
+          bitChatService.voteMessage(id, 'flag');
+          this.render();
+        }
+      });
+    });
+
+    // Hukuki Sorumluluk Reddi Bildirimi
+    this.container.querySelector('#btn-show-legal-disclaimer')?.addEventListener('click', () => {
+      alert(LEGAL_DISCLAIMER.fullText);
     });
 
     // QR Mode

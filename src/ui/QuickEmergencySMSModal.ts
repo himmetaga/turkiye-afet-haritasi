@@ -261,6 +261,11 @@ export class QuickEmergencySMSModal {
                 <span class="text-[10px] font-medium text-gray-300">Elektrik</span>
               </a>
             </div>
+
+            <!-- Civil Emergency Legal Disclaimer -->
+            <p class="text-[10px] text-gray-500 text-center pt-2.5 mt-2 border-t border-white/5 leading-snug">
+              ⚠️ <strong>Yasal Sorumluluk Reddi:</strong> Bu araç kullanıcı cihazının yerel SMS uygulamasını şablonla hazırlar. Gönderilen mesaj ve koordinat kullanıcının şahsi sorumluluğundadır. 112 Acil Çağrı sisteminin yerine geçmez.
+            </p>
           </div>
         </div>
       </div>

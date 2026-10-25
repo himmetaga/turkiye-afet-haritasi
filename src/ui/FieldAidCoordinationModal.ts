@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 
 export interface AidItem {
   id: string;
@@ -384,6 +385,14 @@ export class FieldAidCoordinationModal {
           </div>
         </div>
 
+        <!-- Anti-Manipulation & Legal Notice -->
+        <div class="px-3.5 py-2 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
+          <span class="shrink-0 text-sm">⚖️</span>
+          <p class="leading-snug">
+            <strong>Sivil Afet Lojistiği & Sorumluluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Listeler eşler arası sivil dayanışma içindir; resmi AFAD/112 lojistik kanalı değildir. Asılsız ihtiyaç veya sahte stok beyanında bulunmak TCK m. 217/A uyarınca cezai sorumluluk doğurur.
+          </p>
+        </div>
+
         <!-- Footer Actions -->
         <div class="p-3 sm:p-4 border-t border-white/10 bg-black/30 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <button
@@ -525,7 +534,24 @@ export class FieldAidCoordinationModal {
 
     q<HTMLButtonElement>('#btn-broadcast-aid-bitchat')?.addEventListener('click', (e) => {
       if (this.onBroadcast) {
+        // Anti-manipulation rate limiting
+        const rateCheck = antiManipulationService.checkRateLimit('aid');
+        if (!rateCheck.allowed) {
+          alert(`⏱️ Çok sık yayın yapıldı. Lütfen ${rateCheck.waitSeconds} saniye bekleyin.`);
+          return;
+        }
+
         const text = this.formatBroadcastText();
+        const safety = antiManipulationService.analyzeTextSafety(text);
+        if (safety.isSuspicious) {
+          const proceed = confirm(
+            `⚠️ Doğrulama Uyarısı:\nListede teyitsiz veya panik yaratabilecek bir ifade tespit edildi: "${safety.detectedKeyword}"\n${
+              safety.warningMessage || ''
+            }\n\nYine de bu bildirimi paylaşmak istiyor musunuz?`
+          );
+          if (!proceed) return;
+        }
+
         this.onBroadcast(text);
         const btn = e.currentTarget as HTMLButtonElement;
         const originalHtml = btn.innerHTML;

@@ -18,14 +18,16 @@
   - [3. Faydaya Göre Modül Kataloğu (33 Araç)](#3-faydaya-göre-modül-kataloğu-33-araç)
   - [4. Veri Kaynakları & Doğruluk](#4-veri-kaynakları--doğruluk)
   - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
-  - [6. Kurulum ve Yerel Çalıştırma](#6-kurulum-ve-yerel-çalıştırma)
+  - [6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği](#6-manipülasyon-önleme--hukuki-sorumluluk-güvenliği)
+  - [7. Kurulum ve Yerel Çalıştırma](#7-kurulum-ve-yerel-çalıştırma)
 - [🇬🇧 English Documentation](#-english-afetlive--turkiye-disaster-resilience-and-emergency-atlas)
   - [1. Overview & Core Mission](#1-overview--core-mission)
   - [2. System Architecture](#2-system-architecture)
   - [3. Feature Catalog by Utility (33 Modules)](#3-feature-catalog-by-utility-33-modules)
   - [4. Telemetry & Data Sources](#4-telemetry--data-sources)
   - [5. Privacy & Zero Tracking Architecture](#5-privacy--zero-tracking-architecture)
-  - [6. Installation & Local Development](#6-installation--local-development)
+  - [6. Anti-Manipulation & Legal Zero-Liability Architecture](#6-anti-manipulation--legal-zero-liability-architecture)
+  - [7. Installation & Local Development](#7-installation--local-development)
 
 ---
 
@@ -269,7 +271,37 @@ afet.live üzerinde yer alan veriler kamuya açık resmi kurumsal veritabanları
 
 ---
 
-## 6. Kurulum ve Yerel Çalıştırma
+## 6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği
+
+Kriz ve afet anlarında sivil açık iletişim kanallarının troller, botlar, asılsız ihbarlar ve panik tacirleri tarafından suistimal edilmesini engellemek ve uygulamanın geliştiricileri ile kullanıcılarını hukuki yaptırımlardan korumak için 6 aşamalı hibrit güvenlik katmanı uygulanmıştır:
+
+1. **İstemci Taraflı İş İspatı (Proof-of-Work / NIP-13 PoW):**
+   - Merkezi sunucu, SMS doğrulaması veya e-Devlet girişi zorunluluğu olmadan otomatik botları engellemek üzere Web Crypto API (`crypto.subtle.digest`) ile **Hashcash / Nostr NIP-13 standardında 10-bit SHA-256 iş ispatı** zorunlu kılınmıştır.
+   - İnsan kullanıcının cihazında ~50-150 ms içinde çözülen bu matematiksel maliyet, saniyede yüzlerce sahte mesaj veya SOS yağdıran otonom komut dosyalarını ve scriptleri işlemci düzeyinde bloke eder.
+2. **Akıllı İstek Sınırlandırma (Token-Bucket Rate Limiter):**
+   - Kullanıcıların refleksle ardı ardına butonlara basarak kanalları kilitlemesini veya spam yapmasını engeller:
+     - **Acil S.O.S Çağrısı:** 30 saniye soğuma süresi
+     - **BitChat Mesajı:** 6 saniye soğuma süresi
+     - **Deprem Hissettim Bildirimi:** 60 saniye soğuma süresi
+     - **Sahra İkmal / Çadırkent Karnesi:** 20 saniye soğuma süresi
+     - **Telsiz Mandala Basma (PTT):** Frekans kilitlenmesi ve taciz önleyici mandallama koruması
+3. **Sezgisel Panik ve Dezenformasyon Algılayıcısı (Panic Heuristics):**
+   - *"Baraj patladı"*, *"10 büyüklüğünde deprem bekleniyor"*, *"Tahliye emri verildi"*, *"Nükleer sızıntı var"* gibi kitlesel infial ve kaos yaratabilecek kalıplar yerel regex kurallarıyla anında taranır.
+   - Tespit edilen mesajlar gönderilmeden önce kullanıcıya hukuki sorumluluk hatırlatmasıyla onaylatılır ve ağda kırmızı çerçeveli **"⚠️ Doğrulanmamış Panik Bildirimi"** başlığıyla etiketlenir.
+4. **Coğrafi Mesafe Çiti (Geofencing & Yerinde Doğrulama):**
+   - Bildirilen olayın veya çadırkentin GPS koordinatları ile cihazın gerçek donanım konumu Haversine formülüyle kıyaslanır:
+     - Mesafe $\le$ 3 km ise: **`📍 Yerinde Doğrulandı`** yeşil rozeti
+     - Mesafe > 3 km ise: **`⚠️ Uzaktan Bildirim`** sarı rozeti atanır. Masa başından sahte saha ihbarı yapanlar filtrelenir.
+5. **Topluluk Konsensüsü ve Teyit Ağı (Peer Quorum & Dispute):**
+   - Sahadaki diğer siviller mesajları tek tıkla `✓ Teyit Et` veya `⚠️ Asılsız Bildir` butonlarıyla oylayabilir.
+   - 2 veya daha fazla "Asılsız" oyu alan içerikler otomatik olarak sarı şüpheli çerçeveye alınarak diğer kullanıcılar uyarılır.
+6. **Hukuki Sorumluluk Reddi & TCK m. 217/A Uyumluluğu:**
+   - Platformun bağımsız, açık kaynaklı sivil bir rehber olduğu; hiçbir koşulda resmi 112 Acil Çağrı, AFAD veya mülki amirliklerin yerine geçmediği tüm acil durum pencerelerinde sabit bildirimlerle deklare edilir.
+   - Paylaşılan içeriklerin sorumluluğunun gönderene ait olduğu ve kasıtlı asılsız ihbarın **TCK m. 217/A (Halkı yanıltıcı bilgiyi alenen yayma suçu)** kapsamında cezai kovuşturma konusu olduğu net olarak hatırlatılır.
+
+---
+
+## 7. Kurulum ve Yerel Çalıştırma
 
 Projeyi kendi bilgisayarınızda yerel ortamda çalıştırmak için:
 
@@ -523,7 +555,37 @@ The toolset is organized into **4 logical categories based on immediate survival
 
 ---
 
-## 6. Installation & Local Development
+## 6. Anti-Manipulation & Legal Zero-Liability Architecture
+
+In crisis situations, open civil communication lines are vulnerable to automated bot spam, malicious hoaxes, and manufactured mass hysteria. Simultaneously, platform operators must be protected from legal liabilities arising from user-generated reports. To resolve both challenges offline without central logins, afet.live deploys a 6-layer hybrid security engine:
+
+1. **Client-Side Proof-of-Work (PoW / NIP-13 / SHA-256):**
+   - Imposes a computational cost on message issuance via the browser's native Web Crypto API (`crypto.subtle.digest`) requiring a 10-bit leading-zero SHA-256 Hashcash nonce.
+   - Takes ~50–150ms on human smartphones (imperceptible to survivors) but completely paralyzes automated bot attacks attempting to flood relays with thousands of fake SOS alerts.
+2. **Token-Bucket Rate Limiter:**
+   - Enforces deterministic local cooldowns per action type:
+     - **Distress SOS Beacon:** 30s cooldown
+     - **BitChat Civil Room Message:** 6s cooldown
+     - **"Did You Feel It?" Felt Report:** 60s cooldown
+     - **Field Aid Request & Camp Card:** 20s cooldown
+     - **Push-To-Talk (PTT) Mic Lock:** Cooldown guard preventing channel jamming and frequency harassment
+3. **Panic & Rumor Heuristic Engine:**
+   - Detects high-risk disinformation patterns (e.g., *"dam collapsed"*, *"M10 earthquake expected"*, *"evacuation ordered"*, *"radiation leak"*) in real-time.
+   - Flags suspicious transmissions with a conspicuous warning frame (`⚠️ Unverified Panic Report`) and prompts the sender with legal liability terms before broadcasting.
+4. **Hardware Geofencing & Local Proximity Validation:**
+   - Cross-references reported coordinates against the device's actual hardware GPS using the Haversine metric:
+     - Distance $\le$ 3 km: **`📍 Field Verified`** green badge
+     - Distance > 3 km: **`⚠️ Remote Report`** yellow warning badge, preventing arm-chair actors from posing as on-site witnesses.
+5. **Community Consensus & Peer Dispute Quorum:**
+   - Field responders and nearby citizens can instantly verify (`✓ Verify`) or flag (`⚠️ Dispute`) broadcasts.
+   - Reports receiving 2+ dispute flags are automatically quarantined into highlighted cautionary warning containers.
+6. **Civil Non-Liability Disclaimer & Legal Compliance:**
+   - Prominently informs all users across every modal (SOS, BitChat, Camp Status, PTT Walkie-Talkie, SMS) that afet.live is a civil, open-source guide and **under no circumstances replaces official emergency dispatchers (112 Emergency Call Center, AFAD, Police, or Coast Guard)**.
+   - Warns that intentional hoaxes, malicious distress signals, and defamatory rumors are subject to criminal prosecution under Article 217/A of the Turkish Penal Code (*Public Dissemination of Misleading Information*).
+
+---
+
+## 7. Installation & Local Development
 
 To run afet.live locally on your machine:
 

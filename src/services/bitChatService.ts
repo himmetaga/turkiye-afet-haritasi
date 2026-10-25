@@ -1,3 +1,5 @@
+import { antiManipulationService } from './antiManipulationService';
+
 export interface BitChatMessage {
   id: string;
   pubkey: string;
@@ -11,6 +13,11 @@ export interface BitChatMessage {
   coordinates?: [number, number];
   batteryLevel?: number;
   transport: 'nostr' | 'mesh' | 'webrtc' | 'qr';
+  powNonce?: number;
+  powDifficulty?: number;
+  warningNotice?: string;
+  proximityBadge?: string;
+  proximityClass?: string;
 }
 
 export interface BitChatIdentity {
@@ -292,8 +299,29 @@ class BitChatService {
     type: 'chat' | 'safe' | 'sos' = 'chat',
     meta?: { city?: string; district?: string; coordinates?: [number, number]; batteryLevel?: number }
   ): Promise<BitChatMessage> {
+    // 1. Rate Limiter (Spam ve asılsız SOS engeli)
+    const rateCheck = antiManipulationService.checkRateLimit(type === 'sos' ? 'sos' : 'chat');
+    if (!rateCheck.allowed) {
+      throw new Error(`Lütfen ${rateCheck.waitSeconds} sn bekleyin (Hızlı mesaj ve sahte ihbar engeli).`);
+    }
+
+    // 2. Heuristik Panik & Dezenformasyon Analizi
+    const heuristic = antiManipulationService.analyzeTextSafety(text);
+
+    // 3. Hashcash Proof-of-Work (Bot ve script flooding koruması)
     const now = Date.now();
     const id = `msg-${this.identity.pubkey}-${now}-${Math.random().toString(36).slice(2, 6)}`;
+    const difficulty = type === 'sos' ? 12 : 10;
+    const pow = await antiManipulationService.solveProofOfWork(`${this.identity.pubkey}:${now}:${text}`, difficulty);
+
+    // 4. Coğrafi Mesafe Çiti / Yerinde Doğrulama
+    let proximityBadge: string | undefined;
+    let proximityClass: string | undefined;
+    if (meta?.coordinates) {
+      const prox = antiManipulationService.checkProximity(meta.coordinates, meta.coordinates);
+      proximityBadge = prox.badgeLabel;
+      proximityClass = prox.badgeClass;
+    }
 
     const message: BitChatMessage = {
       id,
@@ -307,13 +335,18 @@ class BitChatService {
       district: meta?.district,
       coordinates: meta?.coordinates,
       batteryLevel: meta?.batteryLevel,
-      transport: this.connectedRelays > 0 ? 'nostr' : 'mesh'
+      transport: this.connectedRelays > 0 ? 'nostr' : 'mesh',
+      powNonce: pow.nonce,
+      powDifficulty: pow.difficulty,
+      warningNotice: heuristic.warningMessage,
+      proximityBadge,
+      proximityClass
     };
 
-    // 1. Local append & broadcast to other tabs/windows
+    // 5. Local append & broadcast to other tabs/windows
     this.handleIncomingMessage(message, true);
 
-    // 2. Publish to Nostr relays via raw WebSocket event
+    // 6. Publish to Nostr relays via raw WebSocket event (NIP-13 PoW tag compliant)
     if (this.connectedRelays > 0) {
       const nostrEvent = [
         'EVENT',
@@ -328,6 +361,7 @@ class BitChatService {
             ['disaster_type', type],
             ['city', meta?.city || ''],
             ['district', meta?.district || ''],
+            ['nonce', String(pow.nonce), String(pow.difficulty)],
             ['client', 'afet.live-bitchat']
           ],
           content: message.text,
@@ -344,7 +378,7 @@ class BitChatService {
       });
     }
 
-    // 3. Send over WebRTC DataChannel if peer is active
+    // 7. Send over WebRTC DataChannel if peer is active
     if (this.dataChannel && this.dataChannel.readyState === 'open') {
       try {
         this.dataChannel.send(JSON.stringify({ type: 'BITCHAT_DIRECT', message }));
@@ -352,6 +386,14 @@ class BitChatService {
     }
 
     return message;
+  }
+
+  public voteMessage(messageId: string, vote: 'verify' | 'flag') {
+    return antiManipulationService.voteMessage(messageId, this.identity.pubkey, vote);
+  }
+
+  public getMessageReputation(messageId: string) {
+    return antiManipulationService.getMessageReputation(messageId, this.identity.pubkey);
   }
 
   // WebRTC P2P Direct Pair (Zero-Server Phone-to-Phone)

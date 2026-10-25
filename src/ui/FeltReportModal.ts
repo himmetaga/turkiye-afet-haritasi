@@ -134,10 +134,13 @@ export class FeltReportModal {
         <!-- Submit Button -->
         <button
           id="btn-submit-felt"
-          class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-bold text-sm shadow-glow-emerald active:scale-95 transition-all mb-4"
+          class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-bold text-sm shadow-glow-emerald active:scale-95 transition-all mb-2"
         >
           ✓ Bildirimi Topluluk Haritasına Gönder
         </button>
+        <p class="text-[10px] text-gray-500 text-center mb-4 leading-tight">
+          ⚖️ Sivil afet dayanışma ağıdır. Resmi AFAD/112 yerine geçmez. Kullanıcı beyanlarından platform sorumlu tutulamaz.
+        </p>
 
         <!-- Recent Reports Preview -->
         <div class="border-t border-white/10 pt-3">
@@ -180,22 +183,26 @@ export class FeltReportModal {
       const floor = Number((this.container.querySelector('#felt-floor') as HTMLInputElement)?.value || 1);
       const comment = (this.container.querySelector('#felt-comment') as HTMLInputElement)?.value || '';
 
-      const report = feltReportsService.submitReport({
-        intensity: this.selectedIntensity,
-        intensityLabel: `Hissedilen Şiddet: ${this.selectedIntensity}/10`,
-        city: 'İstanbul',
-        district: 'Kadıköy',
-        coordinates: this.userCoords,
-        buildingType: building,
-        floor,
-        comment
-      });
+      try {
+        const report = feltReportsService.submitReport({
+          intensity: this.selectedIntensity,
+          intensityLabel: `Hissedilen Şiddet: ${this.selectedIntensity}/10`,
+          city: 'İstanbul',
+          district: 'Kadıköy',
+          coordinates: this.userCoords,
+          buildingType: building,
+          floor,
+          comment
+        });
 
-      if (this.onSubmitSuccess) {
-        this.onSubmitSuccess(report);
+        if (this.onSubmitSuccess) {
+          this.onSubmitSuccess(report);
+        }
+
+        this.hide();
+      } catch (err: any) {
+        alert(err.message || 'Bildirim kaydedilemedi.');
       }
-
-      this.hide();
     });
 
     this.container.addEventListener('click', (e) => {
