@@ -351,34 +351,34 @@ export class HeaderHUD {
       <!-- =========================================================
            2. BOTTOM CENTER: iOS 27 FLOATING SPATIAL GLASS DOCK
            ========================================================= -->
-      <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none max-w-[96vw]">
-        <div id="ios27-dock" class="ios27-dock px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-center gap-1.5 sm:gap-2.5 text-white shadow-2xl">
+      <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none w-[94vw] sm:w-[460px] max-w-[480px]">
+        <div id="ios27-dock" class="ios27-bar w-full p-1 sm:p-1.5 flex items-center justify-between gap-1 sm:gap-1.5 text-white shadow-2xl">
           <!-- Left Wing 1: Locate Me / Map -->
-          <button id="btn-dock-locate" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Konumuma Odaklan">
+          <button id="btn-dock-locate" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Konumuma Odaklan">
             ${Icons.crosshair('w-4.5 h-4.5 sm:w-5 sm:h-5')}
           </button>
 
           <!-- Left Wing 2: Hissettim Butonu -->
-          <button id="btn-dock-felt" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="Depremi Hissettim Bildirimi">
+          <button id="btn-dock-felt" type="button" class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all cursor-pointer" title="Depremi Hissettim Bildirimi">
             ${Icons.activity('w-4 h-4 text-amber-400')}
-            <span class="text-[11px] sm:text-xs">Hissettim</span>
+            <span class="text-[11px] sm:text-xs truncate">Hissettim</span>
           </button>
 
           <!-- DEAD CENTER HERO: Big SOS Trigger -->
-          <button id="btn-dock-sos" type="button" class="px-3.5 sm:px-4.5 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all flex items-center gap-1.5 border border-rose-400/40 cursor-pointer shrink-0">
+          <button id="btn-dock-sos" type="button" class="px-4 sm:px-5 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all border border-rose-400/40 cursor-pointer shrink-0">
             <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>S.O.S</span>
           </button>
 
           <!-- Right Wing 1: BitChat Messenger Pill (Matches Hissettim Pill symmetrically) -->
-          <button id="btn-dock-bitchat" type="button" class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer shrink-0" title="BitChat Kriz Odası">
+          <button id="btn-dock-bitchat" type="button" class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all cursor-pointer" title="BitChat Kriz Odası">
             ${Icons.messages('w-4 h-4 text-cyan-400')}
-            <span class="text-[11px] sm:text-xs">BitChat</span>
+            <span class="text-[11px] sm:text-xs truncate">BitChat</span>
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
           </button>
 
           <!-- Right Wing 2: Control Center Menu Square (Matches Locate Square symmetrically) -->
-          <button id="btn-dock-menu" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer shrink-0" title="Afet Kontrol Merkezi">
+          <button id="btn-dock-menu" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Afet Kontrol Merkezi">
             ${Icons.grid('w-4.5 h-4.5 sm:w-5 sm:h-5 text-cyan-400')}
           </button>
         </div>
@@ -389,7 +389,7 @@ export class HeaderHUD {
            ========================================================= -->
       <div
         id="ios27-bento-sheet"
-        class="fixed bottom-[62px] sm:bottom-[76px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[500px] max-h-[80vh] ios27-glass rounded-3xl p-4 sm:p-5 border border-white/15 shadow-2xl z-50 flex flex-col gap-3.5 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
+        class="fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[80vh] ios27-bar p-4 sm:p-5 shadow-2xl z-50 flex flex-col gap-3.5 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
       >
         <!-- Sheet Header -->
         <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
