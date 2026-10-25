@@ -63,6 +63,7 @@ export interface BarterItem {
 class CivilDefenseProtocolsService {
   private cprAudioCtx: AudioContext | null = null;
   private cprInterval: any = null;
+  private breatheTickCount = 0;
   private cprState: CPRState = {
     isActive: false,
     bpm: 110,
@@ -80,6 +81,7 @@ class CivilDefenseProtocolsService {
     this.cprState.compressionCount = 0;
     this.cprState.cycleCount = 1;
     this.cprState.phase = 'compress';
+    this.breatheTickCount = 0;
 
     const intervalMs = Math.round((60 / 110) * 1000); // ~545ms per compression
 
@@ -98,19 +100,53 @@ class CivilDefenseProtocolsService {
         if (this.cprState.compressionCount >= 30) {
           this.cprState.phase = 'breathe';
           this.cprState.compressionCount = 0;
+          this.breatheTickCount = 0;
+          this.playBreathePromptSound();
         }
       } else {
-        // Breathe phase (2 deep rescue breaths: ~4-5 seconds)
-        this.cprState.cycleCount++;
-        this.cprState.phase = 'compress';
+        // Breathe phase (2 deep rescue breaths: ~4 seconds = 7 ticks)
+        this.breatheTickCount++;
+        if (this.breatheTickCount === 4) {
+          this.playBreathePromptSound(); // 2nd breath prompt
+        }
+        if (this.breatheTickCount >= 7) {
+          this.cprState.cycleCount++;
+          this.cprState.phase = 'compress';
+          this.breatheTickCount = 0;
+        }
       }
 
       onTick({ ...this.cprState });
     }, intervalMs);
   }
 
+  private playBreathePromptSound(): void {
+    try {
+      if (!this.cprAudioCtx || this.cprAudioCtx.state === 'closed') {
+        const AudioClass = window.AudioContext || (window as any).webkitAudioContext;
+        this.cprAudioCtx = new AudioClass();
+      }
+      if (this.cprAudioCtx.state === 'suspended') {
+        this.cprAudioCtx.resume();
+      }
+      const ctx = this.cprAudioCtx;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, now);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } catch {}
+  }
+
   public stopCPRCoach(): void {
     this.cprState.isActive = false;
+    this.breatheTickCount = 0;
     clearInterval(this.cprInterval);
     if (this.cprAudioCtx && this.cprAudioCtx.state !== 'closed') {
       try {

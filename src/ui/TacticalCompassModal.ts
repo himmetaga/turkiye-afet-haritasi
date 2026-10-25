@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { advancedHardwareService } from '../services/advancedHardwareService';
+import { haversineDistanceMeters } from '../utils/geoMath';
 
 export class TacticalCompassModal {
   private container: HTMLElement;
@@ -7,6 +8,7 @@ export class TacticalCompassModal {
   private targetCoords: [number, number] | null = null;
   private targetName = 'En Yakın Toplanma Alanı';
   private compassInterval: any = null;
+  private lastAlignedHaptic = false;
 
   constructor(parent: HTMLElement, userCoords: [number, number]) {
     this.userCoords = userCoords;
@@ -31,6 +33,7 @@ export class TacticalCompassModal {
     this.container.classList.remove('hidden');
     this.render();
     this.startCompassLoop();
+    advancedHardwareService.requestCompassPermission().catch(() => {});
   }
 
   public hide(): void {
@@ -56,27 +59,47 @@ export class TacticalCompassModal {
     const target = this.targetCoords || [this.userCoords[0] + 0.005, this.userCoords[1] + 0.005];
     const bearing = advancedHardwareService.calculateTacticalBearing(this.userCoords, target);
     const depth = advancedHardwareService.getBarometricDepth();
+    const distMeters = Math.round(haversineDistanceMeters(this.userCoords, target));
 
     const needle = this.container.querySelector('#compass-needle') as HTMLElement | null;
+    const targetPointer = this.container.querySelector('#compass-target-pointer') as HTMLElement | null;
     const headingText = this.container.querySelector('#compass-heading-deg') as HTMLElement | null;
     const turnText = this.container.querySelector('#compass-turn-guidance') as HTMLElement | null;
     const depthVal = this.container.querySelector('#compass-depth-val') as HTMLElement | null;
     const floorVal = this.container.querySelector('#compass-floor-val') as HTMLElement | null;
+    const distVal = this.container.querySelector('#compass-target-distance') as HTMLElement | null;
 
     if (needle) {
       needle.style.transform = `rotate(${-bearing.currentHeadingDeg}deg)`;
     }
+    if (targetPointer) {
+      targetPointer.style.transform = `rotate(${bearing.relativeTurnDeg}deg)`;
+    }
     if (headingText) {
       headingText.textContent = `${bearing.currentHeadingDeg}° ${bearing.cardinalDirection}`;
+    }
+    if (distVal) {
+      distVal.textContent = distMeters >= 1000 ? `${(distMeters / 1000).toFixed(1)} km` : `${distMeters} m`;
     }
     if (turnText) {
       const turn = bearing.relativeTurnDeg;
       if (Math.abs(turn) < 8) {
         turnText.innerHTML = `<span class="text-emerald-400 font-bold">🎯 DOĞRUDAN HEDEFE İLERLEYİN</span>`;
-      } else if (turn > 0) {
-        turnText.innerHTML = `<span class="text-amber-300 font-bold">↻ SAĞA ${Math.abs(turn)}° DÖNÜN</span>`;
+        if (!this.lastAlignedHaptic) {
+          this.lastAlignedHaptic = true;
+          if ('vibrate' in navigator) {
+            try { navigator.vibrate(35); } catch {}
+          }
+        }
       } else {
-        turnText.innerHTML = `<span class="text-amber-300 font-bold">↺ SOLA ${Math.abs(turn)}° DÖNÜN</span>`;
+        if (Math.abs(turn) > 15) {
+          this.lastAlignedHaptic = false;
+        }
+        if (turn > 0) {
+          turnText.innerHTML = `<span class="text-amber-300 font-bold">↻ SAĞA ${Math.abs(turn)}° DÖNÜN</span>`;
+        } else {
+          turnText.innerHTML = `<span class="text-amber-300 font-bold">↺ SOLA ${Math.abs(turn)}° DÖNÜN</span>`;
+        }
       }
     }
     if (depthVal) {
@@ -89,6 +112,8 @@ export class TacticalCompassModal {
 
   private render(): void {
     const depth = advancedHardwareService.getBarometricDepth();
+    const target = this.targetCoords || [this.userCoords[0] + 0.005, this.userCoords[1] + 0.005];
+    const distMeters = Math.round(haversineDistanceMeters(this.userCoords, target));
 
     this.container.innerHTML = `
       <div class="ios27-glass rounded-3xl w-full max-w-sm sm:max-w-md flex flex-col overflow-hidden text-white shadow-2xl border border-white/15">
@@ -114,7 +139,7 @@ export class TacticalCompassModal {
         </div>
 
         <!-- Compass Visual Dial -->
-        <div class="p-5 flex flex-col items-center justify-center gap-4">
+        <div class="p-5 flex flex-col items-center justify-center gap-4 cursor-pointer" id="compass-dial-container" title="Dokunarak pusulayı kalibre edin">
           <div class="relative w-56 h-56 rounded-full ios27-glass flex items-center justify-center border-2 border-white/15 shadow-inner">
             <!-- Cardinal markers -->
             <span class="absolute top-2 font-black text-xs text-rose-400 font-mono">N</span>
@@ -122,9 +147,16 @@ export class TacticalCompassModal {
             <span class="absolute right-2 font-bold text-xs text-gray-400 font-mono">E</span>
             <span class="absolute left-2 font-bold text-xs text-gray-400 font-mono">W</span>
 
-            <!-- Rotating Needle dial -->
+            <!-- Target Direction Beacon (Green Arrow) -->
+            <div id="compass-target-pointer" class="absolute inset-0 flex items-center justify-center ios27-spring">
+              <div class="w-2 h-48 flex flex-col justify-start items-center">
+                <div class="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[24px] border-b-emerald-400 shadow-glow-emerald animate-pulse"></div>
+              </div>
+            </div>
+
+            <!-- Rotating Needle dial (North / South) -->
             <div id="compass-needle" class="absolute inset-0 flex items-center justify-center ios27-spring">
-              <div class="w-1.5 h-44 flex flex-col justify-between items-center">
+              <div class="w-1.5 h-44 flex flex-col justify-between items-center opacity-85">
                 <!-- North pointer -->
                 <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[28px] border-b-rose-500 shadow-glow-red"></div>
                 <!-- Center pivot -->
@@ -134,10 +166,13 @@ export class TacticalCompassModal {
               </div>
             </div>
 
-            <!-- Central HUD Degree -->
+            <!-- Central HUD Degree & Distance -->
             <div class="relative z-10 text-center pointer-events-none mt-16">
               <div id="compass-heading-deg" class="text-base font-black font-mono tracking-tight text-white drop-shadow">
                 0° Kuzey
+              </div>
+              <div id="compass-target-distance" class="text-[11px] font-mono text-emerald-400 font-bold drop-shadow">
+                ${distMeters >= 1000 ? `${(distMeters / 1000).toFixed(1)} km` : `${distMeters} m`}
               </div>
             </div>
           </div>
@@ -165,12 +200,20 @@ export class TacticalCompassModal {
         </div>
 
         <!-- Footer -->
-        <div class="p-3 bg-black/40 border-t border-white/10 text-[10.5px] text-gray-400 text-center">
-          💡 Enkaz tozu ve yıkıntılarda yön şaşırdığınızda pusulayı yatay tutun ve kerteriz açısına göre ilerleyin.
+        <div class="p-3 bg-black/40 border-t border-white/10 text-[10.5px] text-gray-400 text-center flex items-center justify-between px-4">
+          <span>🟢 Yeşil Ok: Hedef Toplanma Alanı</span>
+          <button id="btn-calibrate-compass" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] text-gray-300 font-semibold">
+            Kalibre Et ↻
+          </button>
         </div>
       </div>
     `;
 
     this.container.querySelector('#btn-close-compass')?.addEventListener('click', () => this.hide());
+    const calHandler = () => {
+      advancedHardwareService.requestCompassPermission();
+    };
+    this.container.querySelector('#btn-calibrate-compass')?.addEventListener('click', calHandler);
+    this.container.querySelector('#compass-dial-container')?.addEventListener('click', calHandler);
   }
 }

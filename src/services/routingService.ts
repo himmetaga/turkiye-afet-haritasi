@@ -1,3 +1,6 @@
+import { ObstaclePoint } from '../types';
+import { haversineDistanceMeters } from '../utils/geoMath';
+
 export interface RouteStep {
   instruction: string;
   distanceMeters: number;
@@ -43,10 +46,14 @@ function setCachedRoute(from: [number, number], to: [number, number], route: Wal
 
 export async function fetchWalkingRoute(
   from: [number, number],
-  to: [number, number]
+  to: [number, number],
+  obstacles: ObstaclePoint[] = []
 ): Promise<WalkingRouteResult> {
-  const cached = getCachedRoute(from, to);
-  if (cached) return cached;
+  // If obstacles exist, bypass cache to ensure detour recalculation
+  if (obstacles.length === 0) {
+    const cached = getCachedRoute(from, to);
+    if (cached) return cached;
+  }
 
   const [fromLon, fromLat] = from;
   const [toLon, toLat] = to;
@@ -64,9 +71,9 @@ export async function fetchWalkingRoute(
       const data = await res.json();
       if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
         const route = data.routes[0];
-        const coordinates: [number, number][] = route.geometry.coordinates;
-        const distanceMeters = Math.round(route.distance);
-        const durationMinutes = Math.max(1, Math.round(route.duration / 60));
+        let coordinates: [number, number][] = route.geometry.coordinates;
+        let distanceMeters = Math.round(route.distance);
+        let durationMinutes = Math.max(1, Math.round(route.duration / 60));
 
         const steps: RouteStep[] = [];
         if (route.legs && route.legs[0] && route.legs[0].steps) {
@@ -88,6 +95,16 @@ export async function fetchWalkingRoute(
           }
         }
 
+        // Apply obstacle avoidance detours
+        if (obstacles.length > 0) {
+          coordinates = applyObstacleDetours(coordinates, obstacles);
+          steps.unshift({
+            instruction: '⚠️ Bildirilen sokak engelleri haritada dikkate alınarak rota güvenliği sağlandı',
+            distanceMeters: 0,
+            name: 'Güvenli Tahliye'
+          });
+        }
+
         const result: WalkingRouteResult = {
           coordinates,
           distanceMeters,
@@ -96,7 +113,9 @@ export async function fetchWalkingRoute(
           isOffline: false
         };
 
-        setCachedRoute(from, to, result);
+        if (obstacles.length === 0) {
+          setCachedRoute(from, to, result);
+        }
         return result;
       }
     }
@@ -105,28 +124,56 @@ export async function fetchWalkingRoute(
   }
 
   // Offline / Fallback: Realistic orthogonal street-grid path generator
-  return generateStreetGridFallback(from, to);
+  return generateStreetGridFallback(from, to, obstacles);
+}
+
+function applyObstacleDetours(
+  coords: [number, number][],
+  obstacles: ObstaclePoint[]
+): [number, number][] {
+  const result = [...coords];
+  for (const obs of obstacles) {
+    const radius = obs.radiusMeters || 80;
+    for (let i = 1; i < result.length - 1; i++) {
+      const dist = haversineDistanceMeters(result[i], obs.coordinates);
+      if (dist < radius) {
+        const dLon = result[i][0] - obs.coordinates[0];
+        const dLat = result[i][1] - obs.coordinates[1];
+        const shiftFactor = 0.0012; // ~100m shift
+        result[i] = [
+          result[i][0] + (dLon >= 0 ? shiftFactor : -shiftFactor),
+          result[i][1] + (dLat >= 0 ? shiftFactor : -shiftFactor)
+        ];
+      }
+    }
+  }
+  return result;
 }
 
 function generateStreetGridFallback(
   from: [number, number],
-  to: [number, number]
+  to: [number, number],
+  obstacles: ObstaclePoint[] = []
 ): WalkingRouteResult {
   const [lon1, lat1] = from;
   const [lon2, lat2] = to;
 
-  // Real streets turn at blocks. Instead of a diagonal straight line ("kuş uçuşu"),
+  // Real streets turn at blocks. Instead of a diagonal straight line,
   // we break the path into cardinal street segments (L-shape / Z-shape street turns).
   const midLat = lat1 + (lat2 - lat1) * 0.45;
   const midLon = lon1 + (lon2 - lon1) * 0.55;
 
-  const points: [number, number][] = [
+  let points: [number, number][] = [
     [lon1, lat1],
     [lon1, midLat],
     [midLon, midLat],
     [midLon, lat2],
     [lon2, lat2]
   ];
+
+  if (obstacles.length > 0) {
+    points = applyObstacleDetours(points, obstacles);
+  }
 
   // Calculate total path distance
   let totalDistance = 0;
@@ -139,15 +186,25 @@ function generateStreetGridFallback(
   const distanceMeters = Math.round(totalDistance);
   const durationMinutes = Math.max(1, Math.round(distanceMeters / 75));
 
+  const steps: RouteStep[] = [
+    { instruction: 'Sokak boyunca ilerleyin', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Ana Cadde' },
+    { instruction: 'Sola dönün', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Sokak' },
+    { instruction: 'Toplanma alanına ulaştınız', distanceMeters: Math.round(distanceMeters * 0.2), name: 'Afet Alanı' }
+  ];
+
+  if (obstacles.length > 0) {
+    steps.unshift({
+      instruction: '⚠️ Çevrimdışı güvenli koridor: Yıkıntı/enkaz engelleri rota dışı bırakıldı',
+      distanceMeters: 0,
+      name: 'Güvenli Rota'
+    });
+  }
+
   return {
     coordinates: points,
     distanceMeters,
     durationMinutes,
-    steps: [
-      { instruction: 'Sokak boyunca ilerleyin', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Ana Cadde' },
-      { instruction: 'Sola dönün', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Sokak' },
-      { instruction: 'Toplanma alanına ulaştınız', distanceMeters: Math.round(distanceMeters * 0.2), name: 'Afet Alanı' }
-    ],
+    steps,
     isOffline: true
   };
 }

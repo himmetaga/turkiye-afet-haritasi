@@ -692,9 +692,9 @@ export class MapEngine {
   public async drawWalkingRoute(
     from: [number, number],
     to: [number, number],
-    _obstacles: ObstaclePoint[] = []
+    obstacles: ObstaclePoint[] = []
   ): Promise<WalkingRouteResult> {
-    const route = await fetchWalkingRoute(from, to);
+    const route = await fetchWalkingRoute(from, to, obstacles);
 
     if (this.map && this.isLoaded) {
       const source = this.map.getSource('walking-route') as maplibregl.GeoJSONSource;

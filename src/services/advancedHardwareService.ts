@@ -121,6 +121,21 @@ class AdvancedHardwareService {
     this.startConsciousProbe();
   }
 
+  public async requestCompassPermission(): Promise<boolean> {
+    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+      const DOE = (window as any).DeviceOrientationEvent;
+      if (typeof DOE.requestPermission === 'function') {
+        try {
+          const res = await DOE.requestPermission();
+          return res === 'granted';
+        } catch {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /**
    * 1. TAKTİKSEL PUSULA & HEDEF KERTERİZ AÇISI HESAPLAYICI
    * @param targetCoords [longitude, latitude]
