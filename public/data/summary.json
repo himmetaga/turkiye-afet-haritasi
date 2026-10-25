@@ -1,8 +1,8 @@
 {
   "assemblyPointsCount": 27331,
-  "facilitiesCount": 1829,
+  "facilitiesCount": 1747,
   "hospitalsCount": 1226,
-  "pharmaciesCount": 581,
+  "pharmaciesCount": 499,
   "bloodCentersCount": 22,
   "provinces": [
     "Adana",
@@ -74,5 +74,5 @@
     "Yozgat",
     "Zonguldak"
   ],
-  "updatedAt": "2026-10-25T07:57:40.800Z"
+  "updatedAt": "2026-10-25T18:34:22.284Z"
 }
