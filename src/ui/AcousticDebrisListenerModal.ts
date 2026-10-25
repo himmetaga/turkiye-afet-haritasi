@@ -10,6 +10,7 @@ export class AcousticDebrisListenerModal {
   private animFrameId: number | null = null;
   private threshold = 65; // dB threshold
   private triggeredCount = 0;
+  private lastTriggerTime = 0;
   private onTriggerWhistle?: () => void;
 
   constructor(parent: HTMLElement, onTriggerWhistle?: () => void) {
@@ -99,7 +100,9 @@ export class AcousticDebrisListenerModal {
       dbValueEl.textContent = `${currentDb} dB`;
     }
 
-    if (currentDb >= this.threshold) {
+    const now = Date.now();
+    if (currentDb >= this.threshold && now - this.lastTriggerTime > 2500) {
+      this.lastTriggerTime = now;
       this.handleSoundTriggered(currentDb);
     }
 

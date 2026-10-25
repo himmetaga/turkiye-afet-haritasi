@@ -6,6 +6,7 @@ export class QuickEmergencySMSModal {
   private selectedTemplate: 'help' | 'safe' = 'help';
   private targetPhone = '';
   private customNote = '';
+  private batteryLevel: number | null = null;
 
   constructor(parent: HTMLElement, userCoords: [number, number]) {
     this.userCoords = userCoords;
@@ -15,7 +16,22 @@ export class QuickEmergencySMSModal {
       'fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-obsidian-950/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300';
     parent.appendChild(this.container);
 
+    this.initBatteryListener();
     this.render();
+  }
+
+  private async initBatteryListener(): Promise<void> {
+    if ('getBattery' in navigator) {
+      try {
+        const battery: any = await (navigator as any).getBattery();
+        this.batteryLevel = Math.round(battery.level * 100);
+        battery.addEventListener('levelchange', () => {
+          this.batteryLevel = Math.round(battery.level * 100);
+          const previewBox = this.container.querySelector('#sms-preview-box');
+          if (previewBox) previewBox.textContent = this.generateSMSMessage();
+        });
+      } catch {}
+    }
   }
 
   public setCoords(coords: [number, number]): void {
@@ -39,23 +55,23 @@ export class QuickEmergencySMSModal {
     const lon = this.userCoords[0].toFixed(5);
     const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
     const extra = this.customNote.trim() ? ` Not: ${this.customNote.trim()}` : '';
+    const batt = this.batteryLevel !== null ? ` (Pil:%${this.batteryLevel})` : '';
 
     if (this.selectedTemplate === 'help') {
-      return `ACİL DURUM! Enkaz altındayım / yardıma ihtiyacım var! Konumum: Enlem ${lat}, Boylam ${lon} (Harita: ${mapUrl}).${extra} Lütfen AFAD ve 112'ye iletin!`;
+      return `ACİL DURUM! Enkaz altındayım / yardıma ihtiyacım var!${batt} Konumum: Enlem ${lat}, Boylam ${lon} (Harita: ${mapUrl}).${extra} Lütfen AFAD ve 112'ye iletin!`;
     } else {
-      return `Ben ve yanımdakiler GÜVENDEYİZ. Konumum: ${lat}, ${lon} (Harita: ${mapUrl}).${extra} Şebekeyi meşgul etmemek için SMS atıyorum.`;
+      return `Ben ve yanımdakiler GÜVENDEYİZ.${batt} Konumum: ${lat}, ${lon} (Harita: ${mapUrl}).${extra} Şebekeyi meşgul etmemek için SMS atıyorum.`;
     }
   }
 
-  private openSMSComposer(): void {
+  private openSMSComposer(targetNumber?: string): void {
     const message = encodeURIComponent(this.generateSMSMessage());
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const delimiter = isIOS ? '&' : '?';
-    const target = this.targetPhone.trim();
+    const target = targetNumber !== undefined ? targetNumber.trim() : this.targetPhone.trim();
 
     let smsUrl = `sms:${target}${delimiter}body=${message}`;
     if (!target) {
-      // In iOS and modern Android, omitting number opens recipient chooser
       smsUrl = isIOS ? `sms:&body=${message}` : `sms:?body=${message}`;
     }
 
@@ -194,35 +210,50 @@ export class QuickEmergencySMSModal {
             />
           </div>
 
-          <!-- SMS Preview Area -->
+          <!-- SMS Preview Area & Length Counter -->
           <div>
-            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Gönderilecek SMS Metni</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Gönderilecek SMS Metni</label>
+              <span id="sms-char-counter" class="text-[10px] text-gray-400 font-mono">
+                ${currentMessage.length} karakter (${Math.ceil(currentMessage.length / 160)} SMS)
+              </span>
+            </div>
             <div id="sms-preview-box" class="p-3 rounded-xl bg-black/40 border border-white/10 text-gray-200 font-mono text-[11.5px] leading-relaxed select-all">
               ${currentMessage}
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="space-y-2 pt-1">
             <button
-              id="btn-open-sms-composer"
+              id="btn-send-sms-112"
               type="button"
-              class="py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 ${
-                this.selectedTemplate === 'help'
-                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20'
-                  : 'bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 shadow-emerald-500/20'
-              }"
+              class="w-full py-3 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-xl shadow-rose-600/30 transition-all active:scale-[0.98]"
             >
-              <span>📱</span> SMS Uygulamasını Aç
+              <span>🚨</span> 112 ACİL MERKEZİNE SMS İLET (112)
             </button>
 
-            <button
-              id="btn-copy-sms"
-              type="button"
-              class="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              <span>📋</span> Metni Kopyala
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                id="btn-open-sms-composer"
+                type="button"
+                class="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 ${
+                  this.selectedTemplate === 'help'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-obsidian-950 shadow-amber-500/20'
+                    : 'bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 shadow-emerald-500/20'
+                }"
+              >
+                <span>📱</span> Rehberden Kişiye Gönder
+              </button>
+
+              <button
+                id="btn-copy-sms"
+                type="button"
+                class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <span>📋</span> Metni Kopyala
+              </button>
+            </div>
           </div>
 
           <!-- Speed Dial Emergency Phone Cards -->
@@ -289,6 +320,16 @@ export class QuickEmergencySMSModal {
       this.render();
     });
 
+    const updatePreviewAndCounter = () => {
+      const msg = this.generateSMSMessage();
+      const previewBox = q<HTMLElement>('#sms-preview-box');
+      if (previewBox) previewBox.textContent = msg;
+      const counter = q<HTMLElement>('#sms-char-counter');
+      if (counter) {
+        counter.textContent = `${msg.length} karakter (${Math.ceil(msg.length / 160)} SMS)`;
+      }
+    };
+
     const targetInput = q<HTMLInputElement>('#input-sms-target');
     targetInput?.addEventListener('input', (e) => {
       this.targetPhone = (e.target as HTMLInputElement).value;
@@ -297,12 +338,10 @@ export class QuickEmergencySMSModal {
     const noteInput = q<HTMLInputElement>('#input-sms-note');
     noteInput?.addEventListener('input', (e) => {
       this.customNote = (e.target as HTMLInputElement).value;
-      const previewBox = q<HTMLElement>('#sms-preview-box');
-      if (previewBox) {
-        previewBox.textContent = this.generateSMSMessage();
-      }
+      updatePreviewAndCounter();
     });
 
+    q('#btn-send-sms-112')?.addEventListener('click', () => this.openSMSComposer('112'));
     q('#btn-open-sms-composer')?.addEventListener('click', () => this.openSMSComposer());
     q('#btn-copy-sms')?.addEventListener('click', () => this.copyMessage());
 

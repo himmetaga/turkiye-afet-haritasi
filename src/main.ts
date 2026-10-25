@@ -552,6 +552,7 @@ class DisasterAtlasApp {
       this.updateBuildingRiskContext();
       this.iceGenerator?.setData(this.userCoords, this.assemblyPoints);
       this.floodRadarModal?.setAssemblyPoints(this.assemblyPoints);
+      this.apartmentPoster?.setData(this.userCoords, this.assemblyPoints, this.facilities);
     }
   }
 
@@ -629,6 +630,8 @@ class DisasterAtlasApp {
     if (this.facilities.length > 0) {
       this.syncOptimizedMapData();
       this.updateUserContextCalculations();
+      this.apartmentPoster?.setData(this.userCoords, this.assemblyPoints, this.facilities);
+      this.bloodCenterModal?.setFacilities(this.facilities);
     }
 
     // Canlı nöbetçi eczaneleri hemen çek
