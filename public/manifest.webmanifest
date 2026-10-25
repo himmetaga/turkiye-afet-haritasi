@@ -9,14 +9,17 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "prefer_related_applications": false,
   "background_color": "#090a0f",
   "theme_color": "#090a0f",
   "orientation": "portrait-primary",
   "shortcuts": [
-    { "name": "3000 Hz Kurtarma Düdüğü", "short_name": "Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "3000 Hz Kurtarma Düdüğü", "short_name": "SAR Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
     { "name": "BitChat P2P Kriz Odası", "short_name": "BitChat", "url": "/?mod=kriz", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Gece Sismograf Nöbeti", "short_name": "Gece Nöbeti", "url": "/?mod=gece-nobeti", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Çevrimdışı QR Güvendeyim", "short_name": "QR Durum", "url": "/?mod=qr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
+    { "name": "CPR Kalp Masajı Koçu", "short_name": "CPR Koçu", "url": "/?mod=cpr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Sel & Taşkın Radarı", "short_name": "Sel Radarı", "url": "/?mod=sel", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Gece Sismograf Nöbeti", "short_name": "Gece Nöbeti", "url": "/?mod=gece-nobeti", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
   ],
   "icons": [
     {

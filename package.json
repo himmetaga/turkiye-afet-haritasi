@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite --host",
-    "build": "node scripts/fetch-civic-data.mjs && tsc && vite build",
+    "build": "node scripts/fetch-civic-data.mjs --skip-if-cached && tsc && vite build",
     "preview": "vite preview",
     "fetch:data": "node scripts/fetch-civic-data.mjs"
   },

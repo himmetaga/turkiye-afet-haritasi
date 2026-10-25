@@ -12,6 +12,22 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const skipIfCached = args.includes('--skip-if-cached') || args.includes('--check-cache');
+  if (skipIfCached) {
+    const assemblyFile = path.join(DATA_DIR, 'assembly-points.geojson');
+    const facilitiesFile = path.join(DATA_DIR, 'emergency-facilities.geojson');
+    if (fs.existsSync(assemblyFile) && fs.existsSync(facilitiesFile)) {
+      try {
+        const stats = fs.statSync(assemblyFile);
+        if (stats.size > 500000) {
+          console.log('[civic-data] Mevcut yerel AFAD ve acil tesis verisi geçerli (skip-if-cached). İndirme adımı atlanıyor.');
+          return;
+        }
+      } catch {}
+    }
+  }
+
   console.log('[civic-data] Türkiye genelindeki resmi AFAD toplanma alanları, hastaneler ve nöbetçi eczaneler derleniyor...');
 
   const assemblyMap = new Map();
@@ -48,7 +64,7 @@ async function main() {
       const cityName = provincePlateNames[plate] || `İl ${plate}`;
       try {
         const u = `https://raw.githubusercontent.com/Ilyas-jpg/geogow/master/public/data/toplanma/${plate}.geo.json`;
-        const res = await fetch(u);
+        const res = await fetch(u, { signal: AbortSignal.timeout(6000) });
         if (!res.ok) return;
         const data = await res.json();
         provincesSet.add(cityName);
@@ -300,53 +316,60 @@ async function main() {
   ];
 
   console.log('[eczane] İstanbul ilçelerinden kesin GPS konumlu nöbetçi eczaneler çekiliyor...');
-  for (const dist of istDistricts) {
-    try {
-      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=istanbul&district=${dist}&ordering=-date&limit=50`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-      });
-      if (!res.ok) continue;
-      const json = await res.json();
-      for (const item of (json.results || [])) {
-        const p = item.pharmacy;
-        if (!p) continue;
+  const chunkSize = 6;
+  for (let i = 0; i < istDistricts.length; i += chunkSize) {
+    const chunk = istDistricts.slice(i, i + chunkSize);
+    await Promise.allSettled(
+      chunk.map(async (dist) => {
+        try {
+          const url = `https://eczanebul.co/v1/duty-pharmacies/?province=istanbul&district=${dist}&ordering=-date&limit=50`;
+          const res = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: AbortSignal.timeout(3500)
+          });
+          if (!res.ok) return;
+          const json = await res.json();
+          for (const item of (json.results || [])) {
+            const p = item.pharmacy;
+            if (!p) continue;
 
-        const lat = parseFloat(p.latitude);
-        const lon = parseFloat(p.longitude);
-        if (isNaN(lat) || isNaN(lon) || lat < 40.5 || lat > 41.6 || lon < 27.9 || lon > 30.0) continue;
+            const lat = parseFloat(p.latitude);
+            const lon = parseFloat(p.longitude);
+            if (isNaN(lat) || isNaN(lon) || lat < 40.5 || lat > 41.6 || lon < 27.9 || lon > 30.0) continue;
 
-        const pKey = `${p.name.toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
-        if (pharmacyKeys.has(pKey)) continue;
-        pharmacyKeys.add(pKey);
+            const pKey = `${p.name.toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
+            if (pharmacyKeys.has(pKey)) continue;
+            pharmacyKeys.add(pKey);
 
-        pharmacyFeatures.push({
-          type: 'Feature',
-          id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-          geometry: {
-            type: 'Point',
-            coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
-          },
-          properties: {
-            id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-            name: `${p.name} (Nöbetçi)`,
-            category: 'pharmacy',
-            city: 'İstanbul',
-            district: p.district || dist,
-            neighborhood: p.neighborhood || '',
-            address: p.address || `${p.district}, İstanbul`,
-            phone: p.phone || '',
-            typeText: '24 Saat Nöbetçi Eczane',
-            emergencyBeds: 0,
-            hasTraumaCenter: false,
-            helipad: false,
-            isDuty: true,
-            dutyDate: item.date || new Date().toISOString().slice(0, 10),
-            closingHour: '7/24 Kesintisiz'
+            pharmacyFeatures.push({
+              type: 'Feature',
+              id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+              geometry: {
+                type: 'Point',
+                coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
+              },
+              properties: {
+                id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+                name: `${p.name} (Nöbetçi)`,
+                category: 'pharmacy',
+                city: 'İstanbul',
+                district: p.district || dist,
+                neighborhood: p.neighborhood || '',
+                address: p.address || `${p.district}, İstanbul`,
+                phone: p.phone || '',
+                typeText: '24 Saat Nöbetçi Eczane',
+                emergencyBeds: 0,
+                hasTraumaCenter: false,
+                helipad: false,
+                isDuty: true,
+                dutyDate: item.date || new Date().toISOString().slice(0, 10),
+                closingHour: '7/24 Kesintisiz'
+              }
+            });
           }
-        });
-      }
-    } catch {}
+        } catch {}
+      })
+    );
   }
 
   // Diğer Büyükşehirler & İller
@@ -413,54 +436,60 @@ async function main() {
     }
   } catch {}
 
-  for (const prov of otherProvinces) {
-    if (prov.slug === 'izmir') continue; // Zaten resmi açık veri portalından çekildi
-    try {
-      const url = `https://eczanebul.co/v1/duty-pharmacies/?province=${prov.slug}&ordering=-date&limit=100`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-      });
-      if (!res.ok) continue;
-      const json = await res.json();
-      for (const item of (json.results || [])) {
-        const p = item.pharmacy;
-        if (!p) continue;
+  for (let i = 0; i < otherProvinces.length; i += chunkSize) {
+    const chunk = otherProvinces.slice(i, i + chunkSize);
+    await Promise.allSettled(
+      chunk.map(async (prov) => {
+        if (prov.slug === 'izmir') return;
+        try {
+          const url = `https://eczanebul.co/v1/duty-pharmacies/?province=${prov.slug}&ordering=-date&limit=100`;
+          const res = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: AbortSignal.timeout(3500)
+          });
+          if (!res.ok) return;
+          const json = await res.json();
+          for (const item of (json.results || [])) {
+            const p = item.pharmacy;
+            if (!p) continue;
 
-        const lat = parseFloat(p.latitude);
-        const lon = parseFloat(p.longitude);
-        if (isNaN(lat) || isNaN(lon) || lat < 35.8 || lat > 42.2 || lon < 25.5 || lon > 44.8) continue;
+            const lat = parseFloat(p.latitude);
+            const lon = parseFloat(p.longitude);
+            if (isNaN(lat) || isNaN(lon) || lat < 35.8 || lat > 42.2 || lon < 25.5 || lon > 44.8) continue;
 
-        const pKey = `${p.name.toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
-        if (pharmacyKeys.has(pKey)) continue;
-        pharmacyKeys.add(pKey);
+            const pKey = `${p.name.toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
+            if (pharmacyKeys.has(pKey)) continue;
+            pharmacyKeys.add(pKey);
 
-        pharmacyFeatures.push({
-          type: 'Feature',
-          id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-          geometry: {
-            type: 'Point',
-            coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
-          },
-          properties: {
-            id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-            name: `${p.name} (Nöbetçi)`,
-            category: 'pharmacy',
-            city: prov.name,
-            district: p.district || prov.name,
-            neighborhood: p.neighborhood || '',
-            address: p.address || `${p.district}, ${prov.name}`,
-            phone: p.phone || '',
-            typeText: '24 Saat Nöbetçi Eczane',
-            emergencyBeds: 0,
-            hasTraumaCenter: false,
-            helipad: false,
-            isDuty: true,
-            dutyDate: item.date || new Date().toISOString().slice(0, 10),
-            closingHour: '7/24 Kesintisiz'
+            pharmacyFeatures.push({
+              type: 'Feature',
+              id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+              geometry: {
+                type: 'Point',
+                coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))]
+              },
+              properties: {
+                id: `pharm-duty-${pharmacyFeatures.length + 1}`,
+                name: `${p.name} (Nöbetçi)`,
+                category: 'pharmacy',
+                city: prov.name,
+                district: p.district || prov.name,
+                neighborhood: p.neighborhood || '',
+                address: p.address || `${p.district}, ${prov.name}`,
+                phone: p.phone || '',
+                typeText: '24 Saat Nöbetçi Eczane',
+                emergencyBeds: 0,
+                hasTraumaCenter: false,
+                helipad: false,
+                isDuty: true,
+                dutyDate: item.date || new Date().toISOString().slice(0, 10),
+                closingHour: '7/24 Kesintisiz'
+              }
+            });
           }
-        });
-      }
-    } catch {}
+        } catch {}
+      })
+    );
   }
 
   console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);

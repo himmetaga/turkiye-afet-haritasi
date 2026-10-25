@@ -108,7 +108,7 @@ class FloodRadarService {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4500);
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=precipitation,relative_humidity_2m,weather_code,wind_speed_10m&hourly=precipitation,weather_code&forecast_days=1&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=precipitation,relative_humidity_2m,weather_code,wind_speed_10m&hourly=precipitation,weather_code&forecast_days=2&timezone=auto`;
 
     try {
       const res = await fetch(url, { signal: controller.signal });
@@ -121,9 +121,14 @@ class FloodRadarService {
       const precips: number[] = hourlyRaw.precipitation || [];
 
       const currentHour = new Date().getHours();
-      const hourly: { hour: string; rainMm: number }[] = [];
+      let startIdx = times.findIndex((t) => {
+        const d = new Date(t);
+        return d.getHours() >= currentHour;
+      });
+      if (startIdx < 0) startIdx = 0;
 
-      for (let i = 0; i < Math.min(times.length, 12); i++) {
+      const hourly: { hour: string; rainMm: number }[] = [];
+      for (let i = startIdx; i < Math.min(times.length, startIdx + 12); i++) {
         const timeStr = times[i];
         const h = timeStr ? timeStr.split('T')[1]?.slice(0, 5) || `${i}:00` : `${i}:00`;
         hourly.push({
@@ -279,9 +284,13 @@ class FloodRadarService {
       riskScore: scoreMap[tier],
       hourlyForecast: [
         { hour: '+1h', rainMm: precip },
-        { hour: '+2h', rainMm: Number((precip * 1.2).toFixed(1)) },
-        { hour: '+3h', rainMm: Number((precip * 0.9).toFixed(1)) },
-        { hour: '+4h', rainMm: Number((precip * 0.5).toFixed(1)) }
+        { hour: '+2h', rainMm: Number((precip * 1.3).toFixed(1)) },
+        { hour: '+3h', rainMm: Number((precip * 1.6).toFixed(1)) },
+        { hour: '+4h', rainMm: Number((precip * 1.1).toFixed(1)) },
+        { hour: '+5h', rainMm: Number((precip * 0.7).toFixed(1)) },
+        { hour: '+6h', rainMm: Number((precip * 0.4).toFixed(1)) },
+        { hour: '+7h', rainMm: Number((precip * 0.2).toFixed(1)) },
+        { hour: '+8h', rainMm: Number((precip * 0.1).toFixed(1)) }
       ],
       directives: this.getDirectivesForRisk(tier, precip),
       isSimulated: true,

@@ -61,7 +61,22 @@ export interface ParsedDeepLink {
     | 'altyapi'
     | 'bebek-besleme'
     | 'telsiz-konus'
-    | 'ptt';
+    | 'ptt'
+    | 'kompas'
+    | 'pusula'
+    | 'sar-flasor'
+    | 'flasor'
+    | 'cpr'
+    | 'kalp-masaji'
+    | 'hasar-tespit'
+    | 'su-aritma'
+    | 'su'
+    | 'kbrn'
+    | 'kasa'
+    | 'guvenli-kasa'
+    | 'toplanma'
+    | 'hastane'
+    | 'eczane';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -145,7 +160,22 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'altyapi',
       'bebek-besleme',
       'telsiz-konus',
-      'ptt'
+      'ptt',
+      'kompas',
+      'pusula',
+      'sar-flasor',
+      'flasor',
+      'cpr',
+      'kalp-masaji',
+      'hasar-tespit',
+      'su-aritma',
+      'su',
+      'kbrn',
+      'kasa',
+      'guvenli-kasa',
+      'toplanma',
+      'hastane',
+      'eczane'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

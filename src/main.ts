@@ -300,7 +300,9 @@ class DisasterAtlasApp {
     this.iceGenerator = new LockScreenICEGenerator(appEl, this.userCoords, this.assemblyPoints);
     this.survivalGuide = new DisasterSurvivalGuideModal(appEl);
     this.emergencySMS = new QuickEmergencySMSModal(appEl, this.userCoords);
-    this.floodRadarModal = new FloodRadarModal(appEl, this.userCoords);
+    this.floodRadarModal = new FloodRadarModal(appEl, this.userCoords, this.assemblyPoints, (point) => {
+      this.focusPoint(point);
+    });
     this.emergencyRadioModal = new EmergencyRadioModal(appEl);
     this.triageModal = new TriageModal(appEl, (text) => {
       this.crisisHUD.show();
@@ -528,6 +530,7 @@ class DisasterAtlasApp {
       this.updateUserContextCalculations();
       this.updateBuildingRiskContext();
       this.iceGenerator?.setData(this.userCoords, this.assemblyPoints);
+      this.floodRadarModal?.setAssemblyPoints(this.assemblyPoints);
     } catch {}
   }
 
@@ -986,6 +989,41 @@ class DisasterAtlasApp {
           break;
         case 'kart':
           this.familyCard.show();
+          break;
+        case 'kompas':
+        case 'pusula':
+          this.tacticalCompassModal.show();
+          break;
+        case 'sar-flasor':
+        case 'flasor':
+          this.sarBeaconModal.show();
+          break;
+        case 'cpr':
+        case 'kalp-masaji':
+          this.cprCoachModal.show();
+          break;
+        case 'hasar-tespit':
+          this.damageAssessmentModal.show();
+          break;
+        case 'su-aritma':
+        case 'su':
+          this.waterDisinfectionModal.show();
+          break;
+        case 'kbrn':
+          this.cbrnSurvivalModal.show();
+          break;
+        case 'kasa':
+        case 'guvenli-kasa':
+          this.civilVaultModal.show();
+          break;
+        case 'toplanma':
+          this.nearestHUD.expand('assembly');
+          break;
+        case 'hastane':
+          this.nearestHUD.expand('hospitals');
+          break;
+        case 'eczane':
+          this.nearestHUD.expand('pharmacies');
           break;
       }
     }

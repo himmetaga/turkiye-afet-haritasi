@@ -1,14 +1,25 @@
 import { Icons } from './icons';
 import { floodRadarService, FloodRadarData, FloodRiskTier } from '../services/floodRadarService';
+import { AssemblyPoint } from '../types';
+import { findNearestAssemblyPoints } from '../utils/geoMath';
 
 export class FloodRadarModal {
   private container: HTMLElement;
   private userCoords: [number, number];
+  private assemblyPoints: AssemblyPoint[] = [];
+  private onNavigateToSafety?: (point: AssemblyPoint) => void;
   private currentData: FloodRadarData | null = null;
   private isVisible = false;
 
-  constructor(parent: HTMLElement, userCoords: [number, number]) {
+  constructor(
+    parent: HTMLElement,
+    userCoords: [number, number],
+    assemblyPoints: AssemblyPoint[] = [],
+    onNavigateToSafety?: (point: AssemblyPoint) => void
+  ) {
     this.userCoords = userCoords;
+    this.assemblyPoints = assemblyPoints;
+    this.onNavigateToSafety = onNavigateToSafety;
     this.container = document.createElement('div');
     this.container.id = 'flood-radar-modal';
     this.container.className =
@@ -18,6 +29,10 @@ export class FloodRadarModal {
 
   public setUserCoords(coords: [number, number]): void {
     this.userCoords = coords;
+  }
+
+  public setAssemblyPoints(points: AssemblyPoint[]): void {
+    this.assemblyPoints = points;
   }
 
   public async show(): Promise<void> {
@@ -98,6 +113,7 @@ export class FloodRadarModal {
     };
 
     const cfg = tierConfig[d.riskTier];
+    const isElevatedRisk = d.riskTier !== 'low';
 
     this.container.innerHTML = `
       <div class="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl bg-obsidian-900/95 border border-white/10 shadow-2xl backdrop-blur-xl text-white overflow-hidden">
@@ -139,6 +155,24 @@ export class FloodRadarModal {
             <p class="text-[13px] font-medium text-gray-200 mt-1">
               Hava Durumu: <strong class="text-white">${d.weatherDescription}</strong>
             </p>
+
+            ${
+              isElevatedRisk && this.onNavigateToSafety
+                ? `
+              <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                <span class="text-[11px] text-amber-300 font-medium">Su basma tehlikesi durumunda derhal yüksek toplanma alanına geçin:</span>
+                <button
+                  id="btn-evacuate-flood"
+                  type="button"
+                  class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer shadow-lg"
+                >
+                  ${Icons.navigation('w-3.5 h-3.5')}
+                  <span>Yüksek Alana Git</span>
+                </button>
+              </div>
+            `
+                : ''
+            }
           </div>
 
           <!-- Telemetry Grid -->
@@ -163,6 +197,50 @@ export class FloodRadarModal {
               <span class="text-base font-bold text-indigo-400 font-mono mt-0.5 block">%${d.humidityPct}</span>
             </div>
           </div>
+
+          <!-- Hourly Precipitation Timeline & Histogram -->
+          ${
+            d.hourlyForecast && d.hourlyForecast.length > 0
+              ? `
+            <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+                  <span>⏱️</span><span>Gelecek Saatlik Yağış Dağılımı</span>
+                </h4>
+                <span class="text-[10px] text-gray-400 font-mono">mm/saat</span>
+              </div>
+              
+              <div class="grid grid-flow-col auto-cols-fr gap-1 sm:gap-1.5 pt-3 items-end h-24 sm:h-28 border-b border-white/10 pb-1.5 px-1 overflow-x-auto">
+                ${(() => {
+                  const maxRain = Math.max(5, ...d.hourlyForecast.map((h) => h.rainMm));
+                  return d.hourlyForecast
+                    .map((item) => {
+                      const pct = Math.max(8, Math.min(100, Math.round((item.rainMm / maxRain) * 100)));
+                      const barColor =
+                        item.rainMm >= 20
+                          ? 'bg-rose-500 shadow-rose-500/40'
+                          : item.rainMm >= 10
+                          ? 'bg-orange-500 shadow-orange-500/40'
+                          : item.rainMm >= 3
+                          ? 'bg-sky-400 shadow-sky-500/40'
+                          : 'bg-sky-400/40';
+                      return `
+                      <div class="flex flex-col items-center h-full justify-end group min-w-[24px]">
+                        <span class="text-[9px] font-mono text-gray-400 group-hover:text-white mb-1 transition-colors">
+                          ${item.rainMm > 0 ? item.rainMm : '0'}
+                        </span>
+                        <div class="w-full max-w-[18px] rounded-t-sm transition-all duration-300 ${barColor} group-hover:brightness-125 origin-bottom" style="height: ${pct}%;"></div>
+                        <span class="text-[8.5px] font-mono text-gray-400 mt-1.5 whitespace-nowrap">${item.hour}</span>
+                      </div>
+                    `;
+                    })
+                    .join('');
+                })()}
+              </div>
+            </div>
+          `
+              : ''
+          }
 
           <!-- Directives List -->
           <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
@@ -216,7 +294,7 @@ export class FloodRadarModal {
             <button
               id="btn-share-flood"
               type="button"
-              class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-semibold transition-all flex items-center gap-1.5"
+              class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <span>📲</span><span>Durumu Paylaş</span>
             </button>
@@ -235,6 +313,16 @@ export class FloodRadarModal {
           this.render();
         }
       });
+    });
+
+    this.container.querySelector('#btn-evacuate-flood')?.addEventListener('click', () => {
+      if (this.assemblyPoints.length > 0 && this.onNavigateToSafety) {
+        const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+        if (nearest.length > 0) {
+          this.hide();
+          this.onNavigateToSafety(nearest[0].point);
+        }
+      }
     });
 
     this.container.querySelector('#btn-share-flood')?.addEventListener('click', () => {

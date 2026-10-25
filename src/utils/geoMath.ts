@@ -107,6 +107,49 @@ export function getBearingDirectionText(bearing: number): string {
   return 'Kuzey (K)';
 }
 
+/**
+ * Calculates the closest point on segment AB to point P and returns the haversine distance in meters
+ */
+export function distanceToSegmentMeters(
+  point: [number, number],
+  segStart: [number, number],
+  segEnd: [number, number]
+): { distanceMeters: number; closestPoint: [number, number] } {
+  const [pLon, pLat] = point;
+  const [aLon, aLat] = segStart;
+  const [bLon, bLat] = segEnd;
+
+  const midLatRad = (((aLat + bLat) / 2) * Math.PI) / 180;
+  const cosLat = Math.cos(midLatRad);
+
+  const dx = (bLon - aLon) * cosLat;
+  const dy = bLat - aLat;
+  const segLengthSq = dx * dx + dy * dy;
+
+  if (segLengthSq === 0) {
+    return {
+      distanceMeters: haversineDistanceMeters(point, segStart),
+      closestPoint: segStart
+    };
+  }
+
+  const px = (pLon - aLon) * cosLat;
+  const py = pLat - aLat;
+
+  // Projection parameter t clamped to [0, 1]
+  const t = Math.max(0, Math.min(1, (px * dx + py * dy) / segLengthSq));
+
+  const closestPoint: [number, number] = [
+    Number((aLon + t * (bLon - aLon)).toFixed(6)),
+    Number((aLat + t * (bLat - aLat)).toFixed(6))
+  ];
+
+  return {
+    distanceMeters: haversineDistanceMeters(point, closestPoint),
+    closestPoint
+  };
+}
+
 export function findNearestFaultLine(
   userCoord: [number, number],
   faults: FaultLine[]
@@ -118,12 +161,25 @@ export function findNearestFaultLine(
   let nearestPointOnFault: [number, number] = faults[0].coordinates[0];
 
   for (const fault of faults) {
-    for (const pt of fault.coordinates) {
-      const d = haversineDistanceMeters(userCoord, pt);
+    const coords = fault.coordinates;
+    if (!coords || coords.length === 0) continue;
+
+    if (coords.length === 1) {
+      const d = haversineDistanceMeters(userCoord, coords[0]);
       if (d < minDistanceMeters) {
         minDistanceMeters = d;
         nearestFault = fault;
-        nearestPointOnFault = pt;
+        nearestPointOnFault = coords[0];
+      }
+      continue;
+    }
+
+    for (let i = 0; i < coords.length - 1; i++) {
+      const seg = distanceToSegmentMeters(userCoord, coords[i], coords[i + 1]);
+      if (seg.distanceMeters < minDistanceMeters) {
+        minDistanceMeters = seg.distanceMeters;
+        nearestFault = fault;
+        nearestPointOnFault = seg.closestPoint;
       }
     }
   }
