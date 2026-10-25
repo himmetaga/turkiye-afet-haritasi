@@ -49,10 +49,68 @@
     <link rel="apple-touch-icon" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Fontlar -->
+    <!-- Fontlar & CDN Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin />
+    <link rel="dns-prefetch" href="https://demotiles.maplibre.org" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Critical Zero-FOUC & Zero-CLS Inline Styles (Sayfa açılışında metin parlamasını önler) -->
+    <style>
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border-width: 0 !important;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #090a0f !important;
+        color: #f3f4f6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      }
+      #app {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+        background: #090a0f;
+      }
+      #map-container {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+
+    <!-- 0. WebSite & Google Sitelinks SearchBox Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "afet.live",
+        "alternateName": ["afetlive", "Türkiye Afet Haritası", "AFAD Toplanma Alanları Sorgulama", "Canlı Deprem Haritası"],
+        "url": "https://afet.live/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://afet.live/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
 
     <!-- 1. WebApplication Schema -->
     <script type="application/ld+json">
@@ -211,8 +269,44 @@
         ]
       }
     </script>
+
+    <!-- 6. MedicalWebPage & FirstAid Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        "name": "Afet İlk Yardım, Triyaj ve Sahra Müdahale Rehberi",
+        "url": "https://afet.live/?mod=rehber",
+        "about": [
+          {
+            "@type": "MedicalProcedure",
+            "name": "START Afet Sahra Triyaj Protokolü"
+          },
+          {
+            "@type": "MedicalProcedure",
+            "name": "Turnike Güvenlik Zamanlayıcısı ve Alın Damgası"
+          },
+          {
+            "@type": "MedicalProcedure",
+            "name": "Afet Psikolojik İlk Yardım (4-4-4-4 Kutu Nefesi)"
+          }
+        ],
+        "specialty": "EmergencyMedicine"
+      }
+    </script>
   </head>
   <body class="bg-obsidian-950 text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+    <!-- Premium Seamless Instant Splash Loader (Sıfır Metin Parlaması & Kusursuz Açılış) -->
+    <div id="initial-loader" style="position:fixed;inset:0;background:#090a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.4s ease,visibility 0.4s ease;pointer-events:none;">
+      <div style="width:64px;height:64px;border-radius:18px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);display:grid;place-items:center;margin-bottom:14px;box-shadow:0 0 30px rgba(16,185,129,0.25);">
+        <svg style="width:36px;height:36px;color:#34d399;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;font-size:13.5px;font-weight:700;color:#f3f4f6;letter-spacing:0.01em;">afet.live</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;font-size:11.5px;color:#9ca3af;margin-top:4px;">Afet ve Toplanma Haritası Yükleniyor…</div>
+    </div>
+
     <div id="app">
       <!-- 
         ========================================================================
@@ -391,6 +485,7 @@
             <li><a href="/?mod=harita-indir">Çevrimdışı Vektör Harita Paketleri (İnternetsiz İl ve Bölge Haritası İndir)</a></li>
             <li><a href="/?mod=sahra-durumu">Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji)</a></li>
             <li><a href="/?mod=bebek-besleme">Afet Bebek ve Çocuk Besleme Rehberi (UNICEF & DSÖ Güvenli Bardakla Besleme)</a></li>
+            <li><a href="/?mod=telsiz-konus">İnternetsiz Bas-Konuş Afet Telsizi ve Enkaz Sesli S.O.S Döngüsü (PMR 446 & P2P Telsiz)</a></li>
           </ul>
         </article>
       </section>

@@ -51,6 +51,7 @@ import { AcousticDebrisListenerModal } from './ui/AcousticDebrisListenerModal';
 import { OfflineMapPackModal } from './ui/OfflineMapPackModal';
 import { FieldCampStatusModal } from './ui/FieldCampStatusModal';
 import { InfantFeedingSafetyModal } from './ui/InfantFeedingSafetyModal';
+import { OfflinePTTWalkieTalkieModal } from './ui/OfflinePTTWalkieTalkieModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -64,6 +65,7 @@ class DisasterAtlasApp {
   private obstacles: ObstaclePoint[] = [];
   private userCoords: [number, number] = [29.03367, 40.98527]; // Kadıköy/İstanbul (Yoğurtçu Parkı çevresi)
   private selectedPoint: AssemblyPoint | null = null;
+  private selectedProvince = '';
   private onlyDutyPharmacies = true;
   private deepLink: ParsedDeepLink = parseDeepLink();
 
@@ -111,6 +113,7 @@ class DisasterAtlasApp {
   private offlineMapModal!: OfflineMapPackModal;
   private campStatusModal!: FieldCampStatusModal;
   private infantFeedingModal!: InfantFeedingSafetyModal;
+  private pttWalkieModal!: OfflinePTTWalkieTalkieModal;
 
   constructor() {
     this.mapEngine = new MapEngine();
@@ -195,7 +198,8 @@ class DisasterAtlasApp {
       onToggleOfflineMapPack: () => this.offlineMapModal.show(),
       onTogglePsychFirstAid: () => this.psychFirstAidModal.show(),
       onToggleCampStatus: () => this.campStatusModal.show(),
-      onToggleInfantFeeding: () => this.infantFeedingModal.show()
+      onToggleInfantFeeding: () => this.infantFeedingModal.show(),
+      onTogglePTTWalkie: () => this.pttWalkieModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(appEl, (point) => {
@@ -311,6 +315,7 @@ class DisasterAtlasApp {
     });
 
     this.infantFeedingModal = new InfantFeedingSafetyModal(appEl);
+    this.pttWalkieModal = new OfflinePTTWalkieTalkieModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -391,6 +396,14 @@ class DisasterAtlasApp {
 
     // 7. PWA Service Worker
     this.registerPWA();
+
+    // 8. Dismiss initial loader smoothly
+    const initialLoader = document.getElementById('initial-loader');
+    if (initialLoader) {
+      initialLoader.style.opacity = '0';
+      initialLoader.style.visibility = 'hidden';
+      setTimeout(() => initialLoader.remove(), 400);
+    }
   }
 
   private async loadAssemblyData(): Promise<void> {
@@ -413,7 +426,8 @@ class DisasterAtlasApp {
         hasGenerator: f.properties.hasGenerator ?? true
       }));
 
-      this.mapEngine.setAssemblyPoints(this.assemblyPoints);
+      // Pil ve GPU tasarrufu için yalnızca yakın noktaları yükle
+      this.syncOptimizedMapData();
 
       // Summary provinces for dropdown
       try {
@@ -478,7 +492,7 @@ class DisasterAtlasApp {
           helipad: Boolean(f.properties.helipad),
           coordinates: f.geometry.coordinates as [number, number]
         }));
-        this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+        this.syncOptimizedMapData();
         this.updateUserContextCalculations();
       }
 
@@ -500,7 +514,7 @@ class DisasterAtlasApp {
       const live = await livePharmacyService.fetchDutyPharmacies(targetProv);
       if (live && live.length > 0) {
         this.facilities = livePharmacyService.mergeLivePharmacies(this.facilities, live);
-        this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+        this.syncOptimizedMapData();
         this.updateUserContextCalculations();
       }
     } catch {}
@@ -518,6 +532,80 @@ class DisasterAtlasApp {
     } catch {}
   }
 
+  /**
+   * Telefon şarjını ve mobil GPU'yu korumak amacıyla kullanıcının aktif ilindeki veya
+   * en fazla 45 km yarıçapındaki toplanma alanlarını hesaplar.
+   */
+  private getBatteryOptimizedPoints(): AssemblyPoint[] {
+    if (this.selectedProvince) {
+      const norm = (str: string) =>
+        str
+          .toLowerCase()
+          .trim()
+          .replace(/ı/g, 'i')
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c');
+      const target = norm(this.selectedProvince);
+      return this.assemblyPoints.filter((p) => norm(p.city) === target);
+    }
+
+    const MAX_DISTANCE_M = 45_000; // 45 km yarıçap
+    const [uLon, uLat] = this.userCoords;
+    const nearby = this.assemblyPoints.filter((p) => {
+      const [lon, lat] = p.coordinates;
+      if (Math.abs(lon - uLon) > 0.55 || Math.abs(lat - uLat) > 0.45) return false;
+      return haversineDistanceMeters(this.userCoords, p.coordinates) <= MAX_DISTANCE_M;
+    });
+
+    if (nearby.length < 30 && this.assemblyPoints.length > 0) {
+      return findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 200).map((r) => r.point);
+    }
+    return nearby.slice(0, 1200);
+  }
+
+  /**
+   * Telefon şarjını korumak için kullanıcının konumuna 40 km mesafedeki hastane ve eczaneleri filtreler.
+   */
+  private getBatteryOptimizedFacilities(): EmergencyFacility[] {
+    if (this.selectedProvince) {
+      const norm = (str: string) =>
+        str
+          .toLowerCase()
+          .trim()
+          .replace(/ı/g, 'i')
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c');
+      const target = norm(this.selectedProvince);
+      return this.facilities.filter((f) => norm(f.city) === target);
+    }
+
+    const MAX_DISTANCE_M = 40_000; // 40 km yarıçap
+    const [uLon, uLat] = this.userCoords;
+    const nearby = this.facilities.filter((f) => {
+      const [lon, lat] = f.coordinates;
+      if (Math.abs(lon - uLon) > 0.5 || Math.abs(lat - uLat) > 0.4) return false;
+      return haversineDistanceMeters(this.userCoords, f.coordinates) <= MAX_DISTANCE_M;
+    });
+
+    if (nearby.length < 20 && this.facilities.length > 0) {
+      return this.facilities.slice(0, 200);
+    }
+    return nearby.slice(0, 800);
+  }
+
+  private syncOptimizedMapData(): void {
+    const points = this.getBatteryOptimizedPoints();
+    const facs = this.getBatteryOptimizedFacilities();
+    this.mapEngine.setAssemblyPoints(points);
+    this.mapEngine.setEmergencyFacilities(facs, this.onlyDutyPharmacies);
+  }
+
   private applyVerifiedLocation(coords: [number, number], source: string, flyTo = true): void {
     this.userCoords = coords;
     earlyWarningEngine.setUserCoordinates(coords);
@@ -533,6 +621,7 @@ class DisasterAtlasApp {
       this.mapEngine.flyTo(coords, 15.5, 52, -15);
     }
     this.updateUserContextCalculations(source ? `${source} · En Yakın Noktalar` : 'En Yakın Güvenlik Noktaları');
+    this.syncOptimizedMapData();
     this.refreshLiveDutyPharmacies();
   }
 
@@ -607,13 +696,19 @@ class DisasterAtlasApp {
         'cevrimdisi-harita': 'Çevrimdışı Harita İndir & Önbellek — afet.live',
         'sahra-durumu': 'Toplanma Alanı Sahra Karnesi — afet.live',
         'altyapi': 'Toplanma Alanı Sahra Karnesi — afet.live',
-        'bebek-besleme': 'Afet Dönemi Bebek Besleme & Relaktasyon — afet.live'
+        'bebek-besleme': 'Afet Dönemi Bebek Besleme & Relaktasyon — afet.live',
+        'telsiz-konus': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live',
+        'ptt': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
       }
 
       switch (this.deepLink.mod) {
+        case 'telsiz-konus':
+        case 'ptt':
+          this.pttWalkieModal.show();
+          break;
         case 'ice':
         case 'kilit-ekrani':
           this.iceGenerator.show();
@@ -908,8 +1003,7 @@ class DisasterAtlasApp {
     const query = input.trim().toLowerCase();
     if (query.length < 2) {
       this.headerHUD.clearSearchResults();
-      this.mapEngine.setAssemblyPoints(this.assemblyPoints);
-      this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+      this.syncOptimizedMapData();
       return;
     }
 
@@ -965,10 +1059,10 @@ class DisasterAtlasApp {
   }
 
   private handleProvinceSelect(province: string): void {
+    this.selectedProvince = province;
     if (!province) {
       document.title = 'afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası';
-      this.mapEngine.setAssemblyPoints(this.assemblyPoints);
-      this.mapEngine.setEmergencyFacilities(this.facilities, this.onlyDutyPharmacies);
+      this.syncOptimizedMapData();
       this.mapEngine.flyTo([35.2433, 38.9637], 6, 30, 0);
       return;
     }
@@ -1001,11 +1095,10 @@ class DisasterAtlasApp {
       );
     }
 
+    this.syncOptimizedMapData();
+
     const filteredAssembly = this.assemblyPoints.filter((p) => norm(p.city) === searchNorm);
     const filteredFacilities = this.facilities.filter((f) => norm(f.city) === searchNorm);
-
-    this.mapEngine.setAssemblyPoints(filteredAssembly);
-    this.mapEngine.setEmergencyFacilities(filteredFacilities, this.onlyDutyPharmacies);
 
     if (filteredAssembly.length > 0) {
       this.mapEngine.flyTo(filteredAssembly[0].coordinates, 11, 45, -10);

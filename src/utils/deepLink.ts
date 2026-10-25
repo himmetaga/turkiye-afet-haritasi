@@ -59,7 +59,9 @@ export interface ParsedDeepLink {
     | 'cevrimdisi-harita'
     | 'sahra-durumu'
     | 'altyapi'
-    | 'bebek-besleme';
+    | 'bebek-besleme'
+    | 'telsiz-konus'
+    | 'ptt';
 }
 
 export function parseDeepLink(search = window.location.search): ParsedDeepLink {
@@ -141,7 +143,9 @@ export function parseDeepLink(search = window.location.search): ParsedDeepLink {
       'cevrimdisi-harita',
       'sahra-durumu',
       'altyapi',
-      'bebek-besleme'
+      'bebek-besleme',
+      'telsiz-konus',
+      'ptt'
     ];
     if (validMods.includes(cleanMod)) {
       result.mod = cleanMod as any;

@@ -42,6 +42,7 @@ export interface HeaderHUDCallbacks {
   onTogglePsychFirstAid: () => void;
   onToggleCampStatus: () => void;
   onToggleInfantFeeding: () => void;
+  onTogglePTTWalkie: () => void;
 }
 
 export interface SearchResultItem {
@@ -70,7 +71,7 @@ export interface QuickToolCategory {
   tools: QuickToolItem[];
 }
 
-/** Categorized tool definitions grouped by disaster utility */
+/** Categorized tool definitions grouped by disaster utility (4 balanced categories) */
 const TOOL_CATEGORIES: QuickToolCategory[] = [
   {
     id: 'emergency',
@@ -80,6 +81,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     tools: [
       { id: 'btn-open-triage', label: 'Triyaj', title: 'Afet Triyaj Asistanı (START Sahra Karar Protokolü)', rgb: '236, 72, 153', icon: Icons.health },
       { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)', rgb: '239, 68, 68', icon: Icons.timer },
+      { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S Anons Döngüsü', rgb: '16, 185, 129', icon: Icons.radio },
       { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve Otomatik S.O.S Tetikleyici', rgb: '168, 85, 247', icon: Icons.mic },
       { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Ultra Pil Tasarrufu ve 72 Saat Hayatta Kalma Modu (OLED)', rgb: '16, 185, 129', icon: Icons.battery },
       { id: 'btn-open-sms', label: 'Acil SMS', title: 'Tek Tuşla GPS Konumlu Acil Durum SMS ve Acil Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
@@ -109,28 +111,28 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     accentClass: 'text-amber-400',
     tools: [
       { id: 'btn-open-offline-map', label: 'Harita İndir', title: 'İlçe Bazlı Çevrimdışı Vektör Harita Paketi İndir', rgb: '6, 182, 212', icon: Icons.download },
-      { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Afet Psikolojik İlk Yardım ve 4-4-4-4 Kutu Nefesi Egzersizi', rgb: '59, 130, 246', icon: Icons.brain },
-      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Sıcak Yemek, Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', icon: Icons.tent },
-      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Afet Çadırkent İhtiyaç ve Malzeme Dağıtım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
-      { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Pati ve Evcil Hayvan Afet Güvenliği, Çanta ve Tahliye Rehberi', rgb: '251, 146, 60', icon: Icons.paw },
-      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
-      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Etken Madde Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
-      { id: 'btn-open-hazard-hunt', label: 'Tehlike Avı', title: 'Ev İçi Deprem Güvenlik Denetimi & Sabitleme Skoru', rgb: '245, 158, 11', icon: Icons.home },
       { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası & Aile Güvenliği', rgb: '167, 139, 250', icon: Icons.backpack },
       { id: 'btn-open-building-risk', label: 'Bina Riski', title: 'Bina ve Zemin Sismik Ön Değerlendirme Kartı', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-ice', label: 'Kilit Ekranı', title: 'Kilit Ekranı Acil Durum & Kan Grubu Duvar Kağıdı (ICE)', rgb: '239, 68, 68', icon: Icons.shield },
+      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Türk Kızılay Kan Merkezleri & Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.droplet },
+      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Etken Madde Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
+      { id: 'btn-open-hazard-hunt', label: 'Tehlike Avı', title: 'Ev İçi Deprem Güvenlik Denetimi & Sabitleme Skoru', rgb: '245, 158, 11', icon: Icons.home },
       { id: 'btn-open-drill', label: 'Tatbikat', title: 'Deprem Tatbikatı & Sismik Dalga Simülasyonu', rgb: '239, 68, 68', icon: Icons.waves },
       { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode }
     ]
   },
   {
     id: 'guides',
-    title: 'Bilgilendirme, Rehberler & Afişler',
+    title: 'Bilgilendirme, Rehberler & Sahra',
     badge: 'Eğitim & Rehber',
     accentClass: 'text-emerald-400',
     tools: [
+      { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Afet Psikolojik İlk Yardım ve 4-4-4-4 Kutu Nefesi Egzersizi', rgb: '59, 130, 246', icon: Icons.brain },
+      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Sıcak Yemek, Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', icon: Icons.tent },
+      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Afet Çadırkent İhtiyaç ve Malzeme Dağıtım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
       { id: 'btn-open-infant-feeding', label: 'Bebek Besleme', title: 'Afet Dönemi Güvenli Bebek Besleme ve Relaktasyon Rehberi', rgb: '244, 114, 182', icon: Icons.baby },
       { id: 'btn-open-tent-heating', label: 'Çadır Isınma', title: 'Çadırkent Kış Isınma ve Karbonmonoksit (CO) Zehirlenme Güvenliği', rgb: '239, 68, 68', icon: Icons.flame },
+      { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Pati ve Evcil Hayvan Afet Güvenliği, Çanta ve Tahliye Rehberi', rgb: '251, 146, 60', icon: Icons.paw },
       { id: 'btn-open-guide', label: 'Hayatta Kalma', title: 'Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi', rgb: '16, 185, 129', icon: Icons.checkCircle },
       { id: 'btn-open-apartment-poster', label: 'Bina Afişi', title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4)', rgb: '245, 158, 11', icon: Icons.printer },
       { id: 'btn-open-family-card', label: 'Aile Kartı', title: 'Ailem İçin Afet Buluşma Kartı (Story 9:16)', rgb: '56, 189, 248', icon: Icons.users }
@@ -162,6 +164,8 @@ export class HeaderHUD {
   private isMenuOpen = false;
   private provinces: string[] = [];
   private selectedProvince = '';
+  private activeCategoryTab = 'emergency';
+  private toolFilterQuery = '';
 
   constructor(parent: HTMLElement, callbacks: HeaderHUDCallbacks) {
     this.callbacks = callbacks;
@@ -307,32 +311,49 @@ export class HeaderHUD {
     kbd?.classList.toggle('sm:inline-block', !hasValue);
   }
 
-  private render(): void {
-    const categoriesHtml = TOOL_CATEGORIES.map((cat) => {
-      const tiles = cat.tools
-        .map(
-          (t) => `
-          <button id="${t.id}" type="button" class="hud-tool" style="--tool: ${t.rgb}" title="${t.title}" aria-label="${t.title}">
-            <span class="hud-tool-icon">${t.icon('w-4 h-4')}</span>
-            <span>${t.label}</span>
-          </button>
-        `
-        )
-        .join('');
-
+  private renderToolsSection(): string {
+    const q = this.toolFilterQuery.trim().toLowerCase();
+    if (q.length > 0) {
+      const allTools = TOOL_CATEGORIES.flatMap((c) => c.tools);
+      const matched = allTools.filter(
+        (t) => t.label.toLowerCase().includes(q) || t.title.toLowerCase().includes(q)
+      );
+      if (matched.length === 0) {
+        return `<div class="p-3 text-center text-[11px] text-gray-500">"${escapeHtml(q)}" ile eşleşen afet aracı bulunamadı.</div>`;
+      }
       return `
-        <div class="flex flex-col gap-1.5 pt-2 border-t border-white/[0.06] first:border-0 first:pt-0">
-          <div class="flex items-center justify-between px-1">
-            <span class="hud-section-label !font-bold ${cat.accentClass}">${cat.title}</span>
-            <span class="text-[9.5px] font-mono text-gray-400 font-semibold px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06]">${cat.tools.length}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-1">
-            ${tiles}
-          </div>
+        <div class="grid grid-cols-3 gap-1">
+          ${matched.map((t) => this.renderToolButton(t)).join('')}
         </div>
       `;
-    }).join('');
+    }
 
+    const cat = TOOL_CATEGORIES.find((c) => c.id === this.activeCategoryTab) || TOOL_CATEGORIES[0];
+    return `
+      <div class="grid grid-cols-3 gap-1">
+        ${cat.tools.map((t) => this.renderToolButton(t)).join('')}
+      </div>
+    `;
+  }
+
+  private renderToolButton(t: QuickToolItem): string {
+    return `
+      <button id="${t.id}" type="button" class="hud-tool" style="--tool: ${t.rgb}" title="${t.title}" aria-label="${t.title}">
+        <span class="hud-tool-icon">${t.icon('w-4 h-4')}</span>
+        <span>${t.label}</span>
+      </button>
+    `;
+  }
+
+  private refreshToolsGrid(): void {
+    const gridContainer = this.container.querySelector('#hud-tools-grid-container');
+    if (gridContainer) {
+      gridContainer.innerHTML = this.renderToolsSection();
+      this.bindToolClickEvents();
+    }
+  }
+
+  private render(): void {
     this.container.innerHTML = `
       <div class="hud-header-panel rounded-[20px] p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xl w-full max-w-full overflow-hidden box-border">
         <!-- 1. Brand bar & Symmetrical Menu Toggle -->
@@ -370,7 +391,7 @@ export class HeaderHUD {
           <span class="text-[13px] sm:text-[14px] font-black tracking-wide text-white">AFET DÜDÜĞÜ & S.O.S</span>
         </button>
 
-        <!-- 3. Collapsible Menus & Tools (Sonradan Açılan Menüler) -->
+        <!-- 3. Collapsible Menus & Tools (Sadeleştirilmiş Tab Menüsü) -->
         <div id="hud-tools-collapsible" class="${this.isMenuOpen ? 'flex' : 'hidden'} flex-col gap-2 sm:gap-2.5 pt-1.5 border-t border-white/[0.08] transition-all">
           <!-- Search & GPS -->
           <div class="flex items-center gap-2 min-w-0 w-full">
@@ -461,10 +482,71 @@ export class HeaderHUD {
             </button>
           </div>
 
-          <!-- Categorized Quick Tools Matrix (Faydaya Göre Gruplandırılmış Menü) -->
-          <div class="pt-1">
-            <div class="max-h-[min(480px,calc(100vh-210px))] overflow-y-auto overscroll-contain pr-1 space-y-3.5 scrollbar-thin">
-              ${categoriesHtml}
+          <!-- Categorized Quick Tools Matrix (Sadeleştirilmiş 4 Kategori Tab Menüsü) -->
+          <div class="pt-1 flex flex-col gap-1.5">
+            <!-- 4 Kategori Sekmeleri -->
+            <div class="grid grid-cols-4 gap-1 p-0.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[10px] sm:text-[10.5px] font-bold">
+              <button
+                type="button"
+                data-tab="emergency"
+                class="hud-cat-tab py-1.5 px-0.5 rounded-lg text-center transition-all ${
+                  this.activeCategoryTab === 'emergency'
+                    ? 'bg-rose-500/90 text-white shadow-md'
+                    : 'text-gray-400 hover:text-gray-200'
+                }"
+              >
+                🚨 Acil (9)
+              </button>
+              <button
+                type="button"
+                data-tab="radars"
+                class="hud-cat-tab py-1.5 px-0.5 rounded-lg text-center transition-all ${
+                  this.activeCategoryTab === 'radars'
+                    ? 'bg-sky-500/90 text-white shadow-md'
+                    : 'text-gray-400 hover:text-gray-200'
+                }"
+              >
+                📡 Radar (6)
+              </button>
+              <button
+                type="button"
+                data-tab="preparedness"
+                class="hud-cat-tab py-1.5 px-0.5 rounded-lg text-center transition-all ${
+                  this.activeCategoryTab === 'preparedness'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-gray-400 hover:text-gray-200'
+                }"
+              >
+                🎒 Plan (9)
+              </button>
+              <button
+                type="button"
+                data-tab="guides"
+                class="hud-cat-tab py-1.5 px-0.5 rounded-lg text-center transition-all ${
+                  this.activeCategoryTab === 'guides'
+                    ? 'bg-emerald-500 text-black shadow-md'
+                    : 'text-gray-400 hover:text-gray-200'
+                }"
+              >
+                📋 Sahra (9)
+              </button>
+            </div>
+
+            <!-- Hızlı Araç Arama Girişi -->
+            <div class="relative w-full">
+              <input
+                id="hud-tool-filter-input"
+                type="search"
+                value="${escapeHtml(this.toolFilterQuery)}"
+                placeholder="33 afet aracında hızlı ara (telsiz, turnike, nefes...)"
+                class="w-full py-1.5 pl-7 pr-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[11px] text-gray-200 placeholder-gray-500 focus:outline-none focus:border-white/20"
+              />
+              <span class="absolute left-2.5 top-2 text-gray-500">${Icons.search('w-3.5 h-3.5')}</span>
+            </div>
+
+            <!-- Araç Butonları Izgarası (Yalnızca Seçili Tabın 6-9 Butonu Görünür) -->
+            <div id="hud-tools-grid-container" class="min-h-[135px] max-h-[195px] overflow-y-auto pr-0.5 scrollbar-thin">
+              ${this.renderToolsSection()}
             </div>
           </div>
         </div>
@@ -548,6 +630,57 @@ export class HeaderHUD {
       this.callbacks.onSelectProvince(this.selectedProvince);
     });
 
+    this.bindToolClickEvents();
+
+    // Category tabs click
+    this.container.querySelectorAll<HTMLButtonElement>('.hud-cat-tab').forEach((tabBtn) => {
+      tabBtn.addEventListener('click', () => {
+        const tab = tabBtn.getAttribute('data-tab');
+        if (tab && tab !== this.activeCategoryTab) {
+          this.activeCategoryTab = tab;
+          this.toolFilterQuery = '';
+          const filterInput = q<HTMLInputElement>('#hud-tool-filter-input');
+          if (filterInput) filterInput.value = '';
+          this.container.querySelectorAll<HTMLButtonElement>('.hud-cat-tab').forEach((btn) => {
+            const isCur = btn.getAttribute('data-tab') === tab;
+            btn.className = `hud-cat-tab py-1.5 px-0.5 rounded-lg text-center transition-all ${
+              isCur
+                ? tab === 'emergency'
+                  ? 'bg-rose-500/90 text-white shadow-md'
+                  : tab === 'radars'
+                  ? 'bg-sky-500/90 text-white shadow-md'
+                  : tab === 'preparedness'
+                  ? 'bg-amber-500 text-black shadow-md'
+                  : 'bg-emerald-500 text-black shadow-md'
+                : 'text-gray-400 hover:text-gray-200'
+            }`;
+          });
+          this.refreshToolsGrid();
+        }
+      });
+    });
+
+    // Tool fast filter input
+    const toolFilterInput = q<HTMLInputElement>('#hud-tool-filter-input');
+    toolFilterInput?.addEventListener('input', (e) => {
+      this.toolFilterQuery = (e.target as HTMLInputElement).value;
+      this.refreshToolsGrid();
+    });
+
+    q<HTMLButtonElement>('#btn-toggle-tools-menu')?.addEventListener('click', () => {
+      this.toggleMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      const dropdown = q<HTMLElement>('#search-results-dropdown');
+      if (dropdown && !this.container.contains(e.target as Node)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  private bindToolClickEvents(): void {
+    const q = <T extends HTMLElement>(sel: string) => this.container.querySelector(sel) as T | null;
     const clickMap: Record<string, () => void> = {
       'btn-locate-me': () => this.callbacks.onLocateMe(),
       'btn-toggle-layers': () => this.callbacks.onToggleLayers(),
@@ -557,6 +690,7 @@ export class HeaderHUD {
       'btn-open-guide': () => this.callbacks.onToggleGuide(),
       'btn-open-triage': () => this.callbacks.onToggleTriage(),
       'btn-open-tourniquet': () => this.callbacks.onToggleTourniquet(),
+      'btn-open-ptt-walkie': () => this.callbacks.onTogglePTTWalkie(),
       'btn-open-med-passport': () => this.callbacks.onToggleMedPassport(),
       'btn-open-hazard-hunt': () => this.callbacks.onToggleHazardHunt(),
       'btn-open-acoustic-listener': () => this.callbacks.onToggleAcousticListener(),
@@ -590,17 +724,6 @@ export class HeaderHUD {
     for (const [id, handler] of Object.entries(clickMap)) {
       q<HTMLButtonElement>(`#${id}`)?.addEventListener('click', handler);
     }
-
-    q<HTMLButtonElement>('#btn-toggle-tools-menu')?.addEventListener('click', () => {
-      this.toggleMenu();
-    });
-
-    document.addEventListener('click', (e) => {
-      const dropdown = q<HTMLElement>('#search-results-dropdown');
-      if (dropdown && !this.container.contains(e.target as Node)) {
-        dropdown.classList.add('hidden');
-      }
-    });
   }
 
   public toggleMenu(force?: boolean): void {

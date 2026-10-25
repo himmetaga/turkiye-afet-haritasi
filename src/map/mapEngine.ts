@@ -523,9 +523,10 @@ export class MapEngine {
 
     const pillarSource = this.map.getSource('assembly-pillars') as maplibregl.GeoJSONSource;
     if (pillarSource) {
+      // Pil ve GPU tasarrufu: 2000 yerine yalnızca en yakın 120 toplanma alanına 3D prizma uygula
       pillarSource.setData({
         type: 'FeatureCollection',
-        features: points.slice(0, 2000).map((p) => {
+        features: points.slice(0, 120).map((p) => {
           const [lon, lat] = p.coordinates;
           const d = 0.00035;
           const polygon = [
@@ -533,7 +534,7 @@ export class MapEngine {
             [lon, lat - d],
             [lon + d, lat - d * 0.7],
             [lon + d, lat + d * 0.7],
-            [lon, lat + d],
+            [lon + d, lat + d * 0.7],
             [lon - d, lat + d * 0.7],
             [lon - d, lat - d * 0.7]
           ];

@@ -134,14 +134,16 @@ afet.live menüsü, afet esnasında kafa karışıklığını önlemek amacıyla
    - WebRTC DataChannel ile telefondan telefona doğrudan P2P veri aktarımı.
    - **Acil Sıfırlama (Emergency Wipe):** Tehlike anında cihazdaki tüm mesaj ve kimlik verilerini tek tıkla kalıcı olarak siler.
    - **Ana Ekran Sabit FAB İkonu:** Ekranı kapatmadan canlı ağ/peer durumunu gösteren küçük, zarif yüzen buton.
-8. **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):**
+8. **İnternetsiz Bas-Konuş Telsiz (PTT) & Sesli S.O.S Anons Döngüsü:**
+   - Altyapı ve baz istasyonları çöktüğünde telefon mikrofonunu ve hoparlörünü taktik telsize dönüştürür.
+   - 4 taktik PMR kanalı (Kanal 1 Genel, Kanal 2 Tıbbi, Kanal 8 Arama Kurtarma, Kanal 16 Kriz Masası).
+   - Bas-konuş (Push-to-Talk) ses kaydı, Web Audio API susturucu gürültü patlaması (squelch burst), Roger Beep (1200/1500 Hz) ve 1750 Hz röle tonları.
+   - **Otomatik Enkaz S.O.S Anons Döngüsü:** Kazazedenin sesini bir kez kaydedip, her 45 saniyede bir tam sesle otomatik tekrar ederek enkaz dışındaki arama kurtarma ekiplerine ses duyurmasını sağlar.
+   - Ses paketlerini BitChat P2P ağı üzerinden yakındaki cihazlara telsiz yayını olarak iletir.
+9. **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):**
    - Baz istasyonları çöktüğünde kullanılan PMR 446 lisanssız el telsizi kanalları (Kanal 1 Genel Çağrı, Kanal 8 Arama Kurtarma).
    - TRAC (Türkiye Radyo Amatörleri Cemiyeti) 145.500 MHz VHF / 433.500 MHz UHF acil röle frekansları.
    - Hayati alt ton kapatma kuralı (CTCSS/DCS: 0) ve Web Audio telsiz bip / 1750 Hz röle ton testleri.
-9. **Gece Sismograf Nöbeti & Başucu Deprem Alarmı:**
-   - Telefon komodin veya zemin üzerine bırakıldığında cihaz ivmeölçerini 100 Hz frekansta dinler.
-   - Eşik üstü sismik P dalgası algılandığında tam ses seviyesinde siren çalarak uykudaki kullanıcıyı uyandırır.
-   - Ekranı uyanık tutan WakeLock entegrasyonu içerir.
 
 ---
 
@@ -397,13 +399,15 @@ The toolset is organized into **4 logical categories based on immediate survival
    - Routes encrypted messages over open Nostr relays (`wss://relay.damus.io`, `wss://nos.lol`) and WebRTC browser-to-browser P2P channels.
    - **Emergency Wipe:** Irreversibly purges local messages and identity keys in one click.
    - **Floating Action Button (FAB):** Small, sleek main screen button showing live relay and mesh peer connectivity.
-8. **Emergency Radio Guide (TRAC & PMR 446):**
+8. **Offline Push-to-Talk (PTT) Walkie-Talkie & Debris Voice S.O.S Loop:**
+   - Transforms smartphones into tactical walkie-talkies when cellular infrastructure and voice lines collapse.
+   - 4 tactical PMR channels (Channel 1 Calling, Channel 2 Medical, Channel 8 SAR, Channel 16 Crisis Command).
+   - Press-and-hold PTT recording with Web Audio API squelch open noise bursts, 1200/1500 Hz Roger Beeps, and 1750 Hz repeater access tones.
+   - **Automated Debris Voice S.O.S Loop:** Allows a trapped victim to record a single voice distress beacon and automatically loops it at maximum volume every 45 seconds to alert rescue teams without exhausting the victim.
+   - Broadcasts audio transmissions directly to nearby devices over BitChat P2P.
+9. **Emergency Radio Guide (TRAC & PMR 446):**
    - Offline guide for license-free PMR 446 channels (Channel 1 Calling, Channel 8 SAR) and TRAC 145.500 MHz VHF / 433.500 MHz UHF repeater frequencies.
    - Crucial CTCSS tone bypass (CTCSS: 0) directive and Web Audio 1750 Hz repeater tone generator.
-9. **Night Watch Bedside Seismograph:**
-   - Samples device accelerometer at 100 Hz while the device is stationed on a bedside table or floor.
-   - Sounds a maximum-volume siren if anomalous seismic P-wave accelerations are detected, awakening sleeping inhabitants.
-   - Integrates Screen WakeLock to maintain active listening through the night.
 
 ---
 
