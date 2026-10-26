@@ -17,7 +17,7 @@ export class RouteNavigationHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute top-4 left-4 z-20 flex flex-col gap-2 max-w-[calc(100vw-32px)] sm:max-w-md pointer-events-auto transition-all hidden';
+      'fixed top-14 sm:top-4 left-3 right-3 sm:left-4 sm:right-auto z-30 flex flex-col gap-2 max-w-[calc(100vw-24px)] sm:max-w-md pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
@@ -70,8 +70,14 @@ export class RouteNavigationHUD {
               ${dest.district}, ${dest.city}
             </p>
           </div>
-          <button id="btn-close-nav" class="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition-colors" title="Rotayı Kapat">
-            ${Icons.close('w-4 h-4')}
+          <button
+            id="btn-close-nav"
+            type="button"
+            aria-label="Rotayı Kapat"
+            class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 text-gray-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all shrink-0 cursor-pointer touch-manipulation"
+            title="Rotayı Kapat"
+          >
+            ${Icons.close('w-4.5 h-4.5')}
           </button>
         </div>
 

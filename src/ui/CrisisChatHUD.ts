@@ -1,6 +1,7 @@
 import { Icons } from './icons';
 import { bitChatService, BitChatMessage } from '../services/bitChatService';
 import { LEGAL_DISCLAIMER } from '../services/antiManipulationService';
+import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 
 export class CrisisChatHUD {
   private container: HTMLElement;
@@ -26,6 +27,12 @@ export class CrisisChatHUD {
       'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/85 backdrop-blur-md hidden transition-all';
     parent.appendChild(this.container);
 
+    setupModalMobileDismiss({
+      container: this.container,
+      hide: () => this.hide(),
+      closeBtnSelector: '#btn-close-crisis'
+    });
+
     this.initSubscriptions();
   }
 
@@ -48,12 +55,14 @@ export class CrisisChatHUD {
 
   public show(): void {
     this.container.classList.remove('hidden');
+    registerModalOpen('crisis-chat-modal', () => this.hide());
     // Connect to public Nostr relays in background
     bitChatService.connectRelays();
     this.render();
   }
 
   public hide(): void {
+    registerModalClose('crisis-chat-modal');
     this.container.classList.add('hidden');
   }
 
@@ -117,8 +126,8 @@ export class CrisisChatHUD {
             </div>
           </div>
 
-          <button id="btn-close-crisis" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-gray-400 hover:text-white">
-            ${Icons.close('w-4 h-4')}
+          <button id="btn-close-crisis" type="button" class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all text-gray-300 hover:text-white cursor-pointer touch-manipulation" title="Kapat">
+            ${Icons.close('w-5 h-5')}
           </button>
         </div>
 
@@ -479,8 +488,16 @@ export class CrisisChatHUD {
       }
     });
 
-    this.container.addEventListener('click', (e) => {
-      if (e.target === this.container) this.hide();
+    const closeBtn = this.container.querySelector('#btn-close-crisis');
+    closeBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.hide();
+    });
+    closeBtn?.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.hide();
     });
   }
 

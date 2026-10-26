@@ -284,18 +284,35 @@ export class HeaderHUD {
     }
   }
 
-  private toggleControlCenter(open?: boolean): void {
+  public toggleControlCenter(open?: boolean): void {
     this.isMenuOpen = open !== undefined ? open : !this.isMenuOpen;
     const sheet = this.container.querySelector('#ios27-bento-sheet');
+    const backdrop = this.container.querySelector('#ios27-bento-backdrop');
     if (sheet) {
       if (this.isMenuOpen) {
         sheet.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
         sheet.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        if (backdrop) {
+          backdrop.classList.remove('opacity-0', 'pointer-events-none');
+          backdrop.classList.add('opacity-100', 'pointer-events-auto');
+        }
       } else {
         sheet.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
         sheet.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        if (backdrop) {
+          backdrop.classList.add('opacity-0', 'pointer-events-none');
+          backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+        }
       }
     }
+  }
+
+  public closeControlCenter(): void {
+    this.toggleControlCenter(false);
+  }
+
+  public closeSearch(): void {
+    this.toggleSearch(false);
   }
 
   private render(): void {
@@ -387,10 +404,20 @@ export class HeaderHUD {
       <!-- =========================================================
            3. FULL BENTO CONTROL CENTER SHEET (MINIMALIST DRAWER)
            ========================================================= -->
+      <!-- Bento Sheet Backdrop -->
+      <div
+        id="ios27-bento-backdrop"
+        class="fixed inset-0 bg-black/60 backdrop-blur-xs z-45 opacity-0 pointer-events-none transition-opacity duration-300 cursor-pointer"
+        aria-hidden="true"
+      ></div>
+
       <div
         id="ios27-bento-sheet"
-        class="fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[80vh] ios27-bar p-4 sm:p-5 shadow-2xl z-50 flex flex-col gap-3.5 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
+        class="fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[82dvh] ios27-bar p-3.5 sm:p-5 shadow-2xl z-50 flex flex-col gap-3 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
       >
+        <!-- Mobile Drag/Swipe Down Handle -->
+        <div id="btn-drag-bento-handle" class="w-12 h-1.5 bg-white/25 hover:bg-white/40 rounded-full mx-auto -mt-1 mb-0.5 cursor-pointer transition-colors" title="Aşağı İndir / Kapat"></div>
+
         <!-- Sheet Header -->
         <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
           <div class="flex items-center gap-2.5">
@@ -402,8 +429,13 @@ export class HeaderHUD {
               <p class="text-[10.5px] text-gray-400">Tüm sivil savunma, radar ve hayatta kalma araçları</p>
             </div>
           </div>
-          <button id="btn-close-bento" class="p-1.5 rounded-xl bg-white/5 text-gray-400 hover:text-white cursor-pointer">
-            ${Icons.close('w-4 h-4')}
+          <button
+            id="btn-close-bento"
+            type="button"
+            aria-label="Kapat"
+            class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 text-gray-200 hover:text-white cursor-pointer touch-manipulation transition-all"
+          >
+            ${Icons.close('w-4.5 h-4.5')}
           </button>
         </div>
 
@@ -474,7 +506,24 @@ export class HeaderHUD {
     q('#btn-dock-felt')?.addEventListener('click', () => this.callbacks.onToggleFelt());
     q('#btn-dock-bitchat')?.addEventListener('click', () => this.callbacks.onToggleCrisis());
     q('#btn-dock-menu')?.addEventListener('click', () => this.toggleControlCenter());
-    q('#btn-close-bento')?.addEventListener('click', () => this.toggleControlCenter(false));
+
+    // Bento close events (Click, Touch & Backdrop)
+    const closeBentoHandler = (e: Event) => {
+      e.preventDefault();
+      this.toggleControlCenter(false);
+    };
+
+    const closeBtn = q('#btn-close-bento');
+    closeBtn?.addEventListener('click', closeBentoHandler);
+    closeBtn?.addEventListener('touchend', closeBentoHandler);
+
+    const bentoBackdrop = q('#ios27-bento-backdrop');
+    bentoBackdrop?.addEventListener('click', closeBentoHandler);
+    bentoBackdrop?.addEventListener('touchend', closeBentoHandler);
+
+    const bentoDrag = q('#btn-drag-bento-handle');
+    bentoDrag?.addEventListener('click', closeBentoHandler);
+    bentoDrag?.addEventListener('touchend', closeBentoHandler);
 
     // Seismic island badge
     q('#btn-island-seismic')?.addEventListener('click', () => this.callbacks.onToggleSeismic());

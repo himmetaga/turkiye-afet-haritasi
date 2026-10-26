@@ -1,5 +1,6 @@
 import { EmergencyBagItem } from '../types';
 import { Icons } from './icons';
+import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 
 const DEFAULT_BAG_ITEMS: EmergencyBagItem[] = [
   { id: 'bag-1', title: 'Kişi başı günlük en az 2 litre içme suyu (3 gün için 6L)', category: 'vital', checked: false, description: 'Kapalı pet şişelerde, serin yerde muhafaza edilmeli.' },
@@ -27,6 +28,11 @@ export class EmergencyBagHUD {
     this.container.className =
       'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden';
     parent.appendChild(this.container);
+
+    setupModalMobileDismiss({
+      container: this.container,
+      hide: () => this.hide()
+    });
 
     this.loadState();
   }
@@ -57,10 +63,12 @@ export class EmergencyBagHUD {
 
   public show(): void {
     this.container.classList.remove('hidden');
+    registerModalOpen('emergency-bag-modal', () => this.hide());
     this.render();
   }
 
   public hide(): void {
+    registerModalClose('emergency-bag-modal');
     this.container.classList.add('hidden');
   }
 
@@ -116,7 +124,7 @@ export class EmergencyBagHUD {
               <p class="text-[11px] text-gray-400">Çevrimdışı kaydedilen aile acil durum kontrol listesi</p>
             </div>
           </div>
-          <button id="btn-close-bag" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-colors">
+          <button id="btn-close-bag" class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-400 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer touch-manipulation">
             ${Icons.close('w-5 h-5')}
           </button>
         </div>

@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 
 export interface LayerToggleCallback {
   (layerKey: string, visible: boolean): void;
@@ -22,16 +23,18 @@ export class LayerControlHUD {
     this.onToggle = onToggle;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute top-4 right-4 z-20 flex flex-col gap-2 max-w-[calc(100vw-32px)] sm:max-w-xs pointer-events-auto transition-all hidden';
+      'fixed top-14 sm:top-4 right-2 sm:right-4 z-35 flex flex-col gap-2 max-w-[calc(100vw-16px)] sm:max-w-xs pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
   public show(): void {
     this.container.classList.remove('hidden');
+    registerModalOpen('layer-control-hud', () => this.hide());
     this.render();
   }
 
   public hide(): void {
+    registerModalClose('layer-control-hud');
     this.container.classList.add('hidden');
   }
 
@@ -51,8 +54,8 @@ export class LayerControlHUD {
             ${Icons.layers('w-4 h-4 text-emerald-400')}
             <span class="text-xs font-semibold text-white uppercase tracking-wider">Harita Katmanları</span>
           </div>
-          <button id="btn-close-layers" class="p-1 text-gray-400 hover:text-white rounded-lg bg-white/5">
-            ${Icons.close('w-3.5 h-3.5')}
+          <button id="btn-close-layers" class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-300 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer touch-manipulation" title="Kapat">
+            ${Icons.close('w-4 h-4')}
           </button>
         </div>
 
@@ -125,7 +128,17 @@ export class LayerControlHUD {
     `;
 
     const closeBtn = this.container.querySelector('#btn-close-layers') as HTMLButtonElement;
-    closeBtn.addEventListener('click', () => this.hide());
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hide();
+      });
+      closeBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.hide();
+      });
+    }
 
     const inputs = this.container.querySelectorAll('input[type="checkbox"]');
     inputs.forEach((input) => {

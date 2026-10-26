@@ -458,6 +458,18 @@ class DisasterAtlasApp {
       this.focusEarthquake(eq);
     });
 
+    // Harita boşluğuna tıklandığında/dokunulduğunda açık panelleri kapat
+    this.mapEngine.onMapClick(() => {
+      this.closeAllFloatingBoxes();
+    });
+
+    // Global Escape tuşu ile açık kutuları kapatma
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeAllFloatingBoxes();
+      }
+    });
+
     // Connect Early Warning propagating waves to 3D map
     earlyWarningEngine.subscribe((status) => {
       if (status.isActive && status.earthquake) {
@@ -1308,6 +1320,26 @@ class DisasterAtlasApp {
   private focusEarthquake(eq: Earthquake): void {
     this.mapEngine.flyTo(eq.coordinates, 12, 60, 0);
     this.seismicFeedHUD.show(this.earthquakes);
+  }
+
+  public closeAllFloatingBoxes(): void {
+    if (this.detailHUD) {
+      this.detailHUD.hide();
+    }
+    this.selectedPoint = null;
+    if (this.layerHUD) {
+      this.layerHUD.hide();
+    }
+    if (this.seismicFeedHUD) {
+      this.seismicFeedHUD.hide();
+    }
+    if (this.nearestHUD) {
+      this.nearestHUD.collapse();
+    }
+    if (this.headerHUD) {
+      this.headerHUD.closeControlCenter();
+      this.headerHUD.closeSearch();
+    }
   }
 
   private handleSearch(input: string): void {

@@ -1,5 +1,6 @@
 import { Earthquake } from '../types';
 import { Icons } from './icons';
+import { registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 
 export interface SeismicFeedCallbacks {
   onSelectEarthquake: (eq: Earthquake) => void;
@@ -16,17 +17,19 @@ export class SeismicFeedHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute top-4 right-4 z-20 flex flex-col gap-2 max-w-[calc(100vw-32px)] sm:max-w-sm pointer-events-auto transition-all hidden';
+      'fixed top-14 sm:top-4 right-2 sm:right-4 z-35 flex flex-col gap-2 max-w-[calc(100vw-16px)] sm:max-w-sm pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
   public show(earthquakes: Earthquake[], isOfflineCache = false): void {
     this.earthquakes = earthquakes;
     this.container.classList.remove('hidden');
+    registerModalOpen('seismic-feed-hud', () => this.hide());
     this.render(isOfflineCache);
   }
 
   public hide(): void {
+    registerModalClose('seismic-feed-hud');
     this.container.classList.add('hidden');
     this.callbacks.onClose();
   }
@@ -43,7 +46,7 @@ export class SeismicFeedHUD {
               Son Depremler (Kandilli/AFAD)
             </h3>
           </div>
-          <button id="btn-close-seismic" class="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition-colors">
+          <button id="btn-close-seismic" class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-300 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer touch-manipulation" title="Kapat">
             ${Icons.close('w-4 h-4')}
           </button>
         </div>
@@ -106,7 +109,17 @@ export class SeismicFeedHUD {
     `;
 
     const closeBtn = this.container.querySelector('#btn-close-seismic') as HTMLButtonElement;
-    closeBtn.addEventListener('click', () => this.hide());
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hide();
+      });
+      closeBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.hide();
+      });
+    }
 
     const filterBtns = this.container.querySelectorAll('.filter-btn');
     filterBtns.forEach((btn) => {

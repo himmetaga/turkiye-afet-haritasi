@@ -235,7 +235,9 @@ export class NearestPointsHUD {
     this.container.innerHTML = `
       <div class="ios27-bar p-3 sm:p-3.5 shadow-2xl transition-all max-h-[80vh] flex flex-col">
         <!-- Touch Drag Handle for Mobile Sheet -->
-        <div id="btn-drag-handle" class="w-10 h-1 bg-white/25 hover:bg-white/40 rounded-full mx-auto mb-2 cursor-pointer transition-colors" title="Aşağı küçült"></div>
+        <div id="btn-drag-handle" class="w-20 h-6 flex items-center justify-center mx-auto -mt-1 mb-1 cursor-pointer touch-manipulation active:opacity-60" title="Aşağı küçült">
+          <div class="w-12 h-1.5 bg-white/35 hover:bg-white/60 rounded-full"></div>
+        </div>
 
         <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/5">
           <div class="flex items-center gap-1.5 min-w-0">
@@ -246,11 +248,11 @@ export class NearestPointsHUD {
           </div>
 
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button id="btn-voice-guide" title="Sesli Rehber" class="p-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[10px] font-semibold flex items-center gap-1 px-2 transition-colors">
+            <button id="btn-voice-guide" title="Sesli Rehber" class="h-8 p-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 text-emerald-400 text-[10px] font-semibold flex items-center gap-1 px-2.5 transition-all cursor-pointer touch-manipulation">
               ${Icons.volume('w-3.5 h-3.5')}
               <span class="hidden sm:inline">Sesli Yön</span>
             </button>
-            <button id="btn-collapse-toggle" class="p-1 text-gray-300 hover:text-white rounded-lg bg-white/10 text-[11px] font-bold px-2 flex items-center gap-0.5 transition-colors">
+            <button id="btn-collapse-toggle" class="h-8 px-2.5 min-h-[32px] text-gray-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer touch-manipulation" title="Listeyi Küçült">
               <span>Küçült</span>
               <span class="text-xs">▼</span>
             </button>
@@ -489,13 +491,44 @@ export class NearestPointsHUD {
     // Collapse toggle
     const collapseBtn = this.container.querySelector('#btn-collapse-toggle');
     const dragHandle = this.container.querySelector('#btn-drag-handle');
-    const collapseHandler = () => {
+    const collapseHandler = (e?: Event) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       this.isCollapsed = true;
       this.render();
     };
 
     collapseBtn?.addEventListener('click', collapseHandler);
+    collapseBtn?.addEventListener('touchend', collapseHandler);
     dragHandle?.addEventListener('click', collapseHandler);
+    dragHandle?.addEventListener('touchend', collapseHandler);
+
+    // Swipe down to collapse on mobile
+    let touchStartY = 0;
+    this.container.addEventListener(
+      'touchstart',
+      (e: TouchEvent) => {
+        if (e.touches.length === 1) {
+          touchStartY = e.touches[0].clientY;
+        }
+      },
+      { passive: true }
+    );
+    this.container.addEventListener(
+      'touchend',
+      (e: TouchEvent) => {
+        if (e.changedTouches.length === 1 && !this.isCollapsed) {
+          const diffY = e.changedTouches[0].clientY - touchStartY;
+          // Eğer 60px'den fazla aşağı doğru kaydırıldıysa kapat
+          if (diffY > 60) {
+            collapseHandler(e);
+          }
+        }
+      },
+      { passive: true }
+    );
 
     // Voice guide
     const voiceBtn = this.container.querySelector('#btn-voice-guide');

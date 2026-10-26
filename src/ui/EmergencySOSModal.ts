@@ -2,6 +2,8 @@ import { rescueWhistle } from '../services/audioService';
 import { AssemblyPoint } from '../types';
 import { Icons } from './icons';
 
+import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
+
 export interface SOSContext {
   userCoords: [number, number] | null;
   nearestPoint: AssemblyPoint | null;
@@ -17,15 +19,22 @@ export class EmergencySOSModal {
     this.container.className =
       'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity';
     parent.appendChild(this.container);
+
+    setupModalMobileDismiss({
+      container: this.container,
+      hide: () => this.hide()
+    });
   }
 
   public show(context: SOSContext): void {
     this.currentContext = context;
     this.container.classList.remove('hidden');
+    registerModalOpen('emergency-sos-modal', () => this.hide());
     this.render();
   }
 
   public hide(): void {
+    registerModalClose('emergency-sos-modal');
     if (this.isWhistleActive) {
       rescueWhistle.stop();
       this.isWhistleActive = false;
@@ -85,7 +94,7 @@ export class EmergencySOSModal {
               Acil Durum & Kurtarma Modu
             </h2>
           </div>
-          <button id="btn-close-sos" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-colors">
+          <button id="btn-close-sos" class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-400 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer touch-manipulation">
             ${Icons.close('w-5 h-5')}
           </button>
         </div>

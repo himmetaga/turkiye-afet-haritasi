@@ -452,6 +452,16 @@ export class MapEngine {
         this.onFaultLineClickCallback(fault);
       }
     });
+
+    // General map canvas click (triggers callback when clicking outside interactive features)
+    this.map.on('click', (e) => {
+      const features = this.map?.queryRenderedFeatures(e.point, {
+        layers: ['assembly-core', 'facility-core', 'fault-lines-core']
+      });
+      if ((!features || features.length === 0) && this.onMapClickCallback) {
+        this.onMapClickCallback([e.lngLat.lng, e.lngLat.lat]);
+      }
+    });
   }
 
   private setup3DBuildings(): void {

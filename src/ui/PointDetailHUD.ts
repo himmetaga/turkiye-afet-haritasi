@@ -15,7 +15,7 @@ export class PointDetailHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'absolute bottom-3 sm:bottom-auto sm:top-4 left-3 right-3 sm:left-auto sm:right-4 z-40 flex flex-col gap-2 sm:w-auto sm:max-w-sm pointer-events-auto transition-all hidden';
+      'fixed bottom-[74px] sm:bottom-auto sm:top-4 left-3 right-3 sm:left-auto sm:right-4 z-40 flex flex-col gap-2 sm:w-auto sm:max-w-sm pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
@@ -58,9 +58,12 @@ export class PointDetailHUD {
     }
 
     this.container.innerHTML = `
-      <div class="hud-glass rounded-2xl p-4 shadow-2xl backdrop-blur-xl border border-white/10">
+      <div class="hud-glass rounded-3xl p-4 shadow-2xl backdrop-blur-xl border border-white/10">
+        <!-- Mobile Drag/Swipe Down Handle -->
+        <div id="btn-drag-detail-handle" class="sm:hidden w-10 h-1.5 bg-white/20 hover:bg-white/40 rounded-full mx-auto -mt-1 mb-2 cursor-pointer transition-colors" title="Aşağı İndir / Kapat"></div>
+
         <div class="flex items-start justify-between gap-3 mb-2">
-          <div>
+          <div class="min-w-0 flex-1">
             <span class="inline-flex items-center gap-1 text-[11px] font-mono ${badgeColor} uppercase tracking-wider mb-0.5">
               ${badgeText}
             </span>
@@ -76,8 +79,13 @@ export class PointDetailHUD {
                 : ''
             }
           </div>
-          <button id="btn-close-detail" class="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition-colors">
-            ${Icons.close('w-4 h-4')}
+          <button
+            id="btn-close-detail"
+            type="button"
+            aria-label="Kapat"
+            class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 text-gray-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all shrink-0 cursor-pointer touch-manipulation"
+          >
+            ${Icons.close('w-4.5 h-4.5')}
           </button>
         </div>
 
@@ -267,10 +275,17 @@ export class PointDetailHUD {
     });
 
     const closeBtn = this.container.querySelector('#btn-close-detail') as HTMLButtonElement;
-    closeBtn.addEventListener('click', () => {
+    const closeHandler = (e: Event) => {
+      e.preventDefault();
       this.hide();
       this.callbacks.onClose();
-    });
+    };
+    closeBtn?.addEventListener('click', closeHandler);
+    closeBtn?.addEventListener('touchend', closeHandler);
+
+    const dragHandle = this.container.querySelector('#btn-drag-detail-handle');
+    dragHandle?.addEventListener('click', closeHandler);
+    dragHandle?.addEventListener('touchend', closeHandler);
 
     const routeBtn = this.container.querySelector('#btn-route-action') as HTMLButtonElement;
     routeBtn.addEventListener('click', () => {
