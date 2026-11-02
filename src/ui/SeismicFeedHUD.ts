@@ -17,7 +17,7 @@ export class SeismicFeedHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'fixed top-14 sm:top-4 right-2 sm:right-4 z-35 flex flex-col gap-2 max-w-[calc(100vw-16px)] sm:max-w-sm pointer-events-auto transition-all hidden';
+      'fixed top-16 sm:top-4 right-2 sm:right-4 z-40 flex flex-col gap-2 max-w-[calc(100vw-16px)] sm:max-w-sm pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 

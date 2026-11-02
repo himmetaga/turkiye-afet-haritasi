@@ -15,7 +15,7 @@ export class PointDetailHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.className =
-      'fixed bottom-[74px] sm:bottom-auto sm:top-4 left-3 right-3 sm:left-auto sm:right-4 z-40 flex flex-col gap-2 sm:w-auto sm:max-w-sm pointer-events-auto transition-all hidden';
+      'fixed bottom-safe-hud sm:bottom-auto sm:top-4 left-3 right-3 sm:left-auto sm:right-4 z-40 flex flex-col gap-2 sm:w-auto sm:max-w-sm pointer-events-auto transition-all hidden';
     parent.appendChild(this.container);
   }
 
@@ -58,7 +58,7 @@ export class PointDetailHUD {
     }
 
     this.container.innerHTML = `
-      <div class="hud-glass rounded-3xl p-4 shadow-2xl backdrop-blur-xl border border-white/10">
+      <div class="hud-glass rounded-3xl p-4 shadow-2xl backdrop-blur-xl border border-white/10 max-h-[calc(100dvh-130px)] overflow-y-auto custom-scrollbar">
         <!-- Mobile Drag/Swipe Down Handle -->
         <div id="btn-drag-detail-handle" class="sm:hidden w-10 h-1.5 bg-white/20 hover:bg-white/40 rounded-full mx-auto -mt-1 mb-2 cursor-pointer transition-colors" title="Aşağı İndir / Kapat"></div>
 

@@ -167,6 +167,10 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
 ];
 
 export class HeaderHUD {
+  private capitalize(str: string): string {
+    if (!str) return '';
+    return str.charAt(0).toLocaleUpperCase('tr-TR') + str.slice(1).toLocaleLowerCase('tr-TR');
+  }
   private container: HTMLElement;
   private isOnline = navigator.onLine;
   private callbacks: HeaderHUDCallbacks;
@@ -339,31 +343,94 @@ export class HeaderHUD {
       <!-- =========================================================
            1. TOP CENTER: iOS 27 DYNAMIC ISLAND CAPSULE
            ========================================================= -->
-      <div class="fixed top-2.5 sm:top-3.5 left-1/2 -translate-x-1/2 z-40 w-auto max-w-[94vw] pointer-events-auto select-none">
-        <div id="ios27-dynamic-island" class="ios27-capsule px-3 py-1.5 flex items-center gap-2.5 text-xs text-white shadow-2xl ios27-spring">
-          <!-- Logo (Verilen orijinal vektör logo, yanıp sönen nokta kaldırıldı) -->
+      <div class="fixed top-safe left-1/2 -translate-x-1/2 z-40 w-auto max-w-[96vw] pointer-events-auto select-none">
+        <div id="ios27-dynamic-island" class="ios27-capsule px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center flex-nowrap whitespace-nowrap gap-1.5 sm:gap-2.5 text-xs text-white shadow-2xl ios27-spring">
+          <!-- Logo -->
           <a href="/" class="flex items-center gap-1 shrink-0 active:scale-95 transition-transform" title="afet.live">
-            <img src="/logo-horizontal.svg" alt="afet.live" class="h-5 sm:h-5.5 w-auto select-none pointer-events-none" />
+            <img src="/logo-horizontal.svg" alt="afet.live" class="h-4.5 sm:h-5.5 w-auto select-none pointer-events-none shrink-0" />
           </a>
 
           <!-- Divider -->
-          <span class="h-3.5 w-px bg-white/20"></span>
+          <span class="h-3.5 w-px bg-white/20 shrink-0"></span>
 
-          <!-- Spotlight Search Trigger -->
-          <button id="btn-trigger-spotlight" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer">
-            ${Icons.search('w-3.5 h-3.5')}
-            <span class="hidden sm:inline">Ara</span>
-            <kbd class="hidden sm:inline text-[9px] px-1 rounded bg-black/40 text-gray-400 font-mono">⌘K</kbd>
+          <!-- Province Selector Trigger -->
+          <button id="btn-island-province" type="button" class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 active:scale-95 text-gray-200 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer shrink-0" title="Şehir / İl Seç">
+            <span class="text-[11px]">📍</span>
+            <span id="island-province-label" class="truncate max-w-[55px] xs:max-w-[80px] sm:max-w-[120px]">${this.selectedProvince ? this.capitalize(this.selectedProvince) : '81 İl'}</span>
+            <span class="text-[8px] text-gray-400">▾</span>
           </button>
 
           <!-- Divider -->
-          <span class="h-3.5 w-px bg-white/20"></span>
+          <span class="h-3.5 w-px bg-white/20 shrink-0"></span>
 
-          <!-- Son Depremler Trigger (60 deprem -> Son Depremler) -->
-          <button id="btn-island-seismic" type="button" class="px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 hover:text-white text-[10.5px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-1.5">
-            ${Icons.seismic('w-3.5 h-3.5 text-rose-400')}
-            <span id="island-seismic-badge">Son Depremler</span>
+          <!-- Spotlight Search Trigger -->
+          <button id="btn-trigger-spotlight" type="button" class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 active:scale-95 text-gray-300 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer shrink-0" title="Arama Yap (Spotlight)">
+            ${Icons.search('w-3.5 h-3.5')}
+            <span class="hidden sm:inline">Ara</span>
+            <kbd class="hidden md:inline text-[9px] px-1 rounded bg-black/40 text-gray-400 font-mono">⌘K</kbd>
           </button>
+
+          <!-- Divider -->
+          <span class="h-3.5 w-px bg-white/20 shrink-0"></span>
+
+          <!-- Son Depremler Trigger -->
+          <button id="btn-island-seismic" type="button" class="px-2 sm:px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 active:scale-95 text-rose-300 hover:text-white text-[10.5px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-1 shrink-0" title="Son Depremler">
+            ${Icons.seismic('w-3.5 h-3.5 text-rose-400')}
+            <span id="island-seismic-badge" class="hidden xs:inline">Son Depremler</span>
+            <span class="xs:hidden">Deprem</span>
+          </button>
+        </div>
+
+        <!-- Province Selection Dropdown Modal -->
+        <div id="island-province-dropdown" class="hidden absolute top-12 left-1/2 -translate-x-1/2 w-[92vw] sm:w-[420px] ios27-glass rounded-3xl p-3.5 border border-white/15 shadow-2xl z-50 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-white/10">
+            <div class="flex items-center gap-2">
+              <span class="text-base">📍</span>
+              <h4 class="text-xs font-bold text-white tracking-wide">Şehir / İl Seç</h4>
+            </div>
+            <button id="btn-close-province-dropdown" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer">
+              ${Icons.close('w-3.5 h-3.5')}
+            </button>
+          </div>
+
+          <!-- Quick City Filter -->
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-gray-400">${Icons.search('w-3.5 h-3.5')}</span>
+            <input
+              id="input-filter-province"
+              type="text"
+              placeholder="İl ara... (Örn: İstanbul, Hatay, Ankara)"
+              class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-400 text-xs outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          <!-- Quick Popular Province Chips -->
+          <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 text-xs">
+            <button data-prov="" class="btn-select-prov shrink-0 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-[11px] font-semibold border border-white/5 transition-all cursor-pointer">
+              🇹🇷 Tüm Türkiye
+            </button>
+            ${['istanbul', 'ankara', 'izmir', 'hatay', 'kahramanmaras', 'gaziantep', 'malatya', 'adana', 'bursa', 'antalya'].map((p) => `
+              <button data-prov="${p}" class="btn-select-prov shrink-0 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[11px] font-medium border border-white/5 transition-all cursor-pointer">
+                ${this.capitalize(p)}
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- 81 Provinces Grid (Scrollable) -->
+          <div id="province-buttons-grid" class="max-h-56 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 gap-1.5 pr-1 text-xs custom-scrollbar">
+            ${this.provinces.map((prov) => `
+              <button
+                data-prov="${prov.toLowerCase()}"
+                class="btn-select-prov p-2 rounded-xl text-left truncate transition-all text-[11px] cursor-pointer ${
+                  this.selectedProvince.toLowerCase() === prov.toLowerCase()
+                    ? 'bg-cyan-500/25 text-cyan-200 font-bold border border-cyan-400/40 shadow-sm'
+                    : 'bg-white/[0.03] hover:bg-white/[0.08] text-gray-300 hover:text-white border border-white/5'
+                }"
+              >
+                ${prov}
+              </button>
+            `).join('')}
+          </div>
         </div>
 
         <!-- Spotlight Search Panel (Hidden by default) -->
@@ -384,10 +451,20 @@ export class HeaderHUD {
         </div>
       </div>
 
+      <!-- Floating Right Map Controls (Katmanlar & Sismik) -->
+      <div class="fixed right-2.5 sm:right-4 z-30 flex flex-col gap-2 pointer-events-auto select-none" style="top: max(68px, calc(env(safe-area-inset-top, 0px) + 60px));">
+        <button id="btn-floating-layers" type="button" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl ios27-bar flex items-center justify-center text-emerald-400 hover:text-white shadow-xl active:scale-90 transition-all cursor-pointer border border-white/10" title="Harita Katmanları">
+          ${Icons.layers('w-4.5 h-4.5 sm:w-5 sm:h-5')}
+        </button>
+        <button id="btn-floating-seismic" type="button" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl ios27-bar flex items-center justify-center text-rose-400 hover:text-white shadow-xl active:scale-90 transition-all cursor-pointer border border-white/10" title="Canlı Deprem Akışı">
+          ${Icons.seismic('w-4.5 h-4.5 sm:w-5 sm:h-5')}
+        </button>
+      </div>
+
       <!-- =========================================================
            2. BOTTOM CENTER: iOS 27 FLOATING SPATIAL GLASS DOCK
            ========================================================= -->
-      <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none w-[94vw] sm:w-[460px] max-w-[480px]">
+      <div class="fixed bottom-safe-dock left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none w-[94vw] sm:w-[460px] max-w-[480px]">
         <div id="ios27-dock" class="ios27-bar w-full p-1 sm:p-1.5 flex items-center justify-between gap-1 sm:gap-1.5 text-white shadow-2xl">
           <!-- Left Wing 1: Locate Me / Map -->
           <button id="btn-dock-locate" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Konumuma Odaklan">
@@ -432,7 +509,7 @@ export class HeaderHUD {
 
       <div
         id="ios27-bento-sheet"
-        class="fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[82dvh] ios27-bar p-3.5 sm:p-5 shadow-2xl z-50 flex flex-col gap-3 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
+        class="fixed bottom-safe-hud left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[calc(100dvh-80px)] ios27-bar p-3.5 sm:p-5 shadow-2xl z-50 flex flex-col gap-3 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
       >
         <!-- Mobile Drag/Swipe Down Handle -->
         <div id="btn-drag-bento-handle" class="w-12 h-1.5 bg-white/25 hover:bg-white/40 rounded-full mx-auto -mt-1 mb-0.5 cursor-pointer transition-colors" title="Aşağı İndir / Kapat"></div>
@@ -448,14 +525,25 @@ export class HeaderHUD {
               <p class="text-[10.5px] text-gray-400">Tüm sivil savunma, radar ve hayatta kalma araçları</p>
             </div>
           </div>
-          <button
-            id="btn-close-bento"
+          <div class="flex items-center gap-2">
+            <button
+              id="btn-quick-layers"
+              type="button"
+              class="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Harita Katmanlarını Aç/Kapat"
+            >
+              ${Icons.layers('w-3.5 h-3.5')}
+              <span>Katmanlar</span>
+            </button>
+            <button
+              id="btn-close-bento"
             type="button"
             aria-label="Kapat"
             class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 text-gray-200 hover:text-white cursor-pointer touch-manipulation transition-all"
           >
             ${Icons.close('w-4.5 h-4.5')}
           </button>
+          </div>
         </div>
 
         <!-- Quick Filter Input -->
@@ -511,6 +599,44 @@ export class HeaderHUD {
     const q = <T extends HTMLElement>(sel: string) => this.container.querySelector(sel) as T | null;
 
     // Spotlight search
+    // Province dropdown toggle
+    q('#btn-island-province')?.addEventListener('click', () => {
+      const dropdown = q('#island-province-dropdown');
+      dropdown?.classList.toggle('hidden');
+    });
+
+    q('#btn-close-province-dropdown')?.addEventListener('click', () => {
+      q('#island-province-dropdown')?.classList.add('hidden');
+    });
+
+    q<HTMLInputElement>('#input-filter-province')?.addEventListener('input', (e) => {
+      const filter = (e.target as HTMLInputElement).value.toLowerCase();
+      this.container.querySelectorAll<HTMLButtonElement>('.btn-select-prov').forEach((btn) => {
+        const prov = (btn.getAttribute('data-prov') || '').toLowerCase();
+        const text = btn.textContent?.toLowerCase() || '';
+        const match = prov.includes(filter) || text.includes(filter);
+        btn.classList.toggle('hidden', !match);
+      });
+    });
+
+    this.container.querySelectorAll<HTMLButtonElement>('.btn-select-prov').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const prov = btn.getAttribute('data-prov') || '';
+        this.selectedProvince = prov;
+        this.callbacks.onSelectProvince(prov);
+        q('#island-province-dropdown')?.classList.add('hidden');
+        this.setSelectedProvince(prov);
+      });
+    });
+
+    // Floating Map Controls (Katmanlar & Sismik)
+    q('#btn-floating-layers')?.addEventListener('click', () => this.callbacks.onToggleLayers());
+    q('#btn-floating-seismic')?.addEventListener('click', () => this.callbacks.onToggleSeismic());
+    q('#btn-quick-layers')?.addEventListener('click', () => {
+      this.toggleControlCenter(false);
+      this.callbacks.onToggleLayers();
+    });
+
     q('#btn-trigger-spotlight')?.addEventListener('click', () => this.toggleSearch());
     q('#btn-close-spotlight')?.addEventListener('click', () => this.toggleSearch(false));
 

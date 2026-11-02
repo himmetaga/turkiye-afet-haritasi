@@ -4,6 +4,10 @@
 
 :root {
   color-scheme: dark;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
 body {
@@ -20,8 +24,30 @@ body {
 #app {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
+}
+
+/* Safe Area Insets & Mobile Floating Offsets */
+.top-safe {
+  top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px));
+}
+
+.bottom-safe-dock {
+  bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+}
+
+.bottom-safe-hud {
+  bottom: max(60px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 #map-container {

@@ -14,6 +14,12 @@ export interface NearestHUDData {
   pharmacies: NearestResult[];
 }
 
+function formatCountBadge(count: number): string {
+  if (count >= 10000) return `${Math.round(count / 1000)}k`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return `${count}`;
+}
+
 function formatDutyDate(dateStr?: string): string {
   if (!dateStr) return 'Bugün';
   const parts = dateStr.split('-');
@@ -86,7 +92,7 @@ export class NearestPointsHUD {
     // 1. Kapalı / Dock Buton Çubuğu (Ortalanmış, simetrik 4 parçalı modern spatial cam pill seti)
     if (this.isCollapsed) {
       this.container.className =
-        'fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border w-[94vw] sm:w-[460px] max-w-[480px]';
+        'fixed bottom-safe-hud left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-auto transition-all box-border w-[94vw] sm:w-[460px] max-w-[480px]';
 
       const isReady = this.isOfflineProtected;
 
@@ -100,9 +106,9 @@ export class NearestPointsHUD {
             title="En Yakın Toplanma Alanları"
           >
             ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Toplanma</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
-              ${this.currentData.assembly.length}
+            <span class="text-[9.5px] sm:text-xs font-semibold truncate tracking-tight">Toplanma</span>
+            <span class="px-1 sm:px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
+              ${formatCountBadge(this.currentData.assembly.length)}
             </span>
           </button>
 
@@ -114,9 +120,9 @@ export class NearestPointsHUD {
             title="En Yakın Hastaneler"
           >
             ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Hastane</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
-              ${this.currentData.hospitals.length}
+            <span class="text-[9.5px] sm:text-xs font-semibold truncate tracking-tight">Hastane</span>
+            <span class="px-1 sm:px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
+              ${formatCountBadge(this.currentData.hospitals.length)}
             </span>
           </button>
 
@@ -128,9 +134,9 @@ export class NearestPointsHUD {
             title="Bugünün Nöbetçi Eczaneleri"
           >
             ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0')}
-            <span class="text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">Eczane</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
-              ${this.currentData.pharmacies.length}
+            <span class="text-[9.5px] sm:text-xs font-semibold truncate tracking-tight">Eczane</span>
+            <span class="px-1 sm:px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
+              ${formatCountBadge(this.currentData.pharmacies.length)}
             </span>
           </button>
 
@@ -230,10 +236,10 @@ export class NearestPointsHUD {
 
     // 2. Açık Çekmece Durumu - Ortalanmış ve Dock üstünde simetrik
     this.container.className =
-      'fixed bottom-[64px] sm:bottom-[78px] left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
+      'fixed bottom-safe-hud left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     this.container.innerHTML = `
-      <div class="ios27-bar p-3 sm:p-3.5 shadow-2xl transition-all max-h-[80vh] flex flex-col">
+      <div class="ios27-bar p-3 sm:p-3.5 shadow-2xl transition-all max-h-[calc(100dvh-130px)] sm:max-h-[80vh] flex flex-col">
         <!-- Touch Drag Handle for Mobile Sheet -->
         <div id="btn-drag-handle" class="w-20 h-6 flex items-center justify-center mx-auto -mt-1 mb-1 cursor-pointer touch-manipulation active:opacity-60" title="Aşağı küçült">
           <div class="w-12 h-1.5 bg-white/35 hover:bg-white/60 rounded-full"></div>
@@ -275,7 +281,7 @@ export class NearestPointsHUD {
             <span class="text-[10px] font-mono px-1 rounded ${
               this.activeCategory === 'assembly' ? 'bg-emerald-500/30 text-emerald-200 font-bold' : 'bg-white/10 text-gray-400'
             }">
-              ${this.currentData.assembly.length}
+              ${formatCountBadge(this.currentData.assembly.length)}
             </span>
           </button>
 
@@ -293,7 +299,7 @@ export class NearestPointsHUD {
             <span class="text-[10px] font-mono px-1 rounded ${
               this.activeCategory === 'hospitals' ? 'bg-cyan-500/30 text-cyan-200 font-bold' : 'bg-white/10 text-gray-400'
             }">
-              ${this.currentData.hospitals.length}
+              ${formatCountBadge(this.currentData.hospitals.length)}
             </span>
           </button>
 
@@ -311,7 +317,7 @@ export class NearestPointsHUD {
             <span class="text-[10px] font-mono px-1 rounded ${
               this.activeCategory === 'pharmacies' ? 'bg-amber-500/30 text-amber-200 font-bold' : 'bg-white/10 text-gray-400'
             }">
-              ${this.currentData.pharmacies.length}
+              ${formatCountBadge(this.currentData.pharmacies.length)}
             </span>
           </button>
         </div>
