@@ -1,5 +1,7 @@
 // Cloudflare Pages Edge Function: /api/duty-pharmacies
-// Türkiye 81 il ve KKTC'deki 996 ilçede toplam 1380+ nöbetçi eczaneyi eczaneler.gen.tr ve açık veri servisleri üzerinden çeker.
+// Türkiye 81 il ve 973 ilçede günlük güncellenen nöbetçi eczaneleri eczaneler.gen.tr ve açık veri servisleri üzerinden çeker.
+
+import { DISTRICT_CENTROIDS } from './districtCentroids';
 
 const PROVINCE_CENTROIDS: Record<string, [number, number]> = {
   adana: [35.3213, 37.0000],
@@ -91,18 +93,8 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, User-Agent, X-Requested-With'
 };
 
-export async function onRequest(context: any): Promise<Response> {
-  if (context.request.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS_HEADERS });
-  }
-
-  const url = new URL(context.request.url);
-  const rawProv = (url.searchParams.get('province') || 'istanbul').trim();
-  const district = (url.searchParams.get('district') || '').trim();
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100);
-
-  // Türkçe karakter normalizasyonu (slug)
-  const provSlug = rawProv
+function normalizeSlug(str: string): string {
+  return (str || '')
     .toLocaleLowerCase('tr-TR')
     .replace(/ı/g, 'i')
     .replace(/ğ/g, 'g')
@@ -111,125 +103,168 @@ export async function onRequest(context: any): Promise<Response> {
     .replace(/ö/g, 'o')
     .replace(/ç/g, 'c')
     .replace(/[^a-z0-9]/g, '');
+}
+
+export async function onRequest(context: any): Promise<Response> {
+  if (context.request.method === 'OPTIONS') {
+    return new Response(null, { headers: CORS_HEADERS });
+  }
+
+  const url = new URL(context.request.url);
+  const rawProv = (url.searchParams.get('province') || 'istanbul').trim();
+  const rawDistrict = (url.searchParams.get('district') || '').trim();
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10), 300);
+
+  const provSlug = normalizeSlug(rawProv);
+  const districtSlug = normalizeSlug(rawDistrict);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const provCentroid = PROVINCE_CENTROIDS[provSlug] || [28.9784, 41.0082];
 
-  // 1. Birincil Açık Kaynak: eczaneler.gen.tr (81 il & KKTC 996 ilçe)
+  // 1. Birincil Açık Kaynak: eczaneler.gen.tr (81 il & KKTC 973 ilçe)
   try {
-    const genTrUrl = `https://www.eczaneler.gen.tr/nobetci-${encodeURIComponent(provSlug)}`;
-    const genRes = await fetch(genTrUrl, {
+    let targetUrl = districtSlug
+      ? `https://www.eczaneler.gen.tr/nobetci-${encodeURIComponent(provSlug)}-${encodeURIComponent(districtSlug)}`
+      : `https://www.eczaneler.gen.tr/nobetci-${encodeURIComponent(provSlug)}`;
+
+    let genRes = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
       }
     });
 
+    // İlçe sayfası 404 döndüyse il geneline düş
+    if (!genRes.ok && districtSlug) {
+      targetUrl = `https://www.eczaneler.gen.tr/nobetci-${encodeURIComponent(provSlug)}`;
+      genRes = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+    }
+
     if (genRes.ok) {
       const html = await genRes.text();
-      const rows = html.split('<tr><td colspan="3" class="border-bottom">');
+      const rows = html.split(/<tr><td colspan=['"]?3['"]? class=['"]?border-bottom['"]?>/i);
 
       if (rows.length > 1) {
         const parsedList: any[] = [];
-        const districtFilter = district.toLocaleLowerCase('tr-TR');
+        const districtFilter = districtSlug;
 
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
-          const linkMatch = row.match(/<a href="([^"]+)">\s*<span class="isim">([^<]+)<\/span>/);
-          const addressMatch = row.match(/<div class=['"]col-lg-6['"]>([^<]+)/);
-          const landmarkMatch = row.match(/<span class=['"]font-italic['"]>([^<]+)<\/span>/);
-          const districtMatch = row.match(/<span class="px-2 py-1 rounded bg-info text-white font-weight-bold">([^<]+)<\/span>/);
-          const phoneMatch = row.match(/<div class=['"]col-lg-3 py-lg-2['"]>([^<]+)<\/div>/);
+          const linkMatch = row.match(/<a\s+href=['"](\/eczane\/[^'"]+)['"][^>]*>\s*<span class=['"]isim['"]>([^<]+)<\/span>/i);
+          const nameMatch = row.match(/<span class=['"]isim['"]>([^<]+)<\/span>/i);
 
-          if (linkMatch) {
-            const detailHref = linkMatch[1];
-            const name = linkMatch[2].trim();
-            const address = addressMatch ? addressMatch[1].trim() : '';
-            const landmark = landmarkMatch ? landmarkMatch[1].trim() : '';
-            const rowDistrict = districtMatch ? districtMatch[1].trim() : '';
-            const phone = phoneMatch ? phoneMatch[1].trim() : '';
+          const name = linkMatch ? linkMatch[2].trim() : (nameMatch ? nameMatch[1].trim() : '');
+          if (!name) continue;
 
-            // İlçe filtresi varsa kontrol et
-            if (districtFilter && rowDistrict && !rowDistrict.toLocaleLowerCase('tr-TR').includes(districtFilter)) {
+          const detailHref = linkMatch ? linkMatch[1] : '';
+          const addressMatch = row.match(/<div class=['"]col-lg-6['"]>([^<]+)/i);
+          const landmarkMatch = row.match(/<span class=['"]font-italic['"]>([^<]+)<\/span>/i);
+          const districtMatch = row.match(/<span class=['"][^'"]*bg-info[^'"]*['"]>([^<]+)<\/span>/i);
+          const hoodMatch = row.match(/<span class=['"][^'"]*bg-secondary[^'"]*['"]>([^<]+)<\/span>/i);
+          const phoneMatch = row.match(/<div class=['"]col-lg-3 py-lg-2['"]>([^<]+)<\/div>/i) ||
+                             row.match(/(\b0?\s?\(?\d{3}\)?\s?\d{3}[-\s]?\d{2}[-\s]?\d{2}\b)/);
+
+          const address = addressMatch ? addressMatch[1].trim() : '';
+          const landmark = landmarkMatch ? landmarkMatch[1].trim() : '';
+          const rowDistrict = districtMatch ? districtMatch[1].trim() : rawDistrict;
+          const hood = hoodMatch ? hoodMatch[1].trim() : '';
+          const phone = phoneMatch ? (phoneMatch[1] || phoneMatch[0]).trim() : '';
+
+          // İl genel listesinde ilçe filtresi varsa kontrol et
+          if (districtFilter) {
+            const normRowDist = normalizeSlug(rowDistrict);
+            const normAddr = normalizeSlug(address);
+            if (!normRowDist.includes(districtFilter) && !normAddr.includes(districtFilter)) {
               continue;
             }
-
-            parsedList.push({
-              name: name.includes('Eczanesi') ? name : `${name} Eczanesi`,
-              detailHref,
-              address: landmark ? `${address} (${landmark})` : address,
-              district: rowDistrict,
-              phone
-            });
-
-            if (parsedList.length >= limit) break;
           }
+
+          parsedList.push({
+            name: name.includes('Eczane') ? name : `${name} Eczanesi`,
+            detailHref,
+            address: landmark ? `${address} (${landmark})` : address,
+            district: rowDistrict,
+            neighborhood: hood,
+            phone
+          });
+
+          if (parsedList.length >= limit) break;
         }
 
-        // İlk 16 eczane için detay kapı GPS koordinatlarını paralel çek
-        await Promise.allSettled(
-          parsedList.slice(0, 16).map(async (item) => {
-            try {
-              const dRes = await fetch(`https://www.eczaneler.gen.tr${item.detailHref}`, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-              });
-              if (dRes.ok) {
-                const dHtml = await dRes.text();
-                const coordMatch = dHtml.match(/maps\?daddr=([0-9]{2}\.[0-9]+),([0-9]{2}\.[0-9]+)/);
-                if (coordMatch) {
-                  item.coordinates = [parseFloat(coordMatch[2]), parseFloat(coordMatch[1])];
+        if (parsedList.length > 0) {
+          // İlk 16 eczane için detay kapı GPS koordinatlarını paralel çek (Cloudflare subrequest kotası gözetilerek)
+          await Promise.allSettled(
+            parsedList.slice(0, 16).map(async (item) => {
+              if (!item.detailHref) return;
+              try {
+                const dRes = await fetch(`https://www.eczaneler.gen.tr${item.detailHref}`, {
+                  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+                });
+                if (dRes.ok) {
+                  const dHtml = await dRes.text();
+                  const coordMatch = dHtml.match(/maps\?daddr=([0-9]{2}\.[0-9]+),([0-9]{2}\.[0-9]+)/);
+                  if (coordMatch) {
+                    item.coordinates = [parseFloat(coordMatch[2]), parseFloat(coordMatch[1])];
+                  }
                 }
-              }
-            } catch {}
-          })
-        );
+              } catch {}
+            })
+          );
 
-        // İlgili ilin baş harfini büyüt
-        const cityCap = rawProv.charAt(0).toLocaleUpperCase('tr-TR') + rawProv.slice(1);
-        const pharmacies = parsedList.map((p, idx) => {
-          // Detay koordinatı alınamamışsa ilgili ilin merkezinden deterministik dağılım oluştur
-          let coords = p.coordinates;
-          if (!coords || !Array.isArray(coords) || coords.length !== 2 || isNaN(coords[0])) {
-            const angle = (idx * 137.5 * Math.PI) / 180;
-            const dist = 0.003 + (idx % 7) * 0.002;
-            coords = [
-              Number((provCentroid[0] + Math.cos(angle) * dist).toFixed(6)),
-              Number((provCentroid[1] + Math.sin(angle) * dist).toFixed(6))
-            ];
-          }
-
-          return {
-            id: `pharm-gen-${provSlug}-${idx + 1}`,
-            name: `${p.name} (Nöbetçi)`,
-            city: cityCap,
-            district: p.district,
-            neighborhood: '',
-            address: p.address,
-            phone: p.phone,
-            isDuty: true,
-            dutyDate: todayStr,
-            source: 'eczaneler.gen.tr',
-            coordinates: coords
-          };
-        });
-
-        return new Response(
-          JSON.stringify({
-            province: provSlug,
-            date: todayStr,
-            count: pharmacies.length,
-            totalRegistered: 31172,
-            source: 'https://www.eczaneler.gen.tr/',
-            pharmacies
-          }),
-          {
-            headers: {
-              ...CORS_HEADERS,
-              'Content-Type': 'application/json',
-              'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=7200'
+          const cityCap = rawProv.charAt(0).toLocaleUpperCase('tr-TR') + rawProv.slice(1);
+          const pharmacies = parsedList.map((p, idx) => {
+            let coords = p.coordinates;
+            if (!coords || !Array.isArray(coords) || coords.length !== 2 || isNaN(coords[0])) {
+              const dSlug = normalizeSlug(p.district || rawDistrict);
+              const distKey = `${provSlug}__${dSlug}`;
+              const distCentroid = DISTRICT_CENTROIDS[distKey] || provCentroid;
+              // Eczanelerin üst üste binmemesi için altın oran açılı deterministik dağılım
+              const angle = (idx * 137.5 * Math.PI) / 180;
+              const dist = 0.003 + (idx % 7) * 0.0018;
+              coords = [
+                Number((distCentroid[0] + Math.cos(angle) * dist).toFixed(6)),
+                Number((distCentroid[1] + Math.sin(angle) * dist).toFixed(6))
+              ];
             }
-          }
-        );
+
+            return {
+              id: `pharm-gen-${provSlug}-${idx + 1}`,
+              name: `${p.name} (Nöbetçi)`,
+              city: cityCap,
+              district: p.district || rawDistrict,
+              neighborhood: p.neighborhood,
+              address: p.address,
+              phone: p.phone,
+              isDuty: true,
+              dutyDate: todayStr,
+              source: 'eczaneler.gen.tr',
+              coordinates: coords
+            };
+          });
+
+          return new Response(
+            JSON.stringify({
+              province: provSlug,
+              district: districtSlug || undefined,
+              date: todayStr,
+              count: pharmacies.length,
+              totalRegistered: 31172,
+              source: 'https://www.eczaneler.gen.tr/',
+              pharmacies
+            }),
+            {
+              headers: {
+                ...CORS_HEADERS,
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=7200'
+              }
+            }
+          );
+        }
       }
     }
   } catch {}
@@ -262,21 +297,23 @@ export async function onRequest(context: any): Promise<Response> {
           })
           .filter(Boolean);
 
-        return new Response(
-          JSON.stringify({
-            province: 'izmir',
-            date: todayStr,
-            count: pharmacies.length,
-            pharmacies
-          }),
-          {
-            headers: {
-              ...CORS_HEADERS,
-              'Content-Type': 'application/json',
-              'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=7200'
+        if (pharmacies.length > 0) {
+          return new Response(
+            JSON.stringify({
+              province: 'izmir',
+              date: todayStr,
+              count: pharmacies.length,
+              pharmacies
+            }),
+            {
+              headers: {
+                ...CORS_HEADERS,
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=7200'
+              }
             }
-          }
-        );
+          );
+        }
       }
     } catch {}
   }
@@ -285,6 +322,7 @@ export async function onRequest(context: any): Promise<Response> {
   return new Response(
     JSON.stringify({
       province: provSlug,
+      district: districtSlug || undefined,
       date: todayStr,
       count: 0,
       pharmacies: []

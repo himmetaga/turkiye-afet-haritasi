@@ -702,21 +702,31 @@ class DisasterAtlasApp {
     this.refreshLiveDutyPharmacies();
   }
 
-  private async refreshLiveDutyPharmacies(province?: string): Promise<void> {
+  private async refreshLiveDutyPharmacies(province?: string, district?: string): Promise<void> {
     try {
       let targetProv = province;
+      let targetDist = district;
       if (!targetProv) {
         const nearby = this.assemblyPoints.length > 0
           ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1)
           : [];
-        targetProv = nearby.length > 0 && nearby[0].point.city ? nearby[0].point.city : 'istanbul';
+        if (nearby.length > 0 && nearby[0].point) {
+          targetProv = nearby[0].point.city || 'istanbul';
+          if (!targetDist && nearby[0].point.district) {
+            targetDist = nearby[0].point.district;
+          }
+        } else {
+          targetProv = 'istanbul';
+        }
       }
 
-      const live = await livePharmacyService.fetchDutyPharmacies(targetProv);
+      const live = await livePharmacyService.fetchDutyPharmacies(targetProv, targetDist);
       if (live && live.length > 0) {
         this.facilities = livePharmacyService.mergeLivePharmacies(this.facilities, live);
+        saveFacilitiesToDB(this.facilities).catch(() => {});
         this.syncOptimizedMapData();
         this.updateUserContextCalculations();
+        this.apartmentPoster?.setData(this.userCoords, this.assemblyPoints, this.facilities);
       }
     } catch {}
   }

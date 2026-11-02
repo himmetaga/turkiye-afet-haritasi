@@ -48,11 +48,12 @@ export class LivePharmacyService {
   }
 
   /**
-   * Belirtilen il için güncel nöbetçi eczaneleri API'den çeker
+   * Belirtilen il ve ilçe için güncel nöbetçi eczaneleri API'den çeker
    */
-  public async fetchDutyPharmacies(province: string = 'istanbul'): Promise<EmergencyFacility[]> {
+  public async fetchDutyPharmacies(province: string = 'istanbul', district?: string): Promise<EmergencyFacility[]> {
     const today = this.getTodayDateString();
-    const cacheKey = `${province.toLowerCase()}_${today}`;
+    const cleanDist = (district || '').trim().toLowerCase();
+    const cacheKey = `${province.toLowerCase()}_${cleanDist}_${today}`;
 
     // Bellek önbelleği
     if (this.cachedPharmaciesByProv.has(cacheKey)) {
@@ -60,7 +61,11 @@ export class LivePharmacyService {
     }
 
     try {
-      const res = await fetch(`/api/duty-pharmacies?province=${encodeURIComponent(province)}&limit=100`);
+      let endpoint = `/api/duty-pharmacies?province=${encodeURIComponent(province)}&limit=150`;
+      if (cleanDist) {
+        endpoint += `&district=${encodeURIComponent(cleanDist)}`;
+      }
+      const res = await fetch(endpoint);
       if (!res.ok) return [];
 
       const data: LivePharmacyPayload = await res.json();
@@ -69,11 +74,11 @@ export class LivePharmacyService {
       }
 
       const facilities: EmergencyFacility[] = data.pharmacies.map((p, idx) => ({
-        id: p.id || `live-pharm-${province}-${idx + 1}`,
+        id: p.id || `live-pharm-${province}-${cleanDist || 'all'}-${idx + 1}`,
         name: p.name.includes('(Nöbetçi)') ? p.name : `${p.name} (Nöbetçi)`,
         category: 'pharmacy',
         city: p.city || province,
-        district: p.district || '',
+        district: p.district || district || '',
         neighborhood: p.neighborhood || '',
         address: p.address || '',
         phone: p.phone || '',
@@ -110,11 +115,17 @@ export class LivePharmacyService {
 
     // Canlı eczanelerin illerini tespit et
     const liveCities = new Set(livePharmacies.map((p) => p.city.toLowerCase()));
+    const liveDistricts = new Set(livePharmacies.map((p) => `${p.city.toLowerCase()}__${(p.district || '').toLowerCase()}`));
 
-    // Canlı verisi gelmeyen diğer illerin eczanelerini yedek olarak tut
-    const otherCityPharmacies = existingFacilities.filter(
-      (f) => f.category === 'pharmacy' && !liveCities.has(f.city.toLowerCase())
-    );
+    // Canlı verisi gelmeyen diğer il/ilçelerin eczanelerini yedek olarak tut
+    const otherCityPharmacies = existingFacilities.filter((f) => {
+      if (f.category !== 'pharmacy') return false;
+      const c = (f.city || '').toLowerCase();
+      const d = `${c}__${(f.district || '').toLowerCase()}`;
+      if (liveDistricts.has(d)) return false;
+      if (liveCities.has(c) && !f.district) return false;
+      return true;
+    });
 
     return [...nonPharmacies, ...livePharmacies, ...otherCityPharmacies];
   }
