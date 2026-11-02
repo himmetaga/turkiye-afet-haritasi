@@ -21,3 +21,7 @@ https://www.afet.live/* https://afet.live/:splat 301!
 
 /yangin      /yangin-kacis             301
 /enkaz       /enkaz-cemberi            301
+/cig         /cig-radari               301
+/hipotermi   /cig-radari               301
+/skt         /canta-skt                301
+/gonullu     /afet-gonullu             301

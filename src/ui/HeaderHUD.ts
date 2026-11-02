@@ -58,6 +58,9 @@ export interface HeaderHUDCallbacks {
   onToggleSphereRation: () => void;
   onToggleWildfire: () => void;
   onToggleCollapseZone: () => void;
+  onToggleAvalanche: () => void;
+  onToggleKitTimer: () => void;
+  onToggleVolunteerDispatch: () => void;
 }
 
 export interface SearchResultItem {
@@ -114,6 +117,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
       { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Google Open Location Code & Telsiz Fonetik Grid', rgb: '16, 185, 129', icon: Icons.plusCode },
       { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & HUD', rgb: '16, 185, 129', icon: Icons.compass },
       { id: 'btn-open-wildfire', label: 'Yangın Kaçış', title: 'Orman Yangını Kaçış Koridoru & Rothermel ROS', rgb: '249, 115, 22', icon: Icons.wildfire },
+      { id: 'btn-open-avalanche', label: 'Çığ & Soğuk', title: 'Çığ Riski, Yamaç Klinometresi & Kış Hipotermi Radarı', rgb: '56, 189, 248', icon: Icons.avalanche },
       { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel ve Kentsel Su Baskını Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
       { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi ve Yangın Dumanı Radarı', rgb: '245, 158, 11', icon: Icons.wind },
       { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami ve Kıyı Tahliye Radarı', rgb: '59, 130, 246', icon: Icons.waves },
@@ -128,6 +132,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Şebekesiz P2P',
     accentClass: 'text-cyan-400',
     tools: [
+      { id: 'btn-open-volunteer-dispatch', label: 'Gönüllü Kartı', title: 'Afet Gönüllü Sevk & Sahra Pasaportu (INSARAG)', rgb: '59, 130, 246', icon: Icons.volunteerBadge },
       { id: 'btn-open-afetbilgi', label: 'AfetBilgi', title: 'AfetBilgi Doğrulanmış Aşevi, Çadır & İhtiyaç Kataloğu', rgb: '245, 158, 11', icon: Icons.soupKitchen },
       { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Şebekesiz P2P ve Nostr Kriz Ağı', rgb: '34, 211, 238', icon: Icons.messages },
       { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz', rgb: '16, 185, 129', icon: Icons.radio },
@@ -144,6 +149,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Koruma & Hukuk',
     accentClass: 'text-emerald-400',
     tools: [
+      { id: 'btn-open-kit-timer', label: 'Çanta SKT', title: 'Deprem Çantası Malzeme & İlaç Miad Takibi', rgb: '16, 185, 129', icon: Icons.kitTimer },
       { id: 'btn-open-sphere-ration', label: '72s Rasyon', title: 'Sphere / WHO 72 Saat Hayatta Kalma Rasyonu & Su Planlayıcı', rgb: '6, 182, 212', icon: Icons.rationBox },
       { id: 'btn-open-collapse-zone', label: 'Enkaz Çemberi', title: 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5x H)', rgb: '239, 68, 68', icon: Icons.collapseZone },
       { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
@@ -601,5 +607,8 @@ export class HeaderHUD {
     wire('btn-open-sphere-ration', () => this.callbacks.onToggleSphereRation());
     wire('btn-open-wildfire', () => this.callbacks.onToggleWildfire());
     wire('btn-open-collapse-zone', () => this.callbacks.onToggleCollapseZone());
+    wire('btn-open-avalanche', () => this.callbacks.onToggleAvalanche());
+    wire('btn-open-kit-timer', () => this.callbacks.onToggleKitTimer());
+    wire('btn-open-volunteer-dispatch', () => this.callbacks.onToggleVolunteerDispatch());
   }
 }

@@ -95,7 +95,19 @@ export interface ParsedDeepLink {
     | 'orman-yangini'
     | 'enkaz-cemberi'
     | 'yikilma-alani'
-    | 'standoff';
+    | 'standoff'
+    | 'cig-radari'
+    | 'cig'
+    | 'hipotermi'
+    | 'ruzgar-sogugu'
+    | 'canta-skt'
+    | 'deprem-cantasi-skt'
+    | 'miad-takibi'
+    | 'rotasyon'
+    | 'afet-gonullu'
+    | 'gonullu-karti'
+    | 'sahra-pasaportu'
+    | 'gonullu';
 }
 
 const PROVINCE_SLUGS = new Set([
@@ -184,7 +196,23 @@ const TOOL_PATH_MAP: Record<string, string> = {
   'kbrn': 'kbrn',
   'kasa': 'kasa',
   'toplanma-alanlari': 'toplanma',
-  'toplanma': 'toplanma'
+  'toplanma': 'toplanma',
+  'yangin-kacis': 'yangin-kacis',
+  'yangin': 'yangin-kacis',
+  'enkaz-cemberi': 'enkaz-cemberi',
+  'enkaz': 'enkaz-cemberi',
+  'cig-radari': 'cig-radari',
+  'cig': 'cig-radari',
+  'hipotermi': 'cig-radari',
+  'ruzgar-sogugu': 'cig-radari',
+  'canta-skt': 'canta-skt',
+  'deprem-cantasi-skt': 'canta-skt',
+  'miad-takibi': 'canta-skt',
+  'rotasyon': 'canta-skt',
+  'afet-gonullu': 'afet-gonullu',
+  'gonullu-karti': 'afet-gonullu',
+  'sahra-pasaportu': 'afet-gonullu',
+  'gonullu': 'afet-gonullu'
 };
 
 export function parseDeepLink(

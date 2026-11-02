@@ -152,7 +152,7 @@ graph TD
 
 ---
 
-## 3. Faydaya Göre Modül Kataloğu (46 Araç)
+## 3. Faydaya Göre Modül Kataloğu (49 Araç)
 
 afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **iOS 27 Bento Grid Kontrol Merkezi** içinde 4 ana kategoride yapılandırılmıştır. Ekranın ana görünümünde yalnızca **Dinamik Ada (İl Seçimi & Canlı Sayaç)** ve alttaki **Yüzen Cam Dock** yer alır:
 
@@ -300,6 +300,16 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
 46. **Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (USAR / FEMA 1.5 x H Kuralı & Ölüm Kanyonu Analizi):**
     - USAR / INSARAG Standardı: $D_{\text{safe}} = 1.5 \times H$ standoff kuralı ve $2.0 \times H$ ağır parapet/cam fırlama menzili.
     - Dar sokak genişliği ($W$) ile enkaz çemberi ($1.5H$) karşılaştırmalı kesit diyagramı: Sokak dar olduğunda karşı kaldırımın da doğrudan enkaz altında kalacağını hesaplayan kentsel ölüm kanyonu uyarısı ve artçı şok güvenli intikal yönergesi.
+47. **Çığ Riski, Yamaç Klinometresi & Kış Hipotermi Radarı (NOAA NWS & EAWS 30°-45° Çığ Tuzağı Analizi):**
+    - NOAA NWS Rüzgar Soğuğu (Wind Chill $T_{wc}$) ve donma süresi (Frostbite Time) hesaplayıcısı.
+    - Cihaz ivmeölçeriyle telefon gövdesini yamaca dayayarak yamaç açısını ölçen dijital klinometre ve 30°-45° kritik tabaka çığ tuzağı uyarısı.
+    - Dışarı -25°C iken içeriyi 0°C'de tutan acil durum kar mağarası mimari kesiti ve 4 adımlı inşa yönergesi.
+48. **Deprem Çantası Malzeme & İlaç SKT Rotasyon Takip Motoru:**
+    - Su (6 ay mikroplastik/bayatlama limiti), konserve (2 yıl botulizm toksini riski), reçeteli ilaç ve alkalin piller için gün bazlı otomatik geri sayım ve %100 üzerinden Çanta Hazırlık Skoru.
+    - Tek dokunuşla "+6 Ay Yenile / Rotasyon Yap" aksiyonu ve aile fertleriyle paylaşılabilecek resmi muayene tutanağı çıktısı.
+49. **Afet Gönüllü Sevk ve Sahra Akreditasyon Pasaportu (INSARAG & AFAD Uyumlu Çevrimdışı QR Kimlik):**
+    - Arama-kurtarma, acil sağlık, ağır iş makinesi operatörü, TRAC telsiz muhaberesi, sahra mutfağı ve yabancı dil çevirmenliği yetenek matrisi eşleştirmesi.
+    - Kriz masası ve jandarma kontrol noktalarında internet olmadan taranabilen şifreli çevrimdışı sahra QR kartı ve koordinasyon SMS şablonu.
 
 ---
 

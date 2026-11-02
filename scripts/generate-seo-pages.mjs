@@ -269,6 +269,30 @@ const DISASTER_TOOLS = [
     badge: 'Rothermel ROS'
   },
   {
+    slug: 'cig-radari',
+    aliases: ['cig', 'hipotermi', 'ruzgar-sogugu'],
+    title: 'Çığ Riski, Yamaç Klinometresi ve Kış Hipotermi Radarı — afet.live',
+    desc: 'NOAA NWS Wind Chill rüzgar soğuğu formülü, EAWS 30°-45° kritik tabaka çığ tuzağı analizi, telefon ivmeölçeriyle yamaç eğim ölçümü ve hayatta kalma kar mağarası mimarisi.',
+    h1: 'Çığ Tehlikesi, Yamaç Klinometresi ve Kış Hipotermi Radarı',
+    badge: 'NOAA Wind Chill & EAWS'
+  },
+  {
+    slug: 'canta-skt',
+    aliases: ['deprem-cantasi-skt', 'miad-takibi', 'rotasyon'],
+    title: 'Deprem Çantası SKT ve Malzeme Miad Rotasyon Motoru — afet.live',
+    desc: 'Su, konserve, kuru gıda, reçeteli ilaç ve alkalin pil son kullanma tarihi takibi. Botulizm ve mikroplastik riskini önleyen 6 aylık otomatik rotasyon tutanağı.',
+    h1: 'Deprem Çantası Malzeme & İlaç SKT Rotasyon Takibi',
+    badge: 'Stok & Miad Takibi'
+  },
+  {
+    slug: 'afet-gonullu',
+    aliases: ['gonullu-karti', 'sahra-pasaportu', 'gonullu'],
+    title: 'Afet Gönüllü Sevk ve Çevrimdışı Sahra Akreditasyon Pasaportu — afet.live',
+    desc: 'INSARAG ve AFAD standartlarında sahra gönüllü tanıtım kartı, kan grubu, uzmanlık eşleştirme (Arama-Kurtarma, Sağlık, Ağır İş Makinesi, Telsiz), internetsiz QR kimlik doğrulama.',
+    h1: 'Afet Gönüllü Sevk & Sahra Akreditasyon Pasaportu',
+    badge: 'INSARAG & AFAD'
+  },
+  {
     slug: 'enkaz-cemberi',
     aliases: ['yikilma-alani', 'moloz-golgesi'],
     title: 'Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (1.5x H) — afet.live',

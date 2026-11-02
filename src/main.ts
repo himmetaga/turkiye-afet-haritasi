@@ -73,6 +73,9 @@ import { INSARAGMarkingModal } from './ui/INSARAGMarkingModal';
 import { SphereRationPlannerModal } from './ui/SphereRationPlannerModal';
 import { WildfireEscapeModal } from './ui/WildfireEscapeModal';
 import { BuildingCollapseZoneModal } from './ui/BuildingCollapseZoneModal';
+import { AvalancheHypothermiaModal } from './ui/AvalancheHypothermiaModal';
+import { KitExpirationTrackerModal } from './ui/KitExpirationTrackerModal';
+import { VolunteerDispatchModal } from './ui/VolunteerDispatchModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -152,6 +155,9 @@ class DisasterAtlasApp {
   private sphereRationModal!: SphereRationPlannerModal;
   private wildfireModal!: WildfireEscapeModal;
   private collapseZoneModal!: BuildingCollapseZoneModal;
+  private avalancheModal!: AvalancheHypothermiaModal;
+  private kitTrackerModal!: KitExpirationTrackerModal;
+  private volunteerModal!: VolunteerDispatchModal;
 
   private alertedEarthquakeIds = new Set<string>();
   private seismicPollTimer: any = null;
@@ -282,7 +288,10 @@ class DisasterAtlasApp {
       onToggleINSARAG: () => this.insaragModal.show(),
       onToggleSphereRation: () => this.sphereRationModal.show(),
       onToggleWildfire: () => this.wildfireModal.show(),
-      onToggleCollapseZone: () => this.collapseZoneModal.show()
+      onToggleCollapseZone: () => this.collapseZoneModal.show(),
+      onToggleAvalanche: () => this.avalancheModal.show(),
+      onToggleKitTimer: () => this.kitTrackerModal.show(),
+      onToggleVolunteerDispatch: () => this.volunteerModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(
@@ -423,6 +432,9 @@ class DisasterAtlasApp {
     this.sphereRationModal = new SphereRationPlannerModal(appEl);
     this.wildfireModal = new WildfireEscapeModal(appEl);
     this.collapseZoneModal = new BuildingCollapseZoneModal(appEl);
+    this.avalancheModal = new AvalancheHypothermiaModal(appEl);
+    this.kitTrackerModal = new KitExpirationTrackerModal(appEl);
+    this.volunteerModal = new VolunteerDispatchModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -1217,6 +1229,24 @@ class DisasterAtlasApp {
         case 'yikilma-alani':
         case 'standoff':
           this.collapseZoneModal.show();
+          break;
+        case 'cig-radari':
+        case 'cig':
+        case 'hipotermi':
+        case 'ruzgar-sogugu':
+          this.avalancheModal.show();
+          break;
+        case 'canta-skt':
+        case 'deprem-cantasi-skt':
+        case 'miad-takibi':
+        case 'rotasyon':
+          this.kitTrackerModal.show();
+          break;
+        case 'afet-gonullu':
+        case 'gonullu-karti':
+        case 'sahra-pasaportu':
+        case 'gonullu':
+          this.volunteerModal.show();
           break;
         case 'toplanma':
           this.nearestHUD.expand('assembly');
