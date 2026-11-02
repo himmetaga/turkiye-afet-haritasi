@@ -15,7 +15,7 @@
 - [🇹🇷 Türkçe Dokümantasyon](#-türkçe-afetlive--türkiye-afet-ve-acil-durum-atlası)
   - [1. Genel Bakış ve Misyon](#1-genel-bakış-ve-misyon)
   - [2. Sistem ve Yazılım Mimarisi (8 Sütun & iOS 27)](#2-sistem-ve-yazılım-mimarisi-8-ana-mimari-sütun--ios-27-spatial-glass)
-  - [3. Faydaya Göre Modül Kataloğu (40 Araç)](#3-faydaya-göre-modül-kataloğu-40-araç)
+  - [3. Faydaya Göre Modül Kataloğu (44 Araç)](#3-faydaya-göre-modül-kataloğu-40-araç)
   - [4. Veri Kaynakları & Doğruluk](#4-veri-kaynakları--doğruluk)
   - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
   - [6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği](#6-manipülasyon-önleme--hukuki-sorumluluk-güvenliği)
@@ -23,7 +23,7 @@
 - [🇬🇧 English Documentation](#-english-afetlive--turkiye-disaster-resilience-and-emergency-atlas)
   - [1. Overview & Core Mission](#1-overview--core-mission)
   - [2. System Architecture](#2-system-architecture)
-  - [3. Feature Catalog by Utility (33 Modules)](#3-feature-catalog-by-utility-33-modules)
+  - [3. Feature Catalog by Utility (44 Modules)](#3-feature-catalog-by-utility-33-modules)
   - [4. Telemetry & Data Sources](#4-telemetry--data-sources)
   - [5. Privacy & Zero Tracking Architecture](#5-privacy--zero-tracking-architecture)
   - [6. Anti-Manipulation & Legal Zero-Liability Architecture](#6-anti-manipulation--legal-zero-liability-architecture)
@@ -152,7 +152,7 @@ graph TD
 
 ---
 
-## 3. Faydaya Göre Modül Kataloğu (40 Araç)
+## 3. Faydaya Göre Modül Kataloğu (44 Araç)
 
 afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **iOS 27 Bento Grid Kontrol Merkezi** içinde 4 ana kategoride yapılandırılmıştır. Ekranın ana görünümünde yalnızca **Dinamik Ada (İl Seçimi & Canlı Sayaç)** ve alttaki **Yüzen Cam Dock** yer alır:
 
@@ -277,6 +277,23 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
     - Kapalı alanda, enkaz altında, açık alanda hayatta kalma; 3 vuruş akustik dinleme kodu ve temiz su protokolleri.
 40. **Aile Afet Buluşma Kartı & Deprem Tatbikat Simülatörü:**
     - Sosyal medyada paylaşılabilir 9:16 Aile Buluşma Kartı ve siren sesleriyle Çök-Kapan-Tutun simülatörü.
+
+---
+
+
+41. **Google Open Location Code / Plus Codes (Taktik 14x14m SAR Grid & Telsiz Fonetik Kodlayıcı):**
+    - Açık Kaynak: `google/open-location-code` (Apache 2.0).
+    - Sokakların, binaların ve tabelaların yok olduğu afet sahasında enlem ve boylamı 10 haneli Plus Code'a (Örn: `8GG3VX2Q+9R`) dönüştürür.
+    - AFAD/AKUT/TRAC telsiz operatörleri için NATO ve Türkçe fonetik heceleme tablosu, sesli telsiz okuması, çevrimdışı koordinat çözücü ve haritada rota oluşturma.
+42. **AfetBilgi Doğrulanmış Barınma, Aşevi ve İhtiyaç Kataloğu:**
+    - Açık Kaynak: `alpaylan/afetbilgi.com` & `acikyazilimagi/afet-org`.
+    - Aşevleri, çadırkentler, bebek maması/bezi çadırları, sahra tuvaletleri, giysi/battaniye dağıtım noktaları, psikososyal destek çadırları ve sahra veteriner hastanelerini içeren %100 çevrimdışı doğrulanmış rehber.
+43. **INSARAG USAR Enkaz İşaretleme Sistemi (UN OCHA & AFAD Arama Kurtarma Kodlayıcı & Çözücü):**
+    - Açık Standart: UN OCHA INSARAG Guidelines Vol II: Operations, Manual B.
+    - Arama kurtarma ekiplerinin enkaz üzerine sprey boyayla çizdiği 1x1m kutuları (Tarih/Saat, Ekip Kodu, Canlı/Vefat sayısı, Gaz/Çökme tehlikeleri) çözüp sivil halka güvenli olup olmadığını açıklar ve sahra ekipleri için hatasız şablon üretir.
+44. **Sphere Project 72 Saat Hayatta Kalma Rasyonu ve Su Hesaplayıcısı:**
+    - Açık Standart: The Sphere Handbook (Humanitarian Charter and Minimum Standards in Disaster Response) & WHO Acil Beslenme Direktifleri.
+    - Hane halkı yapısına (yetişkin, çocuk, bebek, hamile) ve kış şartlarına göre ilk 72 saat ("Altın 72 Saat") ve 7 günlük minimum içme suyu (3.0 L/kişi/gün), hijyen suyu ve kalori (2.100 kcal + kış katsayısı) rasyonunu ve saatlik erzak tüketim çizelgesini hesaplar.
 
 ---
 
@@ -432,7 +449,7 @@ graph TD
 
 ---
 
-## 3. Feature Catalog by Utility (33 Modules)
+## 3. Feature Catalog by Utility (44 Modules)
 
 The toolset is organized into **4 logical categories based on immediate survival benefit**, while maintaining a clean, uncluttered main screen with primary quick actions:
 

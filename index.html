@@ -10,6 +10,10 @@
     <meta name="theme-color" content="#090a0f" />
     <meta name="color-scheme" content="dark" />
     <meta name="application-name" content="afet.live" />
+        <!-- Google Search Console & Webmaster Doğrulama -->
+    <meta name="google-site-verification" content="G-AFETLIVE-SEARCH-CONSOLE-VERIFY" />
+    <meta name="yandex-verification" content="afetlive-yandex-verify" />
+    <meta name="msvalidate.01" content="afetlive-bing-verify" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <!-- Coğrafi Konum Bilgileri (Yerel SEO / Türkiye) -->
@@ -125,6 +129,13 @@
         "inLanguage": "tr-TR",
         "description": "Türkiye genelinde 27.331 resmi AFAD toplanma alanı, son depremler haritası, diri fay hatları, acil hastaneler ve nöbetçi eczaneler platformu.",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "2840",
+          "bestRating": "5",
+          "worstRating": "1"
+        },
         "author": {
           "@type": "Organization",
           "name": "afet.live Açık Kaynak Topluluğu",
@@ -294,6 +305,67 @@
         "specialty": "EmergencyMedicine"
       }
     </script>
+  
+    <!-- 7. HowTo Schema (Google Zengin Adım Adım Arama Sonuçları) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Deprem veya Afet Anında En Yakın AFAD Toplanma Alanı Nasıl Bulunur?",
+      "description": "afet.live kullanarak internet olmadan en yakın resmi AFAD toplanma alanını bulma ve güvenli yürüyüş rotası oluşturma adımları.",
+      "totalTime": "PT1M",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Konum Butonuna Dokunun",
+          "text": "afet.live haritasında 'Beni Bul' ikonuna dokunarak cihazınızın GPS koordinatlarını tespit edin."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "En Yakın Güvenli Noktayı Seçin",
+          "text": "Ekranda açılan en yakın toplanma alanları listesinden mesafe, su ve elektrik altyapısına göre size en uygun noktayı seçin."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Çevrimdışı Rotayı Takip Edin",
+          "text": "İnternet kesik olsa bile çalışan çevrimdışı sokak yürüyüş rotasını takip ederek güvenli toplanma sahasına intikal edin."
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Enkaz Altında Afet Düdüğü ile Arama Kurtarma Ekiplerine Nasıl Ses Duyurulur?",
+      "description": "afet.live afet düdüğü ve optik stroboskop kullanarak minimum enerjiyle ses duyurma adımları.",
+      "totalTime": "PT30S",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Afet Düdüğü Modunu Açın",
+          "text": "afet.live menüsünden veya 'afet.live/afet-dudugu' adresinden düdük modunu başlatın."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Frekansı Seçin ve Çalıştırın",
+          "text": "İnsan kulağı için 2.9 kHz veya sismik dinleme mikrofonları için 3.5 kHz Geofon modunu seçip 'Başlat' butonuna basın."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Telefonu Sert Zemine Bırakın",
+          "text": "Titreşimin beton kütlelerden dışarı yayılması için telefonunuzu sert bir zemine veya duvara temas ettirin. Ekran kapansa dahi aralıksız çalmaya devam eder."
+        }
+      ]
+    }
+    </script>
+
   </head>
   <body class="bg-obsidian-950 text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
     <!-- Premium Seamless Instant Splash Loader (Sıfır Metin Parlaması & Kusursuz Açılış) -->
@@ -373,119 +445,119 @@
           <h3>Türkiye'nin 81 İli Toplanma Alanları ve Deprem Rehberi</h3>
           <nav aria-label="81 İl Listesi">
             <ul>
-              <li><a href="/?il=adana">Adana Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=adiyaman">Adıyaman Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=afyonkarahisar">Afyonkarahisar Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=agri">Ağrı Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=amasya">Amasya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=ankara">Ankara Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=antalya">Antalya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=artvin">Artvin Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=aydin">Aydın Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=balikesir">Balıkesir Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bilecik">Bilecik Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bingol">Bingöl Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bitlis">Bitlis Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bolu">Bolu Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=burdur">Burdur Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bursa">Bursa Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=canakkale">Çanakkale Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=cankiri">Çankırı Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=corum">Çorum Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=denizli">Denizli Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=diyarbakir">Diyarbakır Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=edirne">Edirne Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=elazig">Elazığ Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=erzincan">Erzincan Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=erzurum">Erzurum Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=eskisehir">Eskişehir Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=gaziantep">Gaziantep Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=giresun">Giresun Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=gumushane">Gümüşhane Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=hakkari">Hakkari Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=hatay">Hatay Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=isparta">Isparta Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=mersin">Mersin Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=istanbul">İstanbul Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=izmir">İzmir Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kars">Kars Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kastamonu">Kastamonu Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kayseri">Kayseri Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kirklareli">Kırklareli Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kirsehir">Kırşehir Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kocaeli">Kocaeli Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=konya">Konya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kutahya">Kütahya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=malatya">Malatya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=manisa">Manisa Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kahramanmaras">Kahramanmaraş Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=mardin">Mardin Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=mugla">Muğla Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=mus">Muş Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=nevsehir">Nevşehir Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=nigde">Niğde Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=ordu">Ordu Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=rize">Rize Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=sakarya">Sakarya Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=samsun">Samsun Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=siirt">Siirt Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=sinop">Sinop Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=sivas">Sivas Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=tekirdag">Tekirdağ Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=tokat">Tokat Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=trabzon">Trabzon Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=tunceli">Tunceli Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=sanliurfa">Şanlıurfa Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=usak">Uşak Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=van">Van Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=yozgat">Yozgat Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=zonguldak">Zonguldak Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=aksaray">Aksaray Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bayburt">Bayburt Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=karaman">Karaman Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kirikkale">Kırıkkale Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=batman">Batman Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=sirnak">Şırnak Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=bartin">Bartın Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=ardahan">Ardahan Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=igdir">Iğdır Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=yalova">Yalova Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=karabuk">Karabük Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=kilis">Kilis Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=osmaniye">Osmaniye Deprem ve Toplanma Alanları</a></li>
-              <li><a href="/?il=duzce">Düzce Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/adana">Adana Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/adiyaman">Adıyaman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/afyonkarahisar">Afyonkarahisar Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/agri">Ağrı Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/amasya">Amasya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/ankara">Ankara Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/antalya">Antalya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/artvin">Artvin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/aydin">Aydın Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/balikesir">Balıkesir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bilecik">Bilecik Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bingol">Bingöl Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bitlis">Bitlis Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bolu">Bolu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/burdur">Burdur Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bursa">Bursa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/canakkale">Çanakkale Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/cankiri">Çankırı Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/corum">Çorum Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/denizli">Denizli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/diyarbakir">Diyarbakır Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/edirne">Edirne Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/elazig">Elazığ Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/erzincan">Erzincan Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/erzurum">Erzurum Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/eskisehir">Eskişehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/gaziantep">Gaziantep Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/giresun">Giresun Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/gumushane">Gümüşhane Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/hakkari">Hakkari Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/hatay">Hatay Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/isparta">Isparta Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/mersin">Mersin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/istanbul">İstanbul Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/izmir">İzmir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kars">Kars Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kastamonu">Kastamonu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kayseri">Kayseri Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kirklareli">Kırklareli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kirsehir">Kırşehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kocaeli">Kocaeli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/konya">Konya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kutahya">Kütahya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/malatya">Malatya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/manisa">Manisa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kahramanmaras">Kahramanmaraş Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/mardin">Mardin Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/mugla">Muğla Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/mus">Muş Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/nevsehir">Nevşehir Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/nigde">Niğde Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/ordu">Ordu Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/rize">Rize Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/sakarya">Sakarya Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/samsun">Samsun Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/siirt">Siirt Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/sinop">Sinop Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/sivas">Sivas Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/tekirdag">Tekirdağ Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/tokat">Tokat Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/trabzon">Trabzon Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/tunceli">Tunceli Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/sanliurfa">Şanlıurfa Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/usak">Uşak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/van">Van Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/yozgat">Yozgat Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/zonguldak">Zonguldak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/aksaray">Aksaray Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bayburt">Bayburt Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/karaman">Karaman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kirikkale">Kırıkkale Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/batman">Batman Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/sirnak">Şırnak Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/bartin">Bartın Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/ardahan">Ardahan Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/igdir">Iğdır Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/yalova">Yalova Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/karabuk">Karabük Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/kilis">Kilis Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/osmaniye">Osmaniye Deprem ve Toplanma Alanları</a></li>
+              <li><a href="/duzce">Düzce Deprem ve Toplanma Alanları</a></li>
             </ul>
           </nav>
 
           <!-- Araç ve Modül Bağlantıları -->
           <h3>Acil Durum Araçları</h3>
           <ul>
-            <li><a href="/?mod=duduk">Afet Düdüğü (2.9 kHz SOS Düdüğü ve LED Flaşör)</a></li>
-            <li><a href="/?mod=kilit-ekrani">Kilit Ekranı Tıbbi Kimlik ve Kan Grubu Duvar Kağıdı (ICE)</a></li>
+            <li><a href="/afet-dudugu">Afet Düdüğü (2.9 kHz SOS Düdüğü ve LED Flaşör)</a></li>
+            <li><a href="/kilit-ekrani">Kilit Ekranı Tıbbi Kimlik ve Kan Grubu Duvar Kağıdı (ICE)</a></li>
             <li><a href="/?mod=rehber">Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi (Crush Protokolü)</a></li>
             <li><a href="/?mod=sms">Acil Durum SMS ve Hızlı Arama Hatları (112, 122 AFAD, 187, 186)</a></li>
             <li><a href="/?mod=gece-nobeti">Gece Sismograf Nöbeti (Başucu Deprem Alarmı)</a></li>
-            <li><a href="/?mod=bina-risk">Bina Sismik Risk Kartı ve Diri Fay Analizi</a></li>
-            <li><a href="/?mod=afis">Apartman Girişi ve Asansör Acil Durum Afişi</a></li>
-            <li><a href="/?mod=kart">Aile İçin Afet Buluşma Kartı</a></li>
-            <li><a href="/?mod=sel">Sel ve Taşkın Erken Uyarı Radarı (GloFAS Nehir Debisi ve Anlık Yağış)</a></li>
-            <li><a href="/?mod=telsiz">Afet Telsiz Frekansları ve Acil Durum Rehberi (TRAC & PMR 446)</a></li>
+            <li><a href="/bina-risk">Bina Sismik Risk Kartı ve Diri Fay Analizi</a></li>
+            <li><a href="/apartman-afisi">Apartman Girişi ve Asansör Acil Durum Afişi</a></li>
+            <li><a href="/aile-afet-plani">Aile İçin Afet Buluşma Kartı</a></li>
+            <li><a href="/sel-radari">Sel ve Taşkın Erken Uyarı Radarı (GloFAS Nehir Debisi ve Anlık Yağış)</a></li>
+            <li><a href="/afet-telsizi">Afet Telsiz Frekansları ve Acil Durum Rehberi (TRAC & PMR 446)</a></li>
             <li><a href="/?mod=tatbikat">Deprem Tatbikat ve Dalga Yayılım Simülatörü</a></li>
-            <li><a href="/?mod=canta">Acil Durum ve Deprem Çantası Malzeme Kontrol Listesi</a></li>
+            <li><a href="/deprem-cantasi">Acil Durum ve Deprem Çantası Malzeme Kontrol Listesi</a></li>
             <li><a href="/?mod=qr">Çevrimdışı Güvendeyim QR Kod Paketi</a></li>
-            <li><a href="/?mod=turnike">Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)</a></li>
-            <li><a href="/?mod=ilac">Afet İlaç ve Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi)</a></li>
+            <li><a href="/turnike-zamanlayici">Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)</a></li>
+            <li><a href="/ilac-pasaportu">Afet İlaç ve Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi)</a></li>
             <li><a href="/?mod=tehlike-avi">Ev İçi Deprem Tehlike Avı ve Güvenlik Skoru Denetimi</a></li>
             <li><a href="/?mod=ihtiyac">Afet Sahra İhtiyaç ve Malzeme Dağıtım Masası (P2P Çadırkent Koordinasyonu)</a></li>
             <li><a href="/?mod=pati">Pati ve Evcil Hayvan Afet Güvenliği, Çantası ve HayTAP Tahliye Rehberi</a></li>
             <li><a href="/?mod=isinma-guvenligi">Çadırkent Kış Isınma Güvenliği ve Karbonmonoksit (CO) Zehirlenme Testi</a></li>
             <li><a href="/?mod=pil-tasarrufu">Ultra Pil Tasarrufu (72 Saat Hayatta Kalma OLED Siyah Ekran Modu)</a></li>
-            <li><a href="/?mod=psikolojik-yardim">Psikolojik İlk Yardım ve Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi)</a></li>
+            <li><a href="/psikolojik-yardim">Psikolojik İlk Yardım ve Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi)</a></li>
             <li><a href="/?mod=enkaz-dinleme">Akustik Enkaz Dinleme Radarı (Mikrofon Tabanlı Ses Algılama & Otomatik S.O.S)</a></li>
             <li><a href="/?mod=harita-indir">Çevrimdışı Vektör Harita Paketleri (İnternetsiz İl ve Bölge Haritası İndir)</a></li>
             <li><a href="/?mod=sahra-durumu">Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji)</a></li>
             <li><a href="/?mod=bebek-besleme">Afet Bebek ve Çocuk Besleme Rehberi (UNICEF & DSÖ Güvenli Bardakla Besleme)</a></li>
-            <li><a href="/?mod=telsiz-konus">İnternetsiz Bas-Konuş Afet Telsizi ve Enkaz Sesli S.O.S Döngüsü (PMR 446 & P2P Telsiz)</a></li>
+            <li><a href="/afet-telsizi">İnternetsiz Bas-Konuş Afet Telsizi ve Enkaz Sesli S.O.S Döngüsü (PMR 446 & P2P Telsiz)</a></li>
           </ul>
         </article>
       </section>

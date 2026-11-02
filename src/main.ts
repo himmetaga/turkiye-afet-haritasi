@@ -67,6 +67,10 @@ import { BuildingDamageAssessmentModal } from './ui/BuildingDamageAssessmentModa
 import { WaterDisinfectionModal } from './ui/WaterDisinfectionModal';
 import { CBRNSurvivalModal } from './ui/CBRNSurvivalModal';
 import { CivilDefenseVaultModal } from './ui/CivilDefenseVaultModal';
+import { TacticalPlusCodeModal } from './ui/TacticalPlusCodeModal';
+import { AfetBilgiCatalogModal } from './ui/AfetBilgiCatalogModal';
+import { INSARAGMarkingModal } from './ui/INSARAGMarkingModal';
+import { SphereRationPlannerModal } from './ui/SphereRationPlannerModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -140,6 +144,10 @@ class DisasterAtlasApp {
   private waterDisinfectionModal!: WaterDisinfectionModal;
   private cbrnSurvivalModal!: CBRNSurvivalModal;
   private civilVaultModal!: CivilDefenseVaultModal;
+  private tacticalPlusCodeModal!: TacticalPlusCodeModal;
+  private afetBilgiModal!: AfetBilgiCatalogModal;
+  private insaragModal!: INSARAGMarkingModal;
+  private sphereRationModal!: SphereRationPlannerModal;
 
   private alertedEarthquakeIds = new Set<string>();
   private seismicPollTimer: any = null;
@@ -264,7 +272,11 @@ class DisasterAtlasApp {
       onToggleDamageAssessment: () => this.damageAssessmentModal.show(),
       onToggleWaterDisinfection: () => this.waterDisinfectionModal.show(),
       onToggleCBRN: () => this.cbrnSurvivalModal.show(),
-      onToggleCivilVault: () => this.civilVaultModal.show()
+      onToggleCivilVault: () => this.civilVaultModal.show(),
+      onToggleTacticalPlusCode: () => this.tacticalPlusCodeModal.show(this.userCoords),
+      onToggleAfetBilgi: () => this.afetBilgiModal.show(this.userCoords),
+      onToggleINSARAG: () => this.insaragModal.show(),
+      onToggleSphereRation: () => this.sphereRationModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(
@@ -395,6 +407,14 @@ class DisasterAtlasApp {
     this.waterDisinfectionModal = new WaterDisinfectionModal(appEl);
     this.cbrnSurvivalModal = new CBRNSurvivalModal(appEl);
     this.civilVaultModal = new CivilDefenseVaultModal(appEl);
+    this.tacticalPlusCodeModal = new TacticalPlusCodeModal(appEl, (coords, title) => {
+      this.focusCoordinates(coords, title);
+    });
+    this.afetBilgiModal = new AfetBilgiCatalogModal(appEl, (coords, title) => {
+      this.focusCoordinates(coords, title);
+    });
+    this.insaragModal = new INSARAGMarkingModal(appEl);
+    this.sphereRationModal = new SphereRationPlannerModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -432,6 +452,15 @@ class DisasterAtlasApp {
 
     // Dismiss initial loader smoothly as soon as map canvas is active
     const dismissLoader = () => {
+      const seoCard = document.getElementById('seo-prerender-card');
+      if (seoCard) {
+        setTimeout(() => {
+          seoCard.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          seoCard.style.opacity = '0';
+          seoCard.style.transform = 'translate(-50%, -10px)';
+          setTimeout(() => seoCard.remove(), 400);
+        }, 1200);
+      }
       const initialLoader = document.getElementById('initial-loader');
       if (initialLoader) {
         initialLoader.style.opacity = '0';
@@ -1139,6 +1168,26 @@ class DisasterAtlasApp {
         case 'guvenli-kasa':
           this.civilVaultModal.show();
           break;
+        case 'pluscode':
+        case 'telsiz-grid':
+        case 'olc':
+          this.tacticalPlusCodeModal.show(this.userCoords);
+          break;
+        case 'afetbilgi':
+        case 'asevi':
+        case 'barinma':
+          this.afetBilgiModal.show(this.userCoords);
+          break;
+        case 'insarag':
+        case 'enkaz-isaret':
+        case 'usar':
+          this.insaragModal.show();
+          break;
+        case 'rasyon':
+        case 'sphere':
+        case 'gida-su':
+          this.sphereRationModal.show();
+          break;
         case 'toplanma':
           this.nearestHUD.expand('assembly');
           break;
@@ -1282,6 +1331,25 @@ class DisasterAtlasApp {
 
   private focusFacility(fac: EmergencyFacility): void {
     this.focusPoint(fac);
+  }
+
+  private async focusCoordinates(coords: [number, number], title: string): Promise<void> {
+    try {
+      this.mapEngine.flyTo(coords, 16.5, 60, -25);
+      const route = await this.mapEngine.drawWalkingRoute(this.userCoords, coords, this.obstacles);
+      this.navHUD.show(route, {
+        id: 'coord-target',
+        name: title,
+        district: 'Hedef Sahra Noktası',
+        city: '',
+        coordinates: coords,
+        capacity: 0
+      } as any);
+      this.notificationToast.show(`📍 "${title}" noktasına gerçek sokak rotası çizildi.`, false);
+    } catch {
+      this.mapEngine.flyTo(coords, 16.5, 60, -25);
+      this.notificationToast.show(`📍 Harita "${title}" konumuna odaklandı.`, false);
+    }
   }
 
   private focusFault(fault: FaultLine): void {

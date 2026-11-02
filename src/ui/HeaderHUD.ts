@@ -51,6 +51,11 @@ export interface HeaderHUDCallbacks {
   onToggleWaterDisinfection: () => void;
   onToggleCBRN: () => void;
   onToggleCivilVault: () => void;
+  // GitHub & Humanitarian Open Source Civil Modules
+  onToggleTacticalPlusCode: () => void;
+  onToggleAfetBilgi: () => void;
+  onToggleINSARAG: () => void;
+  onToggleSphereRation: () => void;
 }
 
 export interface SearchResultItem {
@@ -87,6 +92,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Kritik Müdahale',
     accentClass: 'text-rose-400',
     tools: [
+      { id: 'btn-open-insarag', label: 'INSARAG', title: 'INSARAG USAR Enkaz İşaretleme Çözücü & Oluşturucu', rgb: '244, 63, 94', icon: Icons.sprayCan },
       { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Kalp Masajı Metronomu (AHA 110 BPM)', rgb: '244, 63, 94', icon: Icons.heartPulse },
       { id: 'btn-open-triage', label: 'Triyaj', title: 'Sahra Triyaj Asistanı (START Protokolü)', rgb: '236, 72, 153', icon: Icons.stethoscope },
       { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Zamanlayıcısı (120 Dk Güvenlik)', rgb: '239, 68, 68', icon: Icons.timer },
@@ -103,6 +109,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Canlı Sensörler',
     accentClass: 'text-sky-400',
     tools: [
+      { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Google Open Location Code & Telsiz Fonetik Grid', rgb: '16, 185, 129', icon: Icons.plusCode },
       { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & HUD', rgb: '16, 185, 129', icon: Icons.compass },
       { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel ve Kentsel Su Baskını Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
       { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi ve Yangın Dumanı Radarı', rgb: '245, 158, 11', icon: Icons.wind },
@@ -118,6 +125,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Şebekesiz P2P',
     accentClass: 'text-cyan-400',
     tools: [
+      { id: 'btn-open-afetbilgi', label: 'AfetBilgi', title: 'AfetBilgi Doğrulanmış Aşevi, Çadır & İhtiyaç Kataloğu', rgb: '245, 158, 11', icon: Icons.soupKitchen },
       { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Şebekesiz P2P ve Nostr Kriz Ağı', rgb: '34, 211, 238', icon: Icons.messages },
       { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz', rgb: '16, 185, 129', icon: Icons.radio },
       { id: 'btn-open-sms', label: 'Acil SMS', title: 'GPS Konumlu Acil Durum SMS ve Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
@@ -133,6 +141,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Koruma & Hukuk',
     accentClass: 'text-emerald-400',
     tools: [
+      { id: 'btn-open-sphere-ration', label: '72s Rasyon', title: 'Sphere / WHO 72 Saat Hayatta Kalma Rasyonu & Su Planlayıcı', rgb: '6, 182, 212', icon: Icons.rationBox },
       { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon ve Sığınak Güvenliği', rgb: '234, 179, 8', icon: Icons.radiation },
       { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı', rgb: '14, 165, 233', icon: Icons.droplet },
@@ -582,5 +591,9 @@ export class HeaderHUD {
     wire('btn-toggle-bag', () => this.callbacks.onToggleBag());
     wire('btn-open-psych-firstaid', () => this.callbacks.onTogglePsychFirstAid());
     wire('btn-open-pet-safety', () => this.callbacks.onTogglePetSafety());
+    wire('btn-open-insarag', () => this.callbacks.onToggleINSARAG());
+    wire('btn-open-pluscode', () => this.callbacks.onToggleTacticalPlusCode());
+    wire('btn-open-afetbilgi', () => this.callbacks.onToggleAfetBilgi());
+    wire('btn-open-sphere-ration', () => this.callbacks.onToggleSphereRation());
   }
 }

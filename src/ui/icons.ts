@@ -465,8 +465,36 @@ export const Icons = {
       <path d="M12 3v18"></path>
       <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
     </svg>
+  `,
+  plusCode: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+      <line x1="12" y1="8" x2="12" y2="16"></line>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+    </svg>
+  `,
+  sprayCan: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="7" y="8" width="10" height="13" rx="2"></rect>
+      <path d="M10 8V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"></path>
+      <line x1="9" y1="2" x2="9" y2="3"></line>
+      <line x1="12" y1="1" x2="12" y2="2"></line>
+      <line x1="15" y1="2" x2="15" y2="3"></line>
+    </svg>
+  `,
+  soupKitchen: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 11h16a1 1 0 0 1 1 1c0 5-4 9-9 9s-9-4-9-9a1 1 0 0 1 1-1Z"></path>
+      <path d="M7 4c0 2 2 2 2 4"></path>
+      <path d="M12 3c0 2 2 2 2 5"></path>
+      <path d="M17 4c0 2 2 2 2 4"></path>
+    </svg>
+  `,
+  rationBox: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+      <path d="m3.3 7 8.7 5 8.7-5"></path>
+      <path d="M12 22V12"></path>
+    </svg>
   `
 };
-
-
-
