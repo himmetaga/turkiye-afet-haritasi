@@ -89,7 +89,13 @@ export interface ParsedDeepLink {
     | 'usar'
     | 'rasyon'
     | 'sphere'
-    | 'gida-su';
+    | 'gida-su'
+    | 'yangin'
+    | 'yangin-kacis'
+    | 'orman-yangini'
+    | 'enkaz-cemberi'
+    | 'yikilma-alani'
+    | 'standoff';
 }
 
 const PROVINCE_SLUGS = new Set([

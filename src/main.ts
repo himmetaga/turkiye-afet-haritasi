@@ -71,6 +71,8 @@ import { TacticalPlusCodeModal } from './ui/TacticalPlusCodeModal';
 import { AfetBilgiCatalogModal } from './ui/AfetBilgiCatalogModal';
 import { INSARAGMarkingModal } from './ui/INSARAGMarkingModal';
 import { SphereRationPlannerModal } from './ui/SphereRationPlannerModal';
+import { WildfireEscapeModal } from './ui/WildfireEscapeModal';
+import { BuildingCollapseZoneModal } from './ui/BuildingCollapseZoneModal';
 import { Icons } from './ui/icons';
 import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
@@ -148,6 +150,8 @@ class DisasterAtlasApp {
   private afetBilgiModal!: AfetBilgiCatalogModal;
   private insaragModal!: INSARAGMarkingModal;
   private sphereRationModal!: SphereRationPlannerModal;
+  private wildfireModal!: WildfireEscapeModal;
+  private collapseZoneModal!: BuildingCollapseZoneModal;
 
   private alertedEarthquakeIds = new Set<string>();
   private seismicPollTimer: any = null;
@@ -276,7 +280,9 @@ class DisasterAtlasApp {
       onToggleTacticalPlusCode: () => this.tacticalPlusCodeModal.show(this.userCoords),
       onToggleAfetBilgi: () => this.afetBilgiModal.show(this.userCoords),
       onToggleINSARAG: () => this.insaragModal.show(),
-      onToggleSphereRation: () => this.sphereRationModal.show()
+      onToggleSphereRation: () => this.sphereRationModal.show(),
+      onToggleWildfire: () => this.wildfireModal.show(),
+      onToggleCollapseZone: () => this.collapseZoneModal.show()
     });
 
     this.nearestHUD = new NearestPointsHUD(
@@ -415,6 +421,8 @@ class DisasterAtlasApp {
     });
     this.insaragModal = new INSARAGMarkingModal(appEl);
     this.sphereRationModal = new SphereRationPlannerModal(appEl);
+    this.wildfireModal = new WildfireEscapeModal(appEl);
+    this.collapseZoneModal = new BuildingCollapseZoneModal(appEl);
 
     this.seismographModal = new SeismographModal(appEl);
     this.whistleModal = new EmergencyWhistleModal(appEl);
@@ -1021,7 +1029,9 @@ class DisasterAtlasApp {
         'altyapi': 'Toplanma Alanı Sahra Karnesi — afet.live',
         'bebek-besleme': 'Afet Dönemi Bebek Besleme & Relaktasyon — afet.live',
         'telsiz-konus': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live',
-        'ptt': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live'
+        'ptt': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live',
+        'yangin-kacis': 'Orman Yangını Kaçış Koridoru & Rüzgar Vektörü — afet.live',
+        'enkaz-cemberi': 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5x H) — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
@@ -1197,6 +1207,16 @@ class DisasterAtlasApp {
         case 'sphere':
         case 'gida-su':
           this.sphereRationModal.show();
+          break;
+        case 'yangin':
+        case 'yangin-kacis':
+        case 'orman-yangini':
+          this.wildfireModal.show();
+          break;
+        case 'enkaz-cemberi':
+        case 'yikilma-alani':
+        case 'standoff':
+          this.collapseZoneModal.show();
           break;
         case 'toplanma':
           this.nearestHUD.expand('assembly');

@@ -18,3 +18,6 @@ https://www.afet.live/* https://afet.live/:splat 301!
 /toplanma    /toplanma-alanlari        301
 /hasar       /bina-hasar-tespiti       301
 /rasyon      /hayatta-kalma-rasyonu    301
+
+/yangin      /yangin-kacis             301
+/enkaz       /enkaz-cemberi            301

@@ -259,6 +259,22 @@ const DISASTER_TOOLS = [
     desc: 'Lisanssız PMR 446 telsiz kanalları (Kanal 1 Genel, Kanal 8 SAR) ve TRAC 145.500 MHz VHF acil afet röle frekansları rehberi.',
     h1: 'Afet Telsizi ve Acil Durum Frekans Rehberi',
     badge: 'Telsiz İletişimi'
+  },
+  {
+    slug: 'yangin-kacis',
+    aliases: ['yangin', 'orman-yangini'],
+    title: 'Orman ve Arazi Yangını Kaçış Koridoru (Rothermel ROS) — afet.live',
+    desc: 'Rothermel yüzey yangını yayılma hızı ve 90° yan kanat (flank) kaçış vektörü. Rüzgar altı ölüm konisinden ve yamaç baca etkisinden korunma protokolü.',
+    h1: 'Orman ve Arazi Yangını Taktik Kaçış Koridoru',
+    badge: 'Rothermel ROS'
+  },
+  {
+    slug: 'enkaz-cemberi',
+    aliases: ['yikilma-alani', 'moloz-golgesi'],
+    title: 'Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (1.5x H) — afet.live',
+    desc: 'USAR / FEMA 1.5x bina yüksekliği standoff güvenlik çemberi ve kentsel dar sokak ölüm kanyonu analizi. Artçı şoklarda enkaz altında kalmayı önleme rehberi.',
+    h1: 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5 x H)',
+    badge: 'USAR Standoff'
   }
 ];
 

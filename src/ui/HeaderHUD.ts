@@ -56,6 +56,8 @@ export interface HeaderHUDCallbacks {
   onToggleAfetBilgi: () => void;
   onToggleINSARAG: () => void;
   onToggleSphereRation: () => void;
+  onToggleWildfire: () => void;
+  onToggleCollapseZone: () => void;
 }
 
 export interface SearchResultItem {
@@ -111,6 +113,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     tools: [
       { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Google Open Location Code & Telsiz Fonetik Grid', rgb: '16, 185, 129', icon: Icons.plusCode },
       { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & HUD', rgb: '16, 185, 129', icon: Icons.compass },
+      { id: 'btn-open-wildfire', label: 'Yangın Kaçış', title: 'Orman Yangını Kaçış Koridoru & Rothermel ROS', rgb: '249, 115, 22', icon: Icons.wildfire },
       { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel ve Kentsel Su Baskını Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
       { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi ve Yangın Dumanı Radarı', rgb: '245, 158, 11', icon: Icons.wind },
       { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami ve Kıyı Tahliye Radarı', rgb: '59, 130, 246', icon: Icons.waves },
@@ -142,6 +145,7 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     accentClass: 'text-emerald-400',
     tools: [
       { id: 'btn-open-sphere-ration', label: '72s Rasyon', title: 'Sphere / WHO 72 Saat Hayatta Kalma Rasyonu & Su Planlayıcı', rgb: '6, 182, 212', icon: Icons.rationBox },
+      { id: 'btn-open-collapse-zone', label: 'Enkaz Çemberi', title: 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5x H)', rgb: '239, 68, 68', icon: Icons.collapseZone },
       { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon ve Sığınak Güvenliği', rgb: '234, 179, 8', icon: Icons.radiation },
       { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı', rgb: '14, 165, 233', icon: Icons.droplet },
@@ -595,5 +599,7 @@ export class HeaderHUD {
     wire('btn-open-pluscode', () => this.callbacks.onToggleTacticalPlusCode());
     wire('btn-open-afetbilgi', () => this.callbacks.onToggleAfetBilgi());
     wire('btn-open-sphere-ration', () => this.callbacks.onToggleSphereRation());
+    wire('btn-open-wildfire', () => this.callbacks.onToggleWildfire());
+    wire('btn-open-collapse-zone', () => this.callbacks.onToggleCollapseZone());
   }
 }

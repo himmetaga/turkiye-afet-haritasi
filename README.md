@@ -152,7 +152,7 @@ graph TD
 
 ---
 
-## 3. Faydaya Göre Modül Kataloğu (44 Araç)
+## 3. Faydaya Göre Modül Kataloğu (46 Araç)
 
 afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **iOS 27 Bento Grid Kontrol Merkezi** içinde 4 ana kategoride yapılandırılmıştır. Ekranın ana görünümünde yalnızca **Dinamik Ada (İl Seçimi & Canlı Sayaç)** ve alttaki **Yüzen Cam Dock** yer alır:
 
@@ -294,6 +294,12 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
 44. **Sphere Project 72 Saat Hayatta Kalma Rasyonu ve Su Hesaplayıcısı:**
     - Açık Standart: The Sphere Handbook (Humanitarian Charter and Minimum Standards in Disaster Response) & WHO Acil Beslenme Direktifleri.
     - Hane halkı yapısına (yetişkin, çocuk, bebek, hamile) ve kış şartlarına göre ilk 72 saat ("Altın 72 Saat") ve 7 günlük minimum içme suyu (3.0 L/kişi/gün), hijyen suyu ve kalori (2.100 kcal + kış katsayısı) rasyonunu ve saatlik erzak tüketim çizelgesini hesaplar.
+45. **Orman ve Arazi Yangını Taktik Kaçış Koridoru (Rothermel ROS & 90° Çapraz Kanat Kaçış Vektörü):**
+    - Yangın Fiziği: Rothermel yüzey yayılma modeli, rüzgar hızı ($U^{1.35}$) ve yamaç eğim çarpanı (baca/chimney etkisi).
+    - Canlı radar pusulası üzerinde alev cephesi ölüm konisi (rüzgar altı yönü) ve alevlerin sağ/sol kanatlarına 90° dik güvenli kaçış açıları, NFPA 1051 4x alev boyu güvenlik çemberi, yanmış siyah kül arazisi (black zone) sığınma ve araç içi burnover protokolleri.
+46. **Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (USAR / FEMA 1.5 x H Kuralı & Ölüm Kanyonu Analizi):**
+    - USAR / INSARAG Standardı: $D_{\text{safe}} = 1.5 \times H$ standoff kuralı ve $2.0 \times H$ ağır parapet/cam fırlama menzili.
+    - Dar sokak genişliği ($W$) ile enkaz çemberi ($1.5H$) karşılaştırmalı kesit diyagramı: Sokak dar olduğunda karşı kaldırımın da doğrudan enkaz altında kalacağını hesaplayan kentsel ölüm kanyonu uyarısı ve artçı şok güvenli intikal yönergesi.
 
 ---
 

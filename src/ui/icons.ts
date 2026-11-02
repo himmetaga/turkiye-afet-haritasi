@@ -490,6 +490,25 @@ export const Icons = {
       <path d="M17 4c0 2 2 2 2 4"></path>
     </svg>
   `,
+  wildfire: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"></path>
+      <path d="M12 18v4"></path>
+      <path d="m15 19 3 3"></path>
+      <path d="m9 19-3 3"></path>
+    </svg>
+  `,
+  collapseZone: (className = 'w-4 h-4') => `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21h18"></path>
+      <path d="M6 21V7l8-4v18"></path>
+      <path d="M14 11h4l2 3v7"></path>
+      <circle cx="10" cy="11" r="1"></circle>
+      <circle cx="10" cy="15" r="1"></circle>
+      <path d="M17 3v4"></path>
+      <path d="M21 5h-4"></path>
+    </svg>
+  `,
   rationBox: (className = 'w-4 h-4') => `
     <svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
