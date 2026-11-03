@@ -102,7 +102,7 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-assembly"
             type="button"
-            class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex-1 min-w-0 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 text-gray-200 hover:text-emerald-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="En Yakın Toplanma Alanları"
           >
             ${Icons.shield('w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0')}
@@ -116,7 +116,7 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-hospitals"
             type="button"
-            class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex-1 min-w-0 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-cyan-500/15 border border-white/5 hover:border-cyan-500/30 text-gray-200 hover:text-cyan-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="En Yakın Hastaneler"
           >
             ${Icons.hospital('w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0')}
@@ -130,7 +130,7 @@ export class NearestPointsHUD {
           <button
             id="btn-collapsed-pharmacies"
             type="button"
-            class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+            class="flex-1 min-w-0 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
             title="Bugünün Nöbetçi Eczaneleri"
           >
             ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0')}
@@ -144,7 +144,7 @@ export class NearestPointsHUD {
           <button
             id="btn-sync-offline"
             type="button"
-            class="relative overflow-hidden flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] ${
+            class="relative overflow-hidden flex-1 min-w-0 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] ${
               isReady
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 text-gray-200 hover:text-white'
@@ -160,9 +160,6 @@ export class NearestPointsHUD {
             </span>
             <span id="sync-subtext" class="relative z-10 text-[9.5px] sm:text-xs font-semibold whitespace-nowrap tracking-tight">
               ${isReady ? 'Kayıtlı' : 'Kaydet'}
-            </span>
-            <span class="relative z-10 px-1.5 py-0.5 rounded-md ${isReady ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/20 text-cyan-300'} font-mono text-[9px] sm:text-[10px] font-bold shrink-0">
-              ${isReady ? 'OK' : 'PWA'}
             </span>
           </button>
         </div>
@@ -239,7 +236,7 @@ export class NearestPointsHUD {
       'fixed bottom-safe-hud left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] z-40 flex flex-col gap-2 pointer-events-auto transition-all box-border';
 
     this.container.innerHTML = `
-      <div class="ios27-bar p-3 sm:p-3.5 shadow-2xl transition-all max-h-[calc(100dvh-130px)] sm:max-h-[80vh] flex flex-col">
+      <div class="ios27-bar p-3 sm:p-3.5 shadow-2xl transition-all max-h-[calc(100dvh-160px)] sm:max-h-[80vh] flex flex-col">
         <!-- Touch Drag Handle for Mobile Sheet -->
         <div id="btn-drag-handle" class="w-20 h-6 flex items-center justify-center mx-auto -mt-1 mb-1 cursor-pointer touch-manipulation active:opacity-60" title="Aşağı küçült">
           <div class="w-12 h-1.5 bg-white/35 hover:bg-white/60 rounded-full"></div>

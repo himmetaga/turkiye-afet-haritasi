@@ -186,7 +186,7 @@ export class HeaderHUD {
     this.callbacks = callbacks;
     this.container = document.createElement('div');
     this.container.id = 'ios27-header-root';
-    this.container.className = 'contents pointer-events-none';
+    this.container.className = 'fixed inset-0 pointer-events-none z-40 overflow-hidden';
     parent.appendChild(this.container);
 
     window.addEventListener('online', () => this.setOnlineState(true));
@@ -212,7 +212,11 @@ export class HeaderHUD {
     this.seismicCount = count;
     const badge = this.container.querySelector('#island-seismic-badge');
     if (badge) {
-      badge.textContent = 'Son Depremler';
+      badge.textContent = count > 0 ? `Depremler (${count})` : 'Son Depremler';
+    }
+    const mobileBadge = this.container.querySelector('#island-seismic-badge-mobile');
+    if (mobileBadge) {
+      mobileBadge.textContent = count > 0 ? `Deprem (${count})` : 'Deprem';
     }
   }
 
@@ -347,7 +351,8 @@ export class HeaderHUD {
         <div id="ios27-dynamic-island" class="ios27-capsule px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center flex-nowrap whitespace-nowrap gap-1.5 sm:gap-2.5 text-xs text-white shadow-2xl ios27-spring">
           <!-- Logo -->
           <a href="/" class="flex items-center gap-1 shrink-0 active:scale-95 transition-transform" title="afet.live">
-            <img src="/logo-horizontal.svg" alt="afet.live" class="h-4.5 sm:h-5.5 w-auto select-none pointer-events-none shrink-0" />
+            <img src="/logo.svg" alt="afet.live" class="h-5 w-auto sm:hidden select-none pointer-events-none shrink-0" />
+            <img src="/logo-horizontal.svg" alt="afet.live" class="hidden sm:block h-5.5 w-auto select-none pointer-events-none shrink-0" />
           </a>
 
           <!-- Divider -->
@@ -356,7 +361,7 @@ export class HeaderHUD {
           <!-- Province Selector Trigger -->
           <button id="btn-island-province" type="button" class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 active:scale-95 text-gray-200 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer shrink-0" title="Şehir / İl Seç">
             <span class="text-[11px]">📍</span>
-            <span id="island-province-label" class="truncate max-w-[55px] xs:max-w-[80px] sm:max-w-[120px]">${this.selectedProvince ? this.capitalize(this.selectedProvince) : '81 İl'}</span>
+            <span id="island-province-label" class="truncate max-w-[60px] sm:max-w-[120px]">${this.selectedProvince ? this.capitalize(this.selectedProvince) : '81 İl'}</span>
             <span class="text-[8px] text-gray-400">▾</span>
           </button>
 
@@ -376,8 +381,8 @@ export class HeaderHUD {
           <!-- Son Depremler Trigger -->
           <button id="btn-island-seismic" type="button" class="px-2 sm:px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 active:scale-95 text-rose-300 hover:text-white text-[10.5px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-1 shrink-0" title="Son Depremler">
             ${Icons.seismic('w-3.5 h-3.5 text-rose-400')}
-            <span id="island-seismic-badge" class="hidden xs:inline">Son Depremler</span>
-            <span class="xs:hidden">Deprem</span>
+            <span id="island-seismic-badge" class="hidden sm:inline">Son Depremler</span>
+            <span id="island-seismic-badge-mobile" class="sm:hidden">Deprem</span>
           </button>
         </div>
 
@@ -452,7 +457,7 @@ export class HeaderHUD {
       </div>
 
       <!-- Floating Right Map Controls (Katmanlar & Sismik) -->
-      <div class="fixed right-2.5 sm:right-4 z-30 flex flex-col gap-2 pointer-events-auto select-none" style="top: max(68px, calc(env(safe-area-inset-top, 0px) + 60px));">
+      <div class="floating-map-controls fixed right-2.5 sm:right-4 z-30 flex flex-col gap-2 pointer-events-auto select-none">
         <button id="btn-floating-layers" type="button" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl ios27-bar flex items-center justify-center text-emerald-400 hover:text-white shadow-xl active:scale-90 transition-all cursor-pointer border border-white/10" title="Harita Katmanları">
           ${Icons.layers('w-4.5 h-4.5 sm:w-5 sm:h-5')}
         </button>
@@ -467,31 +472,31 @@ export class HeaderHUD {
       <div class="fixed bottom-safe-dock left-1/2 -translate-x-1/2 z-40 pointer-events-auto select-none w-[94vw] sm:w-[460px] max-w-[480px]">
         <div id="ios27-dock" class="ios27-bar w-full p-1 sm:p-1.5 flex items-center justify-between gap-1 sm:gap-1.5 text-white shadow-2xl">
           <!-- Left Wing 1: Locate Me / Map -->
-          <button id="btn-dock-locate" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Konumuma Odaklan">
+          <button id="btn-dock-locate" type="button" class="w-[36px] h-[36px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Konumuma Odaklan">
             ${Icons.crosshair('w-4.5 h-4.5 sm:w-5 sm:h-5')}
           </button>
 
           <!-- Left Wing 2: Hissettim Butonu -->
-          <button id="btn-dock-felt" type="button" class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all cursor-pointer" title="Depremi Hissettim Bildirimi">
-            ${Icons.activity('w-4 h-4 text-amber-400')}
-            <span class="text-[11px] sm:text-xs truncate">Hissettim</span>
+          <button id="btn-dock-felt" type="button" class="flex-1 min-w-0 h-[36px] sm:h-[42px] px-2 sm:px-3 flex items-center justify-center gap-1 sm:gap-1.5 rounded-[18px] bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-amber-500/30 transition-all cursor-pointer" title="Depremi Hissettim Bildirimi">
+            ${Icons.activity('w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0')}
+            <span class="text-[10px] sm:text-xs truncate">Hissettim</span>
           </button>
 
           <!-- DEAD CENTER HERO: Big SOS Trigger -->
-          <button id="btn-dock-sos" type="button" class="px-4 sm:px-5 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all border border-rose-400/40 cursor-pointer shrink-0">
+          <button id="btn-dock-sos" type="button" class="px-3 sm:px-5 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 rounded-[18px] bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-rose-600/40 active:scale-95 transition-all border border-rose-400/40 cursor-pointer shrink-0">
             <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>S.O.S</span>
           </button>
 
           <!-- Right Wing 1: BitChat Messenger Pill (Matches Hissettim Pill symmetrically) -->
-          <button id="btn-dock-bitchat" type="button" class="flex-1 min-w-0 h-[38px] sm:h-[42px] flex items-center justify-center gap-1.5 rounded-[18px] bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all cursor-pointer" title="BitChat Kriz Odası">
-            ${Icons.messages('w-4 h-4 text-cyan-400')}
-            <span class="text-[11px] sm:text-xs truncate">BitChat</span>
+          <button id="btn-dock-bitchat" type="button" class="flex-1 min-w-0 h-[36px] sm:h-[42px] px-2 sm:px-3 flex items-center justify-center gap-1 sm:gap-1.5 rounded-[18px] bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all cursor-pointer" title="BitChat Kriz Odası">
+            ${Icons.messages('w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0')}
+            <span class="text-[10px] sm:text-xs truncate">BitChat</span>
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
           </button>
 
           <!-- Right Wing 2: Control Center Menu Square (Matches Locate Square symmetrically) -->
-          <button id="btn-dock-menu" type="button" class="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Afet Kontrol Merkezi">
+          <button id="btn-dock-menu" type="button" class="w-[36px] h-[36px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-[18px] bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-gray-200 hover:text-white transition-all cursor-pointer border border-white/5 shrink-0" title="Afet Kontrol Merkezi">
             ${Icons.grid('w-4.5 h-4.5 sm:w-5 sm:h-5 text-cyan-400')}
           </button>
         </div>
@@ -509,7 +514,7 @@ export class HeaderHUD {
 
       <div
         id="ios27-bento-sheet"
-        class="fixed bottom-safe-hud left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[calc(100dvh-80px)] ios27-bar p-3.5 sm:p-5 shadow-2xl z-50 flex flex-col gap-3 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
+        class="fixed bottom-safe-dock left-1/2 -translate-x-1/2 w-[94vw] sm:w-[460px] max-w-[480px] max-h-[calc(100dvh-70px)] ios27-bar p-3.5 sm:p-5 shadow-2xl z-50 flex flex-col gap-3 transition-all duration-300 translate-y-full opacity-0 pointer-events-none"
       >
         <!-- Mobile Drag/Swipe Down Handle -->
         <div id="btn-drag-bento-handle" class="w-12 h-1.5 bg-white/25 hover:bg-white/40 rounded-full mx-auto -mt-1 mb-0.5 cursor-pointer transition-colors" title="Aşağı İndir / Kapat"></div>

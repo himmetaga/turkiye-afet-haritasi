@@ -10,6 +10,14 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, select {
+  touch-action: manipulation;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -29,17 +37,35 @@ body {
   overflow: hidden;
 }
 
-/* Safe Area Insets & Mobile Floating Offsets */
+/* Safe Area Insets & Mobile Floating Offsets (iOS Progressive Fallbacks) */
 .top-safe {
-  top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px));
+  top: 10px;
+  top: calc(10px + constant(safe-area-inset-top));
+  top: calc(10px + env(safe-area-inset-top, 0px));
+}
+
+.floating-map-controls {
+  top: 54px;
+  top: calc(54px + constant(safe-area-inset-top));
+  top: calc(54px + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 640px) {
+  .floating-map-controls {
+    top: 68px;
+  }
 }
 
 .bottom-safe-dock {
-  bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  bottom: 10px;
+  bottom: calc(10px + constant(safe-area-inset-bottom));
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-safe-hud {
-  bottom: max(60px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+  bottom: 64px;
+  bottom: calc(64px + constant(safe-area-inset-bottom));
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -223,16 +249,28 @@ button.hud-control:active {
   }
 }
 
-/* MapLibre Canvas overrides */
+/* MapLibre Canvas overrides - vertically stacked below floating controls with 0 collision */
 .maplibregl-ctrl-top-right {
   top: 14px !important;
   right: 14px !important;
+  z-index: 25 !important;
+}
+
+@media (min-width: 640px) {
+  .maplibregl-ctrl-top-right {
+    top: 158px !important;
+    right: 16px !important;
+    margin: 0 !important;
+  }
 }
 
 @media (max-width: 639px) {
   .maplibregl-ctrl-top-right {
-    top: 52px !important;
+    top: 144px !important;
+    top: calc(144px + constant(safe-area-inset-top)) !important;
+    top: calc(144px + env(safe-area-inset-top, 0px)) !important;
     right: 10px !important;
+    margin: 0 !important;
   }
 }
 
