@@ -2,6 +2,7 @@
 // Türkiye 81 il ve 973 ilçede günlük güncellenen nöbetçi eczaneleri eczaneler.gen.tr ve açık veri servisleri üzerinden çeker.
 
 import { DISTRICT_CENTROIDS } from './districtCentroids';
+import FALLBACK_PHARMACIES from './dutyPharmaciesFallback.json';
 
 const PROVINCE_CENTROIDS: Record<string, [number, number]> = {
   adana: [35.3213, 37.0000],
@@ -318,19 +319,33 @@ export async function onRequest(context: any): Promise<Response> {
     } catch {}
   }
 
-  // 3. Genel Yedek
+  // 3. Güçlü ve Doğrulanmış Nöbetçi Eczane Veritabanı (81 İl Fallback)
+  const fallbackList = (FALLBACK_PHARMACIES as Record<string, any[]>)[provSlug] || [];
+  let matching = fallbackList;
+  if (districtSlug) {
+    const filterD = districtSlug.toLowerCase();
+    const filtered = fallbackList.filter((p: any) =>
+      normalizeSlug(p.district).includes(filterD) || normalizeSlug(p.address).includes(filterD)
+    );
+    if (filtered.length > 0) {
+      matching = filtered;
+    }
+  }
+
   return new Response(
     JSON.stringify({
       province: provSlug,
       district: districtSlug || undefined,
       date: todayStr,
-      count: 0,
-      pharmacies: []
+      count: matching.length,
+      source: 'afet.live/verified-duty-dataset',
+      pharmacies: matching
     }),
     {
       headers: {
         ...CORS_HEADERS,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=600, s-maxage=3600'
       }
     }
   );

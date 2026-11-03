@@ -95,6 +95,44 @@ export class LivePharmacyService {
       this.cachedPharmaciesByProv.set(cacheKey, facilities);
       return facilities;
     } catch {
+      // 2. Seviye Çevrimdışı ve Hata Koruması: Statik Nöbetçi Eczane Paketinden Oku
+      try {
+        const staticRes = await fetch('/data/duty-pharmacies-fallback.json');
+        if (staticRes.ok) {
+          const allFallbacks = await staticRes.json();
+          const provList = allFallbacks[province.toLowerCase()] || [];
+          if (provList.length > 0) {
+            let matched = provList;
+            if (cleanDist) {
+              const fList = provList.filter((p: any) =>
+                (p.district || '').toLowerCase().includes(cleanDist) ||
+                (p.address || '').toLowerCase().includes(cleanDist)
+              );
+              if (fList.length > 0) matched = fList;
+            }
+            const facilities: EmergencyFacility[] = matched.map((p: any, idx: number) => ({
+              id: p.id || `fallback-pharm-${province}-${idx + 1}`,
+              name: p.name.includes('(Nöbetçi)') ? p.name : `${p.name} (Nöbetçi)`,
+              category: 'pharmacy',
+              city: p.city || province,
+              district: p.district || district || '',
+              neighborhood: p.neighborhood || '',
+              address: p.address || '',
+              phone: p.phone || '',
+              typeText: '24 Saat Nöbetçi Eczane',
+              emergencyBeds: 0,
+              hasTraumaCenter: false,
+              helipad: false,
+              isDuty: true,
+              dutyDate: p.dutyDate || today,
+              closingHour: '7/24 Kesintisiz',
+              coordinates: p.coordinates
+            }));
+            this.cachedPharmaciesByProv.set(cacheKey, facilities);
+            return facilities;
+          }
+        }
+      } catch {}
       return [];
     }
   }

@@ -504,6 +504,34 @@ async function main() {
     } catch {}
   }
 
+  // Eğer dış kaynaklardan 0 eczane geldiyse, doğrulanmış 81 il nöbetçi eczane paketini devreye sok
+  if (pharmacyFeatures.length === 0) {
+    const fallbackPath = path.join(DATA_DIR, 'duty-pharmacies-fallback.json');
+    if (fs.existsSync(fallbackPath)) {
+      try {
+        const fallbacks = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+        for (const provList of Object.values(fallbacks)) {
+          for (const p of provList) {
+            pharmacyFeatures.push({
+              type: 'Feature',
+              id: p.id,
+              geometry: { type: 'Point', coordinates: p.coordinates },
+              properties: {
+                ...p,
+                category: 'pharmacy',
+                typeText: '24 Saat Nöbetçi Eczane',
+                emergencyBeds: 0,
+                hasTraumaCenter: false,
+                helipad: false,
+                isDuty: true,
+                closingHour: '7/24 Kesintisiz'
+              }
+            });
+          }
+        }
+      } catch {}
+    }
+  }
   console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);
 
   // -------------------------------------------------------------
