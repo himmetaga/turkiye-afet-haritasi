@@ -1,7 +1,7 @@
 {
   "assemblyPointsCount": 27331,
-  "facilitiesCount": 2354,
-  "hospitalsCount": 1221,
+  "facilitiesCount": 2352,
+  "hospitalsCount": 1219,
   "pharmaciesCount": 1111,
   "bloodCentersCount": 22,
   "provinces": [
@@ -74,5 +74,5 @@
     "Yozgat",
     "Zonguldak"
   ],
-  "updatedAt": "2026-11-04T21:28:50.332Z"
+  "updatedAt": "2026-11-05T21:33:20.915Z"
 }
