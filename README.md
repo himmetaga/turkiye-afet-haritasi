@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![PWA Ready](https://img.shields.io/badge/PWA-Offline--First-blue.svg)](https://afet.live)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Bundler-Vite%205-purple.svg)](https://vitejs.dev/)
+[![Vite](https://img.shields.io/badge/Bundler-Vite%206-purple.svg)](https://vitejs.dev/)
 [![Zero Server Tracking](https://img.shields.io/badge/Privacy-100%25%20Zero--Telemetry-brightgreen.svg)](https://afet.live)
 
 🌐 **Canlı Uygulama / Live Site:** [https://afet.live](https://afet.live)
@@ -20,6 +20,7 @@
   - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
   - [6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği](#6-manipülasyon-önleme--hukuki-sorumluluk-güvenliği)
   - [7. Kurulum ve Yerel Çalıştırma](#7-kurulum-ve-yerel-çalıştırma)
+- [🤝 Katkıda Bulunun / Contributing](#katkıda-bulunun)
 - [🇬🇧 English Documentation](#-english-afetlive--turkiye-disaster-resilience-and-emergency-atlas)
   - [1. Overview & Core Mission](#1-overview--core-mission)
   - [2. System Architecture](#2-system-architecture)
@@ -40,7 +41,7 @@
 6 Şubat 2023 Kahramanmaraş depremleri ve geçmiş Marmara afetleri göstermiştir ki; afet anında hücresel baz istasyonları dakikalar içinde kilitlenmekte, merkezi sunucular çökmekte, internet erişimi kesilmekte ve elektrik şebekesi devre dışı kalmaktadır.
 
 Bu hayati gereksinim doğrultusunda **afet.live**, **"Sıfır Sunucu Bağımlılığı (Zero Server Dependency)"** ilkesiyle tasarlanmıştır:
-- Uygulama tarayıcıya veya telefona bir kez yüklendiğinde (PWA), hücresel veri, fiber internet ve Wi-Fi tamamen kopsa dahi **27.331 resmi AFAD toplanma alanı, 1.226 acil servis hastanesi, MTA diri fay haritası ve tüm hayatta kalma araçları %100 çevrimdışı çalışmaya devam eder.**
+- Uygulama tarayıcıya veya telefona bir kez yüklendiğinde (PWA), hücresel veri, fiber internet ve Wi-Fi tamamen kopsa dahi **27.331 toplanma alanı, 1.212 hastane, 25.442 eczane, ana fay zonları ve hayatta kalma araçları çevrimdışı çalışmaya devam eder.** (Verilerin nereden geldiği ve sınırları için [Veri Kaynakları](#4-veri-kaynakları--doğruluk) bölümüne bakın.)
 - Kullanıcının GPS konumu, kimliği veya tıbbi verileri asla harici bir sunucuya kaydedilmez; tüm hesaplamalar (Haversine mesafe, açı, triyaj, klorlama dozajı) doğrudan kullanıcının cihaz işlemcisinde yerel olarak gerçekleştirilir.
 
 ---
@@ -240,7 +241,7 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
     - **P2P İhtiyaç & Barter Takas Defteri:** Bankacılık sistemi çöktüğünde eldeki fazla malzemeler (bebek maması, kışlık mont) ile acil ihtiyaçları listeler ve çapraz eşleştirir.
     - **DASK 15 Günlük Yasal İhbar Süre Takibi:** Afet anından itibaren işleyen kasko ve DASK yasal başvuru süre sayacı.
 24. **Türk Kızılay Kan Bağış Merkezleri & Donör Eşleşme Portalı:**
-    - 22 Kızılay Bölge Kan Merkezi, 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
+    - 22 Kızılay kan merkezi (elle derlenmiş liste; adres ve koordinatları doğrulanmayı bekliyor), 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
 25. **Afet İlaç & Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi):**
     - Kronik ilaçlar için sahra eşdeğer etken madde rehberi ve Zeer Pot buharlaşmalı soğuk zincir koruma kılavuzu.
 26. **Çevrimdışı Vektör Harita Paketleri (İl & Bölge Bazlı Offline Cache İndirme):**
@@ -315,19 +316,29 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
 
 ## 4. Veri Kaynakları & Doğruluk
 
-afet.live üzerinde yer alan veriler kamuya açık resmi kurumsal veritabanlarından ve sivil açık veri portallarından derlenmektedir:
+> **Önemli:** afet.live bağımsız, gönüllü bir projedir; AFAD, Sağlık Bakanlığı veya başka bir kurumla resmi bir bağı yoktur. Afet anında her zaman **112** ve resmi kurum duyurularını esas alın.
 
-| Veri Seti | Sağlayıcı Kurum / Kaynak | Kapsam & Detay |
+| Veri Seti | Kaynak | Kapsam ve Sınırlar |
 | :--- | :--- | :--- |
-| **Afet Toplanma Alanları** | AFAD & e-Devlet Kapısı | Türkiye genelinde 81 il, 27.331 resmi toplanma alanı (su, elektrik, çadır sahası bilgileriyle) |
-| **Diri Fay Hatları** | MTA (Maden Tetkik ve Arama Genel Müdürlüğü) | 1:25.000 ölçekli Türkiye Diri Fay Haritası vektör katmanı |
-| **Canlı Son Depremler** | Boğaziçi Üniversitesi Kandilli Rasathanesi & AFAD | Anlık sismik titreşim akışı, derinlik, büyüklük ve merkez üssü |
-| **Acil Servis Hastaneleri** | T.C. Sağlık Bakanlığı (HealthTurkiye) | 1.226 doğrulanmış kamu, üniversite ve özel acil servis hastanesi |
-| **Nöbetçi Eczaneler** | İzmir BB Açık Veri Portalı & EczaneBul | Her gün saat 18:00'den ertesi gün 08:30'a kadar geçerli günlük canlı nöbetçi listeleri |
-| **Kan Bağış Merkezleri** | Türk Kızılay Kan Hizmetleri Genel Müdürlüğü | 22 Bölge Kan Merkezi ve koordinatları |
-| **Sel & Taşkın Radarı** | Avrupa Komisyonu ECMWF / GloFAS | Canlı nehir debisi ($m^3/s$) ve yağış erken uyarı modelleri |
-| **Hava Kalitesi & Duman** | Open-Meteo & Avrupa Çevre Ajansı (Copernicus) | AQI, PM2.5, PM10, CO, asbest tozu ve duman konsantrasyonları |
-| **Afet Telsiz Frekansları** | TRAC & BTK | PMR 446 Kanal 1-8 ve VHF/UHF amatör telsiz acil frekansları |
+| **Toplanma Alanları** | AFAD / e-Devlet verisinin açık kaynak GitHub aynaları ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27.331 alan, 68 il. Su, elektrik, çadır alanı ve kapasite bilgisi kaynakta yok; arayüzdeki bu alanlar henüz tahmini (düzeltilecek, bkz. [Yardım Aranan Konular](#yardım-aranan-konular)). |
+| **Hastaneler** | Sağlık Bakanlığı HealthTurkiye API + geogow altyapı verisi | 1.212 hastane. Acil yatak, helikopter pisti ve travma merkezi bilgisi şu an hastane adından tahmin ediliyor (düzeltilecek). |
+| **Eczaneler** | [OpenStreetMap](https://www.openstreetmap.org/copyright) katkıcıları (ODbL), Overpass API | 25.442 eczane; 21 binden fazlasında telefon kayıtlı. **Nöbet bilgisi içermez.** |
+| **Nöbetçi Eczaneler** | İzmir Büyükşehir Belediyesi Açık Veri API'si (yalnızca İzmir) | Diğer illerde uygulama [e-Devlet Nöbetçi Eczane Sorgulama](https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama) hizmetine yönlendirir. |
+| **Son Depremler** | Kandilli ve AFAD ([api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr) üzerinden), EMSC, USGS | Dört kaynak sırayla denenir. |
+| **Fay Hatları** | Elle çizilmiş, basitleştirilmiş katman | 7 ana fay zonu. **MTA Diri Fay Haritası değildir**; bina ölçeğinde risk değerlendirmesi için kullanılmamalıdır. |
+| **Kan Bağış Merkezleri** | Elle derlenmiş liste | 22 Kızılay merkezi. Adres ve koordinatlar doğrulanmayı bekliyor. |
+| **Sel ve Yağış** | [Open-Meteo](https://open-meteo.com) Flood API (GloFAS) ve Forecast API | Nehir debisi ve yağış tahmini. |
+| **Hava Kalitesi** | Open-Meteo Air Quality API (Copernicus CAMS) | AQI, PM2.5, PM10, CO. |
+| **Harita Altlığı** | [OpenFreeMap](https://openfreemap.org) (OpenStreetMap verisi) | Vektör karolar. |
+
+### Veri Dürüstlüğü İlkesi
+
+Bu bir afet uygulaması: yanlış bir adres ya da telefon numarası, hiç bilgi olmamasından daha tehlikelidir. Bu yüzden:
+
+- **Veri asla üretilmez.** Kaynakta olmayan isim, telefon, adres, konum, kapasite veya çalışma saati "doldurulmaz"; bilinmiyorsa arayüzde "bilinmiyor" yazar.
+- **Kaynak her zaman belirtilir** ve "resmi" ya da "doğrulanmış" kelimeleri yalnızca gerçekten öyle olan veri için kullanılır.
+- **Otomatik doğrulama:** [`scripts/validate-data.mjs`](scripts/validate-data.mjs) her build'de ve günlük veri senkronunda çalışır. Eksik, Türkiye dışında kalan, kaynağı belirsiz veya şablonla üretilmiş görünen veri yayına çıkamaz.
+- **Dış kaynaklı metin güvenilmezdir:** OSM, açık veri ve Nostr içerikleri HTML'e yazılmadan önce temizlenir ([`src/utils/safeText.ts`](src/utils/safeText.ts)).
 
 ---
 
@@ -336,6 +347,8 @@ afet.live üzerinde yer alan veriler kamuya açık resmi kurumsal veritabanları
 - **Sıfır Sunucu Kaydı:** afet.live sunucularında hiçbir kullanıcı hesabı, telefon numarası, GPS konumu veya kriz mesajı saklanmaz.
 - **Yerel Depolama:** Afet çantası, aile bilgileri ve ICE kilit ekranı verileri yalnızca kullanıcının telefonundaki `LocalStorage` ve `IndexedDB` belleğinde şifresiz tutulur ve üçüncü taraflarla paylaşılmaz.
 - **Kriptografik Anahtar Üretimi:** BitChat kimliği her cihaz için yerel olarak rastgele bir Ed25519 / Nostr pubkey üretir; telefon şebekesi kopsa dahi anonimlik korunur.
+- **BitChat mesajları herkese açıktır:** Nostr üzerinden gönderilen mesajlar afet.live'ın değil, üçüncü taraf Nostr relay'lerinin (ör. relay.damus.io, nos.lol) sunucularında saklanır ve herkes tarafından okunabilir. Kişisel bilgi, adres veya sağlık bilgisi paylaşmayın.
+- **Barındırma:** Site Cloudflare Pages üzerinde çalışır; Cloudflare standart erişim kayıtlarını (IP, tarayıcı bilgisi) kendi politikası doğrultusunda işler.
 
 ---
 
@@ -366,6 +379,30 @@ Kriz ve afet anlarında sivil açık iletişim kanallarının troller, botlar, a
 6. **Hukuki Sorumluluk Reddi & TCK m. 217/A Uyumluluğu:**
    - Platformun bağımsız, açık kaynaklı sivil bir rehber olduğu; hiçbir koşulda resmi 112 Acil Çağrı, AFAD veya mülki amirliklerin yerine geçmediği tüm acil durum pencerelerinde sabit bildirimlerle deklare edilir.
    - Paylaşılan içeriklerin sorumluluğunun gönderene ait olduğu ve kasıtlı asılsız ihbarın **TCK m. 217/A (Halkı yanıltıcı bilgiyi alenen yayma suçu)** kapsamında cezai kovuşturma konusu olduğu net olarak hatırlatılır.
+
+---
+
+## Katkıda Bulunun
+
+afet.live tek kişinin gönüllü emeğiyle başladı ve kamu yararına açık kaynak. Kod, veri doğrulama, tasarım, çeviri ya da sahadan geri bildirim: her katkı değerli. Başlamak için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına ve [açık konulara](https://github.com/himmetaga/turkiye-afet-haritasi/issues) bakın.
+
+### Yardım Aranan Konular
+
+- **Toplanma alanı olanakları:** Su, elektrik, çadır alanı ve kapasite bilgisi şu an tahmini. Kaynakta olmayan bilgi kaldırılmalı, gerçek veri bulunan illerde (belediye açık verileri) eklenmeli.
+- **Hastane bilgileri:** Acil yatak, helikopter pisti ve travma merkezi bilgisi için güvenilir kaynak gerekiyor.
+- **Nöbetçi eczane verisi:** İzmir dışındaki iller için izinli ve resmi bir kaynak (il eczacı odaları, belediye açık veri portalları).
+- **Kan merkezlerinin doğrulanması:** 22 kaydın adres ve koordinatlarının teyidi.
+- **Gerçek fay verisi:** Basitleştirilmiş katman yerine lisansı uygun, kaynağı belli bir diri fay verisi.
+- **Testler:** Henüz otomatik test yok; yardımcı fonksiyonlar için birim testleri ve temel uçtan uca testler.
+- **SEO ve erişilebilirlik:** Var olmayan adreslerin gerçek 404 döndürmesi ve WCAG uyumluluğu.
+
+### Yerel Kontroller
+
+```bash
+npm run fetch:data      # Verileri kaynaklarından yeniden indir (birkaç dakika sürer)
+npm run validate:data   # Yayın verisini doğrula
+npm run build           # Doğrulama + TypeScript + üretim paketi
+```
 
 ---
 
@@ -409,7 +446,7 @@ npm run preview
 During major catastrophic events (such as the February 6, 2023 Kahramanmaraş earthquakes), cellular mobile networks fail within minutes due to congestion, physical mast damage, and power grid collapse.
 
 To ensure uninterrupted availability when communication lines are dead, **afet.live is built on a "Zero-Server-Dependency" architecture**:
-- Once cached or installed as a Progressive Web App (PWA), **all 27,331 official AFAD assembly points, 1,226 emergency hospitals, active fault lines, and critical survival tools function 100% offline.**
+- Once cached or installed as a Progressive Web App (PWA), **27,331 assembly points, 1,212 hospitals, 25,442 pharmacies, major fault zones, and the survival tools keep working offline.** (See [Data Sources](#4-telemetry--data-sources) for where the data comes from and its limits.)
 - All geospatial, proximity, bearing, triage, and water chlorination computations execute client-side on the user's hardware.
 - No user location, personal data, or distress messages are tracked, stored, or sent to any central server.
 
@@ -451,7 +488,7 @@ graph TD
         R[MTA Active Geological Fault Lines DB]
         S[Kandilli Observatory & AFAD Live Quake Stream]
         T[Ministry of Health Certified Emergency ERs - 1,226]
-        U[Live Daily On-Duty Pharmacies]
+        U[Pharmacies: OpenStreetMap + İzmir live duty API]
         V[GloFAS River Discharge & Flood Radar - ECMWF]
         W[Open-Meteo Air Quality, Asbestos & Smoke Radar]
         X[Turkish Red Crescent 22 Regional Blood Centers]
@@ -540,7 +577,7 @@ The toolset is organized into **4 logical categories based on immediate survival
     - Pre-caches assembly zones, emergency hospitals, and pharmacies for entire provinces/regions to browser `CacheStorage` before infrastructure blackouts.
     - Regional packages for Marmara, Aegean, Mediterranean, Central Anatolia, Eastern and Southeastern regions with storage space monitoring (`navigator.storage.estimate`).
 17. **Turkish Red Crescent Blood Centers & Donor Portal:**
-    - 22 verified Regional Blood Centers across Turkey.
+    - 22 Kızılay blood centers (manually compiled list; addresses and coordinates still need verification).
     - Interactive 8-group donor-recipient compatibility matrix (0- universal donor, AB+ universal recipient).
     - Broadcasts verified emergency blood requests over the BitChat crisis mesh.
 18. **Emergency Chronic Prescription Passport & Generic Equivalent Guide:**
@@ -561,7 +598,7 @@ The toolset is organized into **4 logical categories based on immediate survival
     - Categorized checklist for food, water, medical supplies, tools, sanitation, and documents.
     - One-tap sharing of missing items with family members via SMS or messaging apps.
 23. **Building & Seismic Fault Proximity Risk Card:**
-    - Measures direct distance to the nearest active MTA fault line, fault slip rate, and year-of-construction vulnerability analysis.
+    - Measures direct distance to the nearest major fault zone (simplified 7-zone layer, not the MTA map), fault slip rate, and year-of-construction vulnerability analysis.
 24. **Lock-Screen Medical Emergency Wallpaper (ICE):**
     - Generates customized lock-screen wallpapers displaying blood type, chronic conditions, emergency contacts, and the nearest assembly point for first responders.
 
@@ -601,17 +638,22 @@ The toolset is organized into **4 logical categories based on immediate survival
 
 ## 4. Telemetry & Data Sources
 
-| Telemetry Dataset | Authority / Source | Details |
+> **Important:** afet.live is an independent volunteer project with no official affiliation with AFAD, the Ministry of Health or any other authority. In an emergency, always call **112** and follow official announcements.
+
+| Dataset | Source | Coverage & Limits |
 | :--- | :--- | :--- |
-| **Assembly Points** | AFAD & e-Government Turkey | 27,331 verified safe zones across all 81 provinces |
-| **Active Fault Lines** | General Directorate of MTA | 1:25,000 scale Active Fault Map of Turkey |
-| **Live Earthquakes** | Kandilli Observatory & AFAD | Real-time seismic feed, depth, magnitude, epicenter |
-| **Emergency ER Hospitals**| Turkish Ministry of Health | 1,226 accredited public, university, and private emergency rooms |
-| **On-Duty Pharmacies** | Izmir Open Data & EczaneBul API | Daily refreshed on-duty pharmacy directories |
-| **Blood Donation Centers**| Turkish Red Crescent (Kızılay) | 22 Regional Blood Centers & operational coordinates |
-| **Flood & River Telemetry**| ECMWF / GloFAS | Real-time river discharge rates and flash-flood alerts |
-| **Air Quality & Smoke** | Open-Meteo & Copernicus EEA | AQI, PM2.5, PM10, Carbon Monoxide, and asbestos particulate metrics |
-| **Emergency Radio** | TRAC & BTK | PMR 446 channels and VHF/UHF amateur emergency frequencies |
+| **Assembly Points** | Open-source GitHub mirrors of AFAD / e-Government data ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27,331 sites in 68 provinces. Water, power, tent-area and capacity are not in the source; the UI currently shows estimates (to be fixed). |
+| **Hospitals** | Ministry of Health HealthTurkiye API + geogow infrastructure data | 1,212 hospitals. Emergency beds, helipad and trauma-center flags are currently guessed from the name (to be fixed). |
+| **Pharmacies** | [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL), Overpass API | 25,442 pharmacies, 21k+ with phone numbers. **No on-duty information.** |
+| **On-Duty Pharmacies** | İzmir Metropolitan Municipality open-data API (İzmir only) | Elsewhere the app links to the official [e-Devlet on-duty pharmacy lookup](https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama). |
+| **Live Earthquakes** | Kandilli & AFAD (via [api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr)), EMSC, USGS | Four sources tried in order. |
+| **Fault Lines** | Hand-drawn simplified layer | 7 major fault zones. **Not the MTA Active Fault Map**; do not use for building-level risk. |
+| **Blood Donation Centers** | Manually compiled list | 22 Kızılay centers; addresses and coordinates need verification. |
+| **Flood & Rainfall** | [Open-Meteo](https://open-meteo.com) Flood API (GloFAS) and Forecast API | River discharge and precipitation forecasts. |
+| **Air Quality** | Open-Meteo Air Quality API (Copernicus CAMS) | AQI, PM2.5, PM10, CO. |
+| **Basemap** | [OpenFreeMap](https://openfreemap.org) (OpenStreetMap data) | Vector tiles. |
+
+**Data honesty rule:** data is never generated or filled in. If the source does not have a phone number, address, location, capacity or opening hours, the UI says "unknown". [`scripts/validate-data.mjs`](scripts/validate-data.mjs) runs on every build and before the daily sync commits, and blocks missing, out-of-bounds, unsourced or templated-looking data.
 
 ---
 
@@ -620,6 +662,8 @@ The toolset is organized into **4 logical categories based on immediate survival
 - **No Central Tracking:** afet.live does not maintain any database of user identities, IP addresses, coordinates, or distress calls.
 - **Client-Side Storage:** All user configurations (emergency bag checklists, family data, ICE profiles) reside strictly in the browser's local `LocalStorage` and `IndexedDB`.
 - **Ephemeral Identity:** BitChat identities are generated locally as ephemeral Ed25519 / Nostr keypairs and can be wiped instantly at any time.
+- **BitChat messages are public:** messages sent over Nostr are stored on third-party Nostr relays (e.g. relay.damus.io, nos.lol), not by afet.live, and anyone can read them. Do not share personal, address or health details.
+- **Hosting:** the site runs on Cloudflare Pages; Cloudflare processes standard access logs (IP, user agent) under its own policy.
 
 ---
 
