@@ -16,6 +16,7 @@ import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
 import { livePharmacyService } from './services/livePharmacyService';
+import { sanitizeRecordStrings } from './utils/safeText';
 import {
   saveAssemblyPointsToDB,
   getAssemblyPointsFromDB,
@@ -94,7 +95,7 @@ class DisasterAtlasApp {
   private hasCachedLocation = false;
   private selectedPoint: AssemblyPoint | null = null;
   private selectedProvince = '';
-  private onlyDutyPharmacies = true;
+  private onlyDutyPharmacies = false;
   private deepLink: ParsedDeepLink = parseDeepLink();
 
   private headerHUD!: HeaderHUD;
@@ -617,6 +618,9 @@ class DisasterAtlasApp {
     }
 
     if (this.assemblyPoints.length > 0) {
+      // Dış kaynaklı metinler innerHTML ile çizildiği için yüklemede temizlenir (önbellekten gelenler dahil)
+      this.assemblyPoints = this.assemblyPoints.map(sanitizeRecordStrings);
+
       // Pil ve GPU tasarrufu için yalnızca yakın noktaları yükle
       this.syncOptimizedMapData();
 
@@ -696,6 +700,8 @@ class DisasterAtlasApp {
           emergencyBeds: Number(f.properties.emergencyBeds || 0),
           hasTraumaCenter: Boolean(f.properties.hasTraumaCenter),
           helipad: Boolean(f.properties.helipad),
+          openingHours: f.properties.openingHours || undefined,
+          source: f.properties.source || undefined,
           coordinates: f.geometry.coordinates as [number, number]
         }));
         saveFacilitiesToDB(this.facilities).catch(() => {});
@@ -712,6 +718,7 @@ class DisasterAtlasApp {
     }
 
     if (this.facilities.length > 0) {
+      this.facilities = this.facilities.map(sanitizeRecordStrings);
       this.syncOptimizedMapData();
       this.updateUserContextCalculations();
       this.apartmentPoster?.setData(this.userCoords, this.assemblyPoints, this.facilities);
@@ -742,7 +749,10 @@ class DisasterAtlasApp {
 
       const live = await livePharmacyService.fetchDutyPharmacies(targetProv, targetDist);
       if (live && live.length > 0) {
-        this.facilities = livePharmacyService.mergeLivePharmacies(this.facilities, live);
+        this.facilities = livePharmacyService.mergeLivePharmacies(
+          this.facilities,
+          live.map(sanitizeRecordStrings)
+        );
         saveFacilitiesToDB(this.facilities).catch(() => {});
         this.syncOptimizedMapData();
         this.updateUserContextCalculations();
@@ -890,17 +900,20 @@ class DisasterAtlasApp {
 
     const facMap = new Map<string, EmergencyFacility>();
 
-    // 1. Kullanıcı çevresi (40 km)
+    // 1. Kullanıcı çevresi (40 km): dosya sırasına göre değil, en yakın 500 tesis
     const MAX_DISTANCE_M = 40_000;
     const [uLon, uLat] = this.userCoords;
+    const nearby: Array<{ f: EmergencyFacility; d: number }> = [];
     for (const f of this.facilities) {
       const [lon, lat] = f.coordinates;
       if (Math.abs(lon - uLon) <= 0.5 && Math.abs(lat - uLat) <= 0.4) {
-        if (haversineDistanceMeters(this.userCoords, f.coordinates) <= MAX_DISTANCE_M) {
-          facMap.set(f.id, f);
-          if (facMap.size >= 500) break;
-        }
+        const d = haversineDistanceMeters(this.userCoords, f.coordinates);
+        if (d <= MAX_DISTANCE_M) nearby.push({ f, d });
       }
+    }
+    nearby.sort((a, b) => a.d - b.d);
+    for (const { f } of nearby.slice(0, 500)) {
+      facMap.set(f.id, f);
     }
 
     // 2. Harita görüş alanı

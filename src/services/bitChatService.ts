@@ -168,39 +168,17 @@ class BitChatService {
     try {
       const stored = localStorage.getItem(STORAGE_MESSAGES_KEY);
       if (stored) {
-        this.messages = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Eski sürümlerin eklediği örnek (gerçek olmayan) mesajları temizle
+        this.messages = Array.isArray(parsed)
+          ? parsed.filter((m: BitChatMessage) => !String(m?.id).startsWith('bitchat-init-'))
+          : [];
         return;
       }
     } catch {}
 
-    // Initial situational defaults
-    this.messages = [
-      {
-        id: 'bitchat-init-1',
-        pubkey: 'e3f19a02b4',
-        senderName: 'Kurtarma-01 (TRAC)',
-        text: 'Moda Sahili ve Yoğurtçu Parkı toplanma sahalarında mobil aşevi ve acil su dağıtımı açıldı.',
-        timestamp: Date.now() - 1000 * 60 * 18,
-        channel: '#afet-genel',
-        type: 'chat',
-        city: 'İstanbul',
-        district: 'Kadıköy',
-        transport: 'nostr'
-      },
-      {
-        id: 'bitchat-init-2',
-        pubkey: '7a88c4d1f0',
-        senderName: 'Vatandaş-Can',
-        text: 'Ailemizle birlikte toplanma alanındayız. Durumumuz iyi, şebeke zayıf ancak P2P ağı çalışıyor.',
-        timestamp: Date.now() - 1000 * 60 * 7,
-        channel: '#afet-genel',
-        type: 'safe',
-        city: 'İstanbul',
-        district: 'Kadıköy',
-        batteryLevel: 82,
-        transport: 'mesh'
-      }
-    ];
+    // Sohbet boş başlar: örnek/sahte mesaj gösterilmez (afet anında yanıltıcı olabilir).
+    this.messages = [];
   }
 
   private saveMessages(): void {

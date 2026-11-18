@@ -301,238 +301,28 @@ async function main() {
   console.log(`[hastane] Toplam ${hospitalFeatures.length} doğrulanmış acil servis hastanesi eklendi.`);
 
   // -------------------------------------------------------------
-  // 4. Eczaneler: 81 İl Canlı Günlük Nöbetçi Eczaneler (eczaneler.gen.tr & Açık Veri)
+  // 4. Eczaneler: OpenStreetMap gerçek eczane konumları (ODbL)
+  //    OSM nöbet bilgisi içermez. "Bugün hangi eczane nöbetçi" sorusu için
+  //    arayüz kullanıcıyı resmi kaynağa (e-Devlet) yönlendirir.
+  //    KURAL: Eczane adı, telefon, adres veya konum asla ÜRETİLMEZ.
+  //    OSM erişilemezse mevcut dosyadaki OSM eczaneleri korunur.
   // -------------------------------------------------------------
-  const pharmacyFeatures = [];
-  const pharmacyKeys = new Set();
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  function normalizeSlug(str) {
-    return (str || '')
-      .toLocaleLowerCase('tr-TR')
-      .replace(/ı/g, 'i')
-      .replace(/ğ/g, 'g')
-      .replace(/ü/g, 'u')
-      .replace(/ş/g, 's')
-      .replace(/ö/g, 'o')
-      .replace(/ç/g, 'c')
-      .replace(/[^a-z0-9]/g, '');
-  }
-
-  const PROVINCE_CENTROIDS = {
-    adana: [35.3213, 37.0000],
-    adiyaman: [38.2786, 37.7648],
-    afyonkarahisar: [30.5433, 38.7569],
-    agri: [43.0519, 39.7191],
-    amasya: [35.8331, 40.6565],
-    ankara: [32.8597, 39.9334],
-    antalya: [30.7133, 36.8969],
-    artvin: [41.8183, 41.1828],
-    aydin: [27.8436, 37.8444],
-    balikesir: [27.8826, 39.6484],
-    bilecik: [29.9793, 40.1426],
-    bingol: [40.4939, 38.8855],
-    bitlis: [42.1095, 38.4006],
-    bolu: [31.6061, 40.7392],
-    burdur: [30.2889, 37.7203],
-    bursa: [29.0610, 40.1885],
-    canakkale: [26.4086, 40.1553],
-    cankiri: [33.6134, 40.6013],
-    corum: [34.9556, 40.5506],
-    denizli: [29.0864, 37.7765],
-    diyarbakir: [40.2110, 37.9144],
-    edirne: [26.5557, 41.6772],
-    elazig: [39.2264, 38.6810],
-    erzincan: [39.4911, 39.7500],
-    erzurum: [41.2721, 39.9082],
-    eskisehir: [30.5206, 39.7667],
-    gaziantep: [37.3822, 37.0662],
-    giresun: [38.3895, 40.9128],
-    gumushane: [39.4794, 40.4600],
-    hakkari: [43.7408, 37.5833],
-    hatay: [36.1667, 36.2000],
-    isparta: [30.5537, 37.7648],
-    mersin: [34.6415, 36.8121],
-    istanbul: [28.9784, 41.0082],
-    izmir: [27.1428, 38.4237],
-    kars: [43.0975, 40.6013],
-    kastamonu: [33.7765, 41.3887],
-    kayseri: [35.4853, 38.7312],
-    kirklareli: [27.2244, 41.7333],
-    kirsehir: [34.1709, 39.1425],
-    kocaeli: [29.8815, 40.8533],
-    konya: [32.4932, 37.8746],
-    kutahya: [29.9833, 39.4167],
-    malatya: [38.3552, 38.3552],
-    manisa: [27.4289, 38.6191],
-    kahramanmaras: [36.9372, 37.5858],
-    mardin: [40.7339, 37.3212],
-    mugla: [28.3636, 37.2153],
-    mus: [41.4910, 38.7432],
-    nevsehir: [34.7144, 38.6244],
-    nigde: [34.6857, 37.9667],
-    ordu: [37.8797, 40.9839],
-    rize: [40.5217, 41.0201],
-    sakarya: [30.4060, 40.7569],
-    samsun: [36.3360, 41.2867],
-    siirt: [41.9420, 37.9333],
-    sinop: [35.1628, 42.0231],
-    sivas: [37.0145, 39.7477],
-    tekirdag: [27.5110, 40.9833],
-    tokat: [36.5544, 40.3167],
-    trabzon: [39.7168, 41.0027],
-    tunceli: [39.5401, 39.1079],
-    sanliurfa: [38.7955, 37.1674],
-    usak: [29.4058, 38.6823],
-    van: [43.3833, 38.4891],
-    yozgat: [34.8044, 39.8181],
-    zonguldak: [31.7987, 41.4564],
-    aksaray: [34.0254, 38.3687],
-    bayburt: [40.2249, 40.2552],
-    karaman: [33.2150, 37.1759],
-    kirikkale: [33.5065, 39.8468],
-    batman: [41.1322, 37.8812],
-    sirnak: [42.4594, 37.5164],
-    bartin: [32.3375, 41.6344],
-    ardahan: [42.7022, 41.1105],
-    igdir: [44.0450, 39.9196],
-    yalova: [29.2769, 40.6550],
-    karabuk: [32.6277, 41.2061],
-    kilis: [37.1150, 36.7184],
-    osmaniye: [36.2464, 37.0742],
-    duzce: [31.1626, 40.8438]
-  };
-
-  const priorityProvinces = [
-    { slug: 'istanbul', name: 'İstanbul' },
-    { slug: 'ankara', name: 'Ankara' },
-    { slug: 'izmir', name: 'İzmir' },
-    { slug: 'bursa', name: 'Bursa' },
-    { slug: 'antalya', name: 'Antalya' },
-    { slug: 'adana', name: 'Adana' },
-    { slug: 'gaziantep', name: 'Gaziantep' },
-    { slug: 'hatay', name: 'Hatay' },
-    { slug: 'kahramanmaras', name: 'Kahramanmaraş' },
-    { slug: 'diyarbakir', name: 'Diyarbakır' },
-    { slug: 'malatya', name: 'Malatya' },
-    { slug: 'sanliurfa', name: 'Şanlıurfa' },
-    { slug: 'konya', name: 'Konya' },
-    { slug: 'kocaeli', name: 'Kocaeli' },
-    { slug: 'mersin', name: 'Mersin' },
-    { slug: 'samsun', name: 'Samsun' },
-    { slug: 'trabzon', name: 'Trabzon' },
-    { slug: 'kayseri', name: 'Kayseri' }
-  ];
-
-  console.log('[eczane] Türkiye genelinde güncel nöbetçi eczaneler derleniyor...');
-  for (const prov of priorityProvinces) {
+  console.log('[eczane] OpenStreetMap üzerinden Türkiye eczaneleri alınıyor...');
+  let pharmacyFeatures = await fetchOsmPharmacies();
+  if (!pharmacyFeatures) {
+    const existingPath = path.join(DATA_DIR, 'emergency-facilities.geojson');
     try {
-      const genRes = await fetch(`https://www.eczaneler.gen.tr/nobetci-${prov.slug}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        },
-        signal: AbortSignal.timeout(6000)
-      });
-      if (!genRes.ok) continue;
-      const html = await genRes.text();
-      const rows = html.split(/<tr><td colspan=['"]?3['"]? class=['"]?border-bottom['"]?>/i);
-      if (rows.length <= 1) continue;
-
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const linkMatch = row.match(/<a\s+href=['"](\/eczane\/[^'"]+)['"][^>]*>\s*<span class=['"]isim['"]>([^<]+)<\/span>/i);
-        const nameMatch = row.match(/<span class=['"]isim['"]>([^<]+)<\/span>/i);
-        const name = linkMatch ? linkMatch[2].trim() : (nameMatch ? nameMatch[1].trim() : '');
-        if (!name) continue;
-
-        const addressMatch = row.match(/<div class=['"]col-lg-6['"]>([^<]+)/i);
-        const landmarkMatch = row.match(/<span class=['"]font-italic['"]>([^<]+)<\/span>/i);
-        const districtMatch = row.match(/<span class=['"][^'"]*bg-info[^'"]*['"]>([^<]+)<\/span>/i);
-        const hoodMatch = row.match(/<span class=['"][^'"]*bg-secondary[^'"]*['"]>([^<]+)<\/span>/i);
-        const phoneMatch = row.match(/<div class=['"]col-lg-3 py-lg-2['"]>([^<]+)<\/div>/i) ||
-                           row.match(/(\b0?\s?\(?\d{3}\)?\s?\d{3}[-\s]?\d{2}[-\s]?\d{2}\b)/);
-
-        const address = addressMatch ? addressMatch[1].trim() : '';
-        const landmark = landmarkMatch ? landmarkMatch[1].trim() : '';
-        const rowDistrict = districtMatch ? districtMatch[1].trim() : prov.name;
-        const hood = hoodMatch ? hoodMatch[1].trim() : '';
-        const phone = phoneMatch ? (phoneMatch[1] || phoneMatch[0]).trim() : '';
-
-        const distSlug = normalizeSlug(rowDistrict);
-        const distKey = `${prov.slug}__${distSlug}`;
-        const distCentroid = DISTRICT_CENTROIDS[distKey] || PROVINCE_CENTROIDS[prov.slug];
-        if (!distCentroid) continue;
-
-        const idx = pharmacyFeatures.length;
-        const angle = (idx * 137.5 * Math.PI) / 180;
-        const dist = 0.003 + (idx % 7) * 0.0018;
-        const coords = [
-          Number((distCentroid[0] + Math.cos(angle) * dist).toFixed(6)),
-          Number((distCentroid[1] + Math.sin(angle) * dist).toFixed(6))
-        ];
-
-        const pKey = `${name.toLowerCase()}|${rowDistrict.toLowerCase()}|${prov.name.toLowerCase()}`;
-        if (pharmacyKeys.has(pKey)) continue;
-        pharmacyKeys.add(pKey);
-
-        pharmacyFeatures.push({
-          type: 'Feature',
-          id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-          geometry: {
-            type: 'Point',
-            coordinates: coords
-          },
-          properties: {
-            id: `pharm-duty-${pharmacyFeatures.length + 1}`,
-            name: name.includes('Eczane') ? `${name} (Nöbetçi)` : `${name} Eczanesi (Nöbetçi)`,
-            category: 'pharmacy',
-            city: prov.name,
-            district: rowDistrict,
-            neighborhood: hood,
-            address: landmark ? `${address} (${landmark})` : address,
-            phone,
-            typeText: '24 Saat Nöbetçi Eczane',
-            emergencyBeds: 0,
-            hasTraumaCenter: false,
-            helipad: false,
-            isDuty: true,
-            dutyDate: todayStr,
-            closingHour: '7/24 Kesintisiz'
-          }
-        });
-      }
-    } catch {}
-  }
-
-  // Eğer dış kaynaklardan 0 eczane geldiyse, doğrulanmış 81 il nöbetçi eczane paketini devreye sok
-  if (pharmacyFeatures.length === 0) {
-    const fallbackPath = path.join(DATA_DIR, 'duty-pharmacies-fallback.json');
-    if (fs.existsSync(fallbackPath)) {
-      try {
-        const fallbacks = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
-        for (const provList of Object.values(fallbacks)) {
-          for (const p of provList) {
-            pharmacyFeatures.push({
-              type: 'Feature',
-              id: p.id,
-              geometry: { type: 'Point', coordinates: p.coordinates },
-              properties: {
-                ...p,
-                category: 'pharmacy',
-                typeText: '24 Saat Nöbetçi Eczane',
-                emergencyBeds: 0,
-                hasTraumaCenter: false,
-                helipad: false,
-                isDuty: true,
-                closingHour: '7/24 Kesintisiz'
-              }
-            });
-          }
-        }
-      } catch {}
+      const existing = JSON.parse(fs.readFileSync(existingPath, 'utf8'));
+      pharmacyFeatures = (existing.features || []).filter(
+        (f) => f.properties?.category === 'pharmacy' && f.properties?.source === 'osm'
+      );
+      console.warn(`[eczane] OSM erişilemedi; önceki ${pharmacyFeatures.length} OSM eczanesi korunuyor.`);
+    } catch {
+      pharmacyFeatures = [];
+      console.warn('[eczane] OSM erişilemedi ve önceki veri okunamadı; eczane katmanı boş kalacak.');
     }
   }
-  console.log(`[eczane] Toplam ${pharmacyFeatures.length} adet kesin GPS kapı koordinatlı nöbetçi eczane eklendi.`);
+  console.log(`[eczane] Toplam ${pharmacyFeatures.length} OpenStreetMap eczanesi eklendi.`);
 
   // -------------------------------------------------------------
   // 4b. Türk Kızılay Bölge Kan Merkezleri ve Kan Bağış Noktaları
@@ -619,6 +409,9 @@ async function main() {
     pharmaciesCount: pharmacyFeatures.length,
     bloodCentersCount: bloodCenterFeatures.length,
     provinces: Array.from(provincesSet).sort((a, b) => a.localeCompare(b, 'tr')),
+    sources: {
+      pharmacies: '© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez.'
+    },
     updatedAt: new Date().toISOString()
   };
 
@@ -631,8 +424,151 @@ async function main() {
   console.log('[civic-data] Veri derleme tamamlandı:');
   console.log(`  - Resmi AFAD Toplanma Alanları: ${assemblyFeatures.length}`);
   console.log(`  - Doğrulanmış Hastaneler (Bina GPS): ${hospitalFeatures.length}`);
-  console.log(`  - Nöbetçi Eczaneler (Kapı GPS): ${pharmacyFeatures.length}`);
+  console.log(`  - Eczaneler (OpenStreetMap): ${pharmacyFeatures.length}`);
   console.log(`  - İl Sayısı: ${summary.provinces.length}`);
 }
 
-main().catch(console.error);
+// -------------------------------------------------------------
+// OpenStreetMap eczane yardımcıları
+// -------------------------------------------------------------
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter'
+];
+const OSM_PHARMACY_QUERY =
+  '[out:json][timeout:240];area["ISO3166-1"="TR"][admin_level=2]->.tr;nwr["amenity"="pharmacy"](area.tr);out center tags;';
+// Türkiye'de ~25.000 OSM eczanesi var; bunun çok altı eksik/bozuk yanıt demektir.
+const MIN_OSM_PHARMACIES = 15000;
+
+const PROVINCE_DISPLAY_NAMES = {
+  adana: 'Adana', adiyaman: 'Adıyaman', afyonkarahisar: 'Afyonkarahisar', agri: 'Ağrı', amasya: 'Amasya',
+  ankara: 'Ankara', antalya: 'Antalya', artvin: 'Artvin', aydin: 'Aydın', balikesir: 'Balıkesir',
+  bilecik: 'Bilecik', bingol: 'Bingöl', bitlis: 'Bitlis', bolu: 'Bolu', burdur: 'Burdur', bursa: 'Bursa',
+  canakkale: 'Çanakkale', cankiri: 'Çankırı', corum: 'Çorum', denizli: 'Denizli', diyarbakir: 'Diyarbakır',
+  edirne: 'Edirne', elazig: 'Elazığ', erzincan: 'Erzincan', erzurum: 'Erzurum', eskisehir: 'Eskişehir',
+  gaziantep: 'Gaziantep', giresun: 'Giresun', gumushane: 'Gümüşhane', hakkari: 'Hakkari', hatay: 'Hatay',
+  isparta: 'Isparta', mersin: 'Mersin', istanbul: 'İstanbul', izmir: 'İzmir', kars: 'Kars',
+  kastamonu: 'Kastamonu', kayseri: 'Kayseri', kirklareli: 'Kırklareli', kirsehir: 'Kırşehir',
+  kocaeli: 'Kocaeli', konya: 'Konya', kutahya: 'Kütahya', malatya: 'Malatya', manisa: 'Manisa',
+  kahramanmaras: 'Kahramanmaraş', mardin: 'Mardin', mugla: 'Muğla', mus: 'Muş', nevsehir: 'Nevşehir',
+  nigde: 'Niğde', ordu: 'Ordu', rize: 'Rize', sakarya: 'Sakarya', samsun: 'Samsun', siirt: 'Siirt',
+  sinop: 'Sinop', sivas: 'Sivas', tekirdag: 'Tekirdağ', tokat: 'Tokat', trabzon: 'Trabzon',
+  tunceli: 'Tunceli', sanliurfa: 'Şanlıurfa', usak: 'Uşak', van: 'Van', yozgat: 'Yozgat',
+  zonguldak: 'Zonguldak', aksaray: 'Aksaray', bayburt: 'Bayburt', karaman: 'Karaman',
+  kirikkale: 'Kırıkkale', batman: 'Batman', sirnak: 'Şırnak', bartin: 'Bartın', ardahan: 'Ardahan',
+  igdir: 'Iğdır', yalova: 'Yalova', karabuk: 'Karabük', kilis: 'Kilis', osmaniye: 'Osmaniye',
+  duzce: 'Düzce'
+};
+
+function normalizeSlug(str) {
+  return (str || '')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+const DISTRICT_INDEX = Object.entries(DISTRICT_CENTROIDS).map(([key, [lon, lat]]) => ({
+  prov: key.split('__')[0],
+  lon,
+  lat,
+  cosLat: Math.cos((lat * Math.PI) / 180)
+}));
+
+/** En yakın ilçe merkezine göre il tahmini (yalnızca OSM'de il etiketi yoksa kullanılır). */
+function nearestProvinceSlug(lon, lat) {
+  let best = null;
+  let bestD = Infinity;
+  for (const d of DISTRICT_INDEX) {
+    const dx = (lon - d.lon) * d.cosLat;
+    const dy = lat - d.lat;
+    const dist = dx * dx + dy * dy;
+    if (dist < bestD) {
+      bestD = dist;
+      best = d.prov;
+    }
+  }
+  return best;
+}
+
+function provinceFromTags(tags) {
+  for (const key of ['addr:province', 'addr:city']) {
+    const slug = normalizeSlug(tags[key]);
+    if (slug && PROVINCE_DISPLAY_NAMES[slug]) return slug;
+  }
+  return null;
+}
+
+async function fetchOsmPharmacies() {
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'afet.live-data-sync/1.0 (+https://github.com/himmetaga/turkiye-afet-haritasi)'
+          },
+          body: new URLSearchParams({ data: OSM_PHARMACY_QUERY }),
+          signal: AbortSignal.timeout(280_000)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const elements = Array.isArray(json.elements) ? json.elements : [];
+        if (elements.length < MIN_OSM_PHARMACIES) {
+          throw new Error(`yalnızca ${elements.length} eczane döndü (beklenen en az ${MIN_OSM_PHARMACIES})`);
+        }
+        return elements.map(osmElementToFeature).filter(Boolean);
+      } catch (e) {
+        console.warn(`[eczane] ${endpoint} deneme ${attempt} başarısız: ${e.message}`);
+      }
+    }
+  }
+  return null;
+}
+
+function osmElementToFeature(el) {
+  const tags = el.tags || {};
+  const lat = el.lat ?? el.center?.lat;
+  const lon = el.lon ?? el.center?.lon;
+  if (typeof lat !== 'number' || typeof lon !== 'number') return null;
+  if (lon < 25.5 || lon > 44.8 || lat < 35.8 || lat > 42.2) return null;
+
+  const provSlug = provinceFromTags(tags) || nearestProvinceSlug(lon, lat);
+  const street = [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(' No:');
+  const hood = tags['addr:neighbourhood'] ? `${tags['addr:neighbourhood']} Mah.` : '';
+  // Sokak veya mahalle yoksa adres boş bırakılır (yalnızca ilçe adı adres değildir)
+  const address = street || hood
+    ? [hood, street, tags['addr:district']].filter(Boolean).join(', ')
+    : '';
+  const id = `osm-${el.type[0]}${el.id}`;
+
+  return {
+    type: 'Feature',
+    id,
+    geometry: { type: 'Point', coordinates: [Number(lon.toFixed(6)), Number(lat.toFixed(6))] },
+    properties: {
+      id,
+      name: (tags.name || 'Eczane').trim(),
+      category: 'pharmacy',
+      city: PROVINCE_DISPLAY_NAMES[provSlug] || '',
+      district: tags['addr:district'] || '',
+      neighborhood: tags['addr:neighbourhood'] || '',
+      address,
+      phone: tags.phone || tags['contact:phone'] || '',
+      openingHours: tags.opening_hours || '',
+      isDuty: false,
+      source: 'osm'
+    }
+  };
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

@@ -75,6 +75,8 @@ export interface EmergencyFacility {
   isDuty?: boolean;
   closingHour?: string; // e.g. "19:00"
   dutyDate?: string; // e.g. "2026-10-24"
+  openingHours?: string; // OSM opening_hours tag, verbatim
+  source?: string; // e.g. "osm", "İzmir Büyükşehir Belediyesi Açık Veri"
 }
 
 export interface ObstaclePoint {

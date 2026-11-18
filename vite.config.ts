@@ -189,7 +189,7 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+        globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg,json}'],
         globIgnores: ['**/emergency-facilities.geojson', '**/assembly-points.geojson'],
         runtimeCaching: [
           {

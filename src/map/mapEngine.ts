@@ -1,5 +1,9 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// MapLibre v6 loads its worker as a separate module file. Let Vite emit it and point MapLibre at it.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { AssemblyPoint, Earthquake, FaultLine, EmergencyFacility, ObstaclePoint } from '../types';
 import { createPulsingDot } from './pulsingMarker';
 import { generateSafeEvacuationRoute } from '../utils/geoMath';
@@ -26,7 +30,7 @@ export class MapEngine {
   private showHospitals = true;
   private showBloodCenters = true;
   private showPharmacies = true;
-  private onlyDutyPharmacies = true;
+  private onlyDutyPharmacies = false;
 
   private onAssemblyPointClickCallback?: (point: AssemblyPoint) => void;
   private onEarthquakeClickCallback?: (eq: Earthquake) => void;
@@ -48,9 +52,8 @@ export class MapEngine {
         pitch: initialZoom > 10 ? 52 : 30,
         bearing: initialZoom > 10 ? -15 : 0,
         maxPitch: 75,
-        attributionControl: false
+        attributionControl: { compact: true, customAttribution: '© OpenStreetMap katkıcıları' }
       });
-
       this.map.addControl(
         new maplibregl.NavigationControl({
           showCompass: true,
@@ -208,6 +211,7 @@ export class MapEngine {
       minzoom: 12.5,
       layout: {
         'text-field': ['get', 'name'],
+        'text-font': ['Noto Sans Regular'],
         'text-size': 11,
         'text-offset': [0, 1.3],
         'text-anchor': 'top',
@@ -260,6 +264,7 @@ export class MapEngine {
       minzoom: 10.5,
       layout: {
         'text-field': ['get', 'name'],
+        'text-font': ['Noto Sans Regular'],
         'text-size': 11,
         'text-offset': [0, 1.3],
         'text-anchor': 'top',
@@ -423,7 +428,9 @@ export class MapEngine {
         helipad: props.helipad === true || props.helipad === 'true',
         coordinates: coords,
         isDuty: props.isDuty === true || props.isDuty === 'true',
-        closingHour: props.closingHour
+        closingHour: props.closingHour,
+        openingHours: props.openingHours || undefined,
+        source: props.source || undefined
       };
 
       if (this.onFacilityClickCallback) {
@@ -594,7 +601,7 @@ export class MapEngine {
     });
   }
 
-  public setEmergencyFacilities(facilities: EmergencyFacility[], onlyDutyAfterHours = true): void {
+  public setEmergencyFacilities(facilities: EmergencyFacility[], onlyDutyAfterHours = false): void {
     this.allFacilities = facilities;
     this.onlyDutyPharmacies = onlyDutyAfterHours;
     if (!this.map || !this.isLoaded) {

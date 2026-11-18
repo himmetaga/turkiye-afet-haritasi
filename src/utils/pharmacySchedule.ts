@@ -47,6 +47,17 @@ export function evaluatePharmacyStatus(
     };
   }
 
+  // OSM'de çalışma saati etiketi varsa onu olduğu gibi göster; tahmin yürütme.
+  if (facility.openingHours) {
+    return {
+      isOpen: true,
+      statusText: `Çalışma saati: ${facility.openingHours}`,
+      badgeClass: 'text-amber-300 bg-amber-500/10 border-amber-500/20',
+      isDuty: false
+    };
+  }
+
+  // Etiket yoksa Türkiye'deki genel eczane saatleri (08:30-19:00, Pazar kapalı) varsayılır.
   // Turkey Time (Europe/Istanbul)
   const turkeyTimeStr = refDate.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' });
   const local = new Date(turkeyTimeStr);
@@ -92,24 +103,16 @@ export function evaluatePharmacyStatus(
   };
 }
 
+/**
+ * Eczane listesini filtreler. Nöbet bilgisi yalnızca resmi canlı kaynağı olan
+ * illerde (şimdilik İzmir) bulunduğundan, diğer eczaneler saat dışında da
+ * gizlenmez: kullanıcı en yakın eczaneyi görür, durumu ("Kapalı") etikette yazar
+ * ve bugünün nöbetçisi için resmi sorgu bağlantısı sunulur.
+ */
 export function filterPharmaciesBySchedule(
   facilities: EmergencyFacility[],
-  onlyOpenDuty = true,
-  refDate = new Date()
+  onlyDuty = false
 ): EmergencyFacility[] {
-  const afterHours = isAfterClosingHours(refDate);
-
-  return facilities.filter((f) => {
-    if (f.category !== 'pharmacy') return true;
-
-    // Duty pharmacies are always shown
-    if (f.isDuty) return true;
-
-    // If after 19:00 or Sunday, only duty pharmacies should appear
-    if (onlyOpenDuty || afterHours) {
-      return false;
-    }
-
-    return true;
-  });
+  if (!onlyDuty) return facilities;
+  return facilities.filter((f) => f.category !== 'pharmacy' || f.isDuty);
 }

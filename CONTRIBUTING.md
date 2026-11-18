@@ -31,6 +31,13 @@ Türkiye 3D Afet ve Toplanma Atlası, açık kaynaklı ve kamu yararını gözet
 - Yeni bir il veya ilçe eklerken resmi AFAD ve belediye açık veri portallarından teyit edilmiş toplanma alanlarını baz alınız.
 - `scripts/fetch-civic-data.mjs` dosyasına ekleme yaparken alan adı, il/ilçe, tahmini kapasite ve temel altyapı olanaklarını (su, elektrik, çadır sahası) eksiksiz giriniz.
 
+## Veri Dürüstlüğü (Zorunlu)
+
+- **Veri asla üretilmez.** Bir kaynaktan veri alınamıyorsa (engellendi, kapandı, boş döndü) boşluk sahte isim, telefon, adres, koordinat, kapasite veya çalışma saatiyle **doldurulmaz**. Boş bırakın, arayüz "bilinmiyor" desin veya resmi kaynağa yönlendirsin.
+- Bir veri setini "resmi" ya da "doğrulanmış" diye etiketlemeden önce kaynağını PR açıklamasında belirtin.
+- Bot korumasını veya sitelerin kullanım koşullarını aşan kazıma yapmayın; izinli API'leri ve açık veri portallarını kullanın.
+- PR göndermeden önce `npm run validate:data` komutunun geçtiğinden emin olun. Yapay zekâ araçlarıyla üretilen değişikliklerde bu kurala özellikle dikkat edin.
+
 ## Kod Standartları
 
 - Sıfır sunucu maliyetli ve çevrimdışı öncelikli (Offline-First PWA) mimari korunmalıdır.
