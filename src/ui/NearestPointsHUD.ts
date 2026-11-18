@@ -5,6 +5,7 @@ import { voiceGuide } from '../services/voiceGuideService';
 import { isAfterClosingHours } from '../utils/pharmacySchedule';
 import { bindPressAndHold } from './pressAndHold';
 import { syncCurrentRegionOffline, isOfflineProtected } from '../services/offlineSyncService';
+import { OFFICIAL_DUTY_PHARMACY_URL } from '../services/livePharmacyService';
 
 export type HUDCategory = 'assembly' | 'hospitals' | 'pharmacies';
 
@@ -131,7 +132,7 @@ export class NearestPointsHUD {
             id="btn-collapsed-pharmacies"
             type="button"
             class="flex-1 min-w-0 h-[36px] sm:h-[42px] flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-[18px] bg-white/[0.04] hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-gray-200 hover:text-amber-300 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
-            title="Bugünün Nöbetçi Eczaneleri"
+            title="En Yakın Eczaneler"
           >
             ${Icons.pill('w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0')}
             <span class="text-[9.5px] sm:text-xs font-semibold truncate tracking-tight">Eczane</span>
@@ -322,6 +323,22 @@ export class NearestPointsHUD {
         <!-- Scrollable Nearest Points List -->
         <div id="nearest-items-list" class="flex flex-col gap-2 overflow-y-auto max-h-[46vh] sm:max-h-[380px] pr-0.5">
           ${
+            this.activeCategory === 'pharmacies'
+              ? `<a
+                  href="${OFFICIAL_DUTY_PHARMACY_URL}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 text-xs font-semibold transition-all"
+                >
+                  <span>🌙 Bugünün nöbetçi eczaneleri (e-Devlet)</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+                <p class="px-1 text-[10px] text-gray-400 leading-snug">
+                  Liste OpenStreetMap kayıtlarından gelir; nöbet bilgisi yalnızca resmi kaynaktan teyit edilmelidir.
+                </p>`
+              : ''
+          }
+          ${
             list.length === 0
               ? `<div class="p-4 text-center text-xs text-gray-400 bg-white/5 rounded-xl">
                   Bu bölgede kayıtlı ${
@@ -329,7 +346,7 @@ export class NearestPointsHUD {
                       ? 'toplanma alanı'
                       : this.activeCategory === 'hospitals'
                       ? 'acil hastane'
-                      : 'nöbetçi eczane'
+                      : 'eczane'
                   } bulunamadı. Haritadan başka bir il/ilçe seçebilirsiniz.
                 </div>`
               : list
@@ -414,12 +431,16 @@ export class NearestPointsHUD {
                                   </span>
                                 `
                                 : this.activeCategory === 'pharmacies'
-                                ? `
+                                ? (p as any).isDuty
+                                  ? `
                                   <span class="inline-flex items-center gap-1 text-amber-300 font-medium font-mono text-[10px] bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/25">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                     Bugün Nöbetçi ${dutyDate ? `(${formatDutyDate(dutyDate)})` : ''}
                                   </span>
                                 `
+                                  : `<span class="text-gray-400 font-medium">${
+                                      (p as any).openingHours ? `Saat: ${(p as any).openingHours}` : 'Eczane'
+                                    }</span>`
                                 : (p as any).hasTraumaCenter
                                 ? '<span class="text-rose-400 font-semibold">Travma Merkezi</span>'
                                 : (p as any).emergencyBeds

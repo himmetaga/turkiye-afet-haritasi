@@ -1,6 +1,7 @@
 import { Icons } from './icons';
 import { bitChatService } from '../services/bitChatService';
 import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
+import { escapeHtml } from '../utils/safeText';
 
 interface RadioTransmission {
   id: string;
@@ -424,7 +425,7 @@ export class OfflinePTTWalkieTalkieModal {
               </span>
               <div class="min-w-0">
                 <div class="font-bold text-white flex items-center gap-1.5">
-                  <span>${t.senderName}</span>
+                  <span>${escapeHtml(t.senderName)}</span>
                   <span class="text-[10px] text-gray-400 font-mono">${time}</span>
                 </div>
                 <div class="text-[11px] text-gray-400 truncate">${t.channel} · ${t.durationSec}s</div>

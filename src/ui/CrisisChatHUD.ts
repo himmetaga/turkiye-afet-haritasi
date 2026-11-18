@@ -2,6 +2,7 @@ import { Icons } from './icons';
 import { bitChatService, BitChatMessage } from '../services/bitChatService';
 import { LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
+import { escapeHtml } from '../utils/safeText';
 
 export class CrisisChatHUD {
   private container: HTMLElement;
@@ -237,11 +238,11 @@ export class CrisisChatHUD {
                         : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Mesh</span>';
 
                     const powBadge = m.powDifficulty
-                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 font-mono" title="Anti-Spam Proof-of-Work: ${m.powDifficulty}-bit">🛡️ PoW</span>`
+                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 font-mono" title="Anti-Spam Proof-of-Work: ${escapeHtml(m.powDifficulty)}-bit">🛡️ PoW</span>`
                       : '';
 
                     const proxBadge = m.proximityBadge
-                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded border ${m.proximityClass || 'bg-gray-500/15 text-gray-300 border-gray-500/25'} font-medium">${m.proximityBadge}</span>`
+                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded border ${m.proximityClass || 'bg-gray-500/15 text-gray-300 border-gray-500/25'} font-medium">${escapeHtml(m.proximityBadge)}</span>`
                       : '';
 
                     const verifiedBadge = rep.isVerified
@@ -260,7 +261,7 @@ export class CrisisChatHUD {
                     const warningBanner = m.warningNotice
                       ? `
                       <div class="p-1.5 mb-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10.5px] text-amber-200">
-                        ${m.warningNotice}
+                        ${escapeHtml(m.warningNotice)}
                       </div>
                     `
                       : '';
@@ -274,20 +275,20 @@ export class CrisisChatHUD {
                       <div class="flex items-center justify-between gap-1 mb-1.5">
                         <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
                           <span class="font-bold truncate ${isSOS ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
-                            ${m.senderName}
+                            ${escapeHtml(m.senderName)}
                           </span>
                           ${transportBadge}
                           ${powBadge}
                           ${proxBadge}
                           ${verifiedBadge}
-                          ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${m.district})</span>` : ''}
+                          ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${escapeHtml(m.district)})</span>` : ''}
                         </div>
                         <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono flex-shrink-0">
-                          ${m.batteryLevel !== undefined ? `<span>🔋 %${m.batteryLevel}</span>` : ''}
+                          ${m.batteryLevel !== undefined ? `<span>🔋 %${escapeHtml(m.batteryLevel)}</span>` : ''}
                           <span>${timeAgo}</span>
                         </div>
                       </div>
-                      <p class="text-gray-200 leading-relaxed font-normal">${m.text}</p>
+                      <p class="text-gray-200 leading-relaxed font-normal">${escapeHtml(m.text)}</p>
 
                       <!-- Topluluk Konsensüsü & Teyit Butonları -->
                       <div class="flex items-center justify-end gap-2 mt-2 pt-1.5 border-t border-white/5 text-[10.5px]">
@@ -298,7 +299,7 @@ export class CrisisChatHUD {
                               ? 'bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/40'
                               : 'bg-white/5 text-gray-400 hover:text-emerald-300'
                           } transition-all cursor-pointer"
-                          data-id="${m.id}"
+                          data-id="${escapeHtml(m.id)}"
                           title="Bu bilginin doğruluğunu teyit et"
                         >
                           <span>✓</span><span>Teyit Et (${rep.verifications})</span>
@@ -310,7 +311,7 @@ export class CrisisChatHUD {
                               ? 'bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40'
                               : 'bg-white/5 text-gray-400 hover:text-rose-300'
                           } transition-all cursor-pointer"
-                          data-id="${m.id}"
+                          data-id="${escapeHtml(m.id)}"
                           title="Asılsız veya manipülatif ihbar olarak bildir"
                         >
                           <span>⚠️</span><span>Asılsız Bildir (${rep.flags})</span>

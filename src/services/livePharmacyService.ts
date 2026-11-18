@@ -1,9 +1,14 @@
 import { EmergencyFacility } from '../types';
+import { haversineDistanceMeters } from '../utils/geoMath';
+
+/** Bugünün nöbetçi eczanelerini resmi olarak sorgulamak için e-Devlet hizmeti. */
+export const OFFICIAL_DUTY_PHARMACY_URL = 'https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama';
 
 export interface LivePharmacyPayload {
   province: string;
   date: string;
   count: number;
+  officialUrl?: string;
   pharmacies: Array<{
     id: string;
     name: string;
@@ -14,6 +19,7 @@ export interface LivePharmacyPayload {
     phone: string;
     isDuty: boolean;
     dutyDate: string;
+    source?: string;
     coordinates: [number, number];
   }>;
 }
@@ -21,11 +27,6 @@ export interface LivePharmacyPayload {
 export class LivePharmacyService {
   private static instance: LivePharmacyService;
   private cachedPharmaciesByProv: Map<string, EmergencyFacility[]> = new Map();
-  private lastFetchedDate: string = '';
-
-  private constructor() {
-    this.lastFetchedDate = this.getTodayDateString();
-  }
 
   public static getInstance(): LivePharmacyService {
     if (!LivePharmacyService.instance) {
@@ -48,20 +49,19 @@ export class LivePharmacyService {
   }
 
   /**
-   * Belirtilen il ve ilçe için güncel nöbetçi eczaneleri API'den çeker
+   * Bugünün nöbetçi eczanelerini resmi açık veri API'lerinden çeker.
+   * Kaynak yoksa veya erişilemezse boş liste döner; asla veri üretilmez.
    */
   public async fetchDutyPharmacies(province: string = 'istanbul', district?: string): Promise<EmergencyFacility[]> {
     const today = this.getTodayDateString();
     const cleanDist = (district || '').trim().toLowerCase();
     const cacheKey = `${province.toLowerCase()}_${cleanDist}_${today}`;
 
-    // Bellek önbelleği
-    if (this.cachedPharmaciesByProv.has(cacheKey)) {
-      return this.cachedPharmaciesByProv.get(cacheKey)!;
-    }
+    const cached = this.cachedPharmaciesByProv.get(cacheKey);
+    if (cached) return cached;
 
     try {
-      let endpoint = `/api/duty-pharmacies?province=${encodeURIComponent(province)}&limit=150`;
+      let endpoint = `/api/duty-pharmacies?province=${encodeURIComponent(province)}`;
       if (cleanDist) {
         endpoint += `&district=${encodeURIComponent(cleanDist)}`;
       }
@@ -69,76 +69,40 @@ export class LivePharmacyService {
       if (!res.ok) return [];
 
       const data: LivePharmacyPayload = await res.json();
-      if (!data || !Array.isArray(data.pharmacies) || data.pharmacies.length === 0) {
-        return [];
-      }
+      if (!data || !Array.isArray(data.pharmacies)) return [];
 
-      const facilities: EmergencyFacility[] = data.pharmacies.map((p, idx) => ({
-        id: p.id || `live-pharm-${province}-${cleanDist || 'all'}-${idx + 1}`,
-        name: p.name.includes('(Nöbetçi)') ? p.name : `${p.name} (Nöbetçi)`,
-        category: 'pharmacy',
-        city: p.city || province,
-        district: p.district || district || '',
-        neighborhood: p.neighborhood || '',
-        address: p.address || '',
-        phone: p.phone || '',
-        typeText: 'Canlı Nöbetçi Eczane',
-        emergencyBeds: 0,
-        hasTraumaCenter: false,
-        helipad: false,
-        isDuty: true,
-        dutyDate: p.dutyDate || data.date || today,
-        closingHour: '7/24 Kesintisiz',
-        coordinates: p.coordinates
-      }));
+      const facilities: EmergencyFacility[] = data.pharmacies
+        .filter((p) => Array.isArray(p.coordinates) && p.coordinates.length === 2)
+        .map((p, idx) => ({
+          id: p.id || `live-pharm-${province}-${cleanDist || 'all'}-${idx + 1}`,
+          name: p.name,
+          category: 'pharmacy',
+          city: p.city || province,
+          district: p.district || '',
+          neighborhood: p.neighborhood || '',
+          address: p.address || '',
+          phone: p.phone || '',
+          typeText: 'Nöbetçi Eczane',
+          emergencyBeds: 0,
+          hasTraumaCenter: false,
+          helipad: false,
+          isDuty: true,
+          dutyDate: p.dutyDate || data.date || today,
+          source: p.source,
+          coordinates: p.coordinates
+        }));
 
       this.cachedPharmaciesByProv.set(cacheKey, facilities);
       return facilities;
     } catch {
-      // 2. Seviye Çevrimdışı ve Hata Koruması: Statik Nöbetçi Eczane Paketinden Oku
-      try {
-        const staticRes = await fetch('/data/duty-pharmacies-fallback.json');
-        if (staticRes.ok) {
-          const allFallbacks = await staticRes.json();
-          const provList = allFallbacks[province.toLowerCase()] || [];
-          if (provList.length > 0) {
-            let matched = provList;
-            if (cleanDist) {
-              const fList = provList.filter((p: any) =>
-                (p.district || '').toLowerCase().includes(cleanDist) ||
-                (p.address || '').toLowerCase().includes(cleanDist)
-              );
-              if (fList.length > 0) matched = fList;
-            }
-            const facilities: EmergencyFacility[] = matched.map((p: any, idx: number) => ({
-              id: p.id || `fallback-pharm-${province}-${idx + 1}`,
-              name: p.name.includes('(Nöbetçi)') ? p.name : `${p.name} (Nöbetçi)`,
-              category: 'pharmacy',
-              city: p.city || province,
-              district: p.district || district || '',
-              neighborhood: p.neighborhood || '',
-              address: p.address || '',
-              phone: p.phone || '',
-              typeText: '24 Saat Nöbetçi Eczane',
-              emergencyBeds: 0,
-              hasTraumaCenter: false,
-              helipad: false,
-              isDuty: true,
-              dutyDate: p.dutyDate || today,
-              closingHour: '7/24 Kesintisiz',
-              coordinates: p.coordinates
-            }));
-            this.cachedPharmaciesByProv.set(cacheKey, facilities);
-            return facilities;
-          }
-        }
-      } catch {}
       return [];
     }
   }
 
   /**
-   * Statik tesis listesindeki eski eczaneleri, bugünün canlı nöbetçileriyle birleştirir
+   * Canlı nöbetçi eczaneleri mevcut (OpenStreetMap) eczane listesine ekler.
+   * Aynı eczanenin iki kez görünmemesi için canlı kaydın 80 m yakınındaki
+   * OSM kaydı listeden çıkarılır.
    */
   public mergeLivePharmacies(
     existingFacilities: EmergencyFacility[],
@@ -148,24 +112,15 @@ export class LivePharmacyService {
       return existingFacilities;
     }
 
-    // Hastaneleri ve diğer tesisleri olduğu gibi koru
-    const nonPharmacies = existingFacilities.filter((f) => f.category !== 'pharmacy');
-
-    // Canlı eczanelerin illerini tespit et
-    const liveCities = new Set(livePharmacies.map((p) => p.city.toLowerCase()));
-    const liveDistricts = new Set(livePharmacies.map((p) => `${p.city.toLowerCase()}__${(p.district || '').toLowerCase()}`));
-
-    // Canlı verisi gelmeyen diğer il/ilçelerin eczanelerini yedek olarak tut
-    const otherCityPharmacies = existingFacilities.filter((f) => {
-      if (f.category !== 'pharmacy') return false;
-      const c = (f.city || '').toLowerCase();
-      const d = `${c}__${(f.district || '').toLowerCase()}`;
-      if (liveDistricts.has(d)) return false;
-      if (liveCities.has(c) && !f.district) return false;
-      return true;
+    const liveIds = new Set(livePharmacies.map((p) => p.id));
+    const kept = existingFacilities.filter((f) => {
+      if (f.category !== 'pharmacy') return true;
+      if (liveIds.has(f.id)) return false;
+      if (f.isDuty) return true;
+      return !livePharmacies.some((p) => haversineDistanceMeters(p.coordinates, f.coordinates) < 80);
     });
 
-    return [...nonPharmacies, ...livePharmacies, ...otherCityPharmacies];
+    return [...kept, ...livePharmacies];
   }
 }
 

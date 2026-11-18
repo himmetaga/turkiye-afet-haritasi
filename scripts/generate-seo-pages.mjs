@@ -377,7 +377,7 @@ Host: https://afet.live
 
 function renderProvinceHtml(templateHtml, prov) {
   const title = `${prov.name} AFAD Toplanma Alanları ve Deprem Haritası 2026 — afet.live`;
-  const desc = `${prov.name} genelinde resmi AFAD toplanma alanları, acil servis hastaneleri, nöbetçi eczaneler ve diri fay hattı sorgulama. Çevrimdışı ve ücretsiz.`;
+  const desc = `${prov.name} genelinde resmi AFAD toplanma alanları, acil servis hastaneleri, eczaneler ve diri fay hattı sorgulama. Çevrimdışı ve ücretsiz.`;
   const canonicalUrl = `https://afet.live/${prov.slug}`;
 
   // Replace Title & Meta Description & Canonical
@@ -470,7 +470,7 @@ function renderProvinceHtml(templateHtml, prov) {
         ${prov.name} AFAD Toplanma Alanları ve Deprem Haritası
       </h1>
       <p style="font-size:12px;line-height:1.5;color:#cbd5e1;margin:0 0 14px 0;">
-        ${prov.name} genelindeki resmi AFAD toplanma alanları, acil servis hastaneleri, nöbetçi eczaneler ve MTA diri fay hattı sorgulama sistemi. %100 internetsiz ve ücretsizdir.
+        ${prov.name} genelindeki resmi AFAD toplanma alanları, acil servis hastaneleri, eczaneler ve MTA diri fay hattı sorgulama sistemi. %100 internetsiz ve ücretsizdir.
       </p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;text-align:center;">
         <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);">
@@ -587,12 +587,10 @@ async function main() {
   // 1. Generate 81 Province Static Pages
   let provCount = 0;
   for (const prov of PROVINCES) {
-    const provDir = path.join(DIST_DIR, prov.slug);
-    if (!fs.existsSync(provDir)) {
-      fs.mkdirSync(provDir, { recursive: true });
-    }
+    // <slug>.html olarak yazılır: Cloudflare Pages /<slug> adresini sona '/' eklemeden sunar.
+    // (<slug>/index.html, middleware'in sondaki '/' kaldırmasıyla sonsuz yönlendirme döngüsüne giriyordu.)
     const provHtml = renderProvinceHtml(templateHtml, prov);
-    fs.writeFileSync(path.join(provDir, 'index.html'), provHtml, 'utf8');
+    fs.writeFileSync(path.join(DIST_DIR, `${prov.slug}.html`), provHtml, 'utf8');
     provCount++;
   }
   console.log(`[seo-gen] ✓ 81 İl için statik SEO iniş sayfaları üretildi (${provCount} sayfa).`);
@@ -604,11 +602,7 @@ async function main() {
     const toolHtml = renderToolHtml(templateHtml, tool);
 
     for (const s of slugsToGenerate) {
-      const toolDir = path.join(DIST_DIR, s);
-      if (!fs.existsSync(toolDir)) {
-        fs.mkdirSync(toolDir, { recursive: true });
-      }
-      fs.writeFileSync(path.join(toolDir, 'index.html'), toolHtml, 'utf8');
+      fs.writeFileSync(path.join(DIST_DIR, `${s}.html`), toolHtml, 'utf8');
       toolCount++;
     }
   }

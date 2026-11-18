@@ -1,5 +1,6 @@
 import { AssemblyPoint, EmergencyFacility } from '../types';
 import { Icons } from './icons';
+import { OFFICIAL_DUTY_PHARMACY_URL } from '../services/livePharmacyService';
 
 export interface PointDetailCallbacks {
   onRoute: (point: AssemblyPoint | EmergencyFacility) => void;
@@ -45,9 +46,9 @@ export class PointDetailHUD {
         statusLabel = '24/7 Kesintisiz Nöbetçi';
         statusClass = 'text-amber-400';
       } else {
-        badgeText = '💊 Gündüz Eczanesi (19:00 Kapanış)';
+        badgeText = '💊 Eczane';
         badgeColor = 'text-yellow-400';
-        statusLabel = 'Haftaiçi 08:30 - 19:00';
+        statusLabel = fac.openingHours || 'Bilinmiyor, arayarak teyit edin';
         statusClass = 'text-yellow-400';
       }
     } else if (category === 'blood_center') {
@@ -97,7 +98,7 @@ export class PointDetailHUD {
                 fac.emergencyBeds
                   ? `${fac.emergencyBeds} yatak`
                   : category === 'pharmacy'
-                  ? fac.isDuty ? '24 Saat Nöbetçi' : 'Gündüz Eczanesi'
+                  ? fac.isDuty ? '24 Saat Nöbetçi' : 'Eczane'
                   : category === 'blood_center'
                   ? 'Türk Kızılay'
                   : fac.capacity
@@ -126,6 +127,22 @@ export class PointDetailHUD {
               <span>Ara: ${fac.phone}</span>
             </a>
           </div>
+        `
+            : ''
+        }
+
+        ${
+          category === 'pharmacy' && !fac.isDuty
+            ? `
+          <a
+            href="${OFFICIAL_DUTY_PHARMACY_URL}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mb-3 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 text-xs font-semibold transition-all"
+          >
+            🌙 Bugünün nöbetçi eczaneleri (e-Devlet) ↗
+          </a>
+          <p class="-mt-2 mb-3 text-[10px] text-gray-500">Kaynak: © OpenStreetMap katkıcıları</p>
         `
             : ''
         }

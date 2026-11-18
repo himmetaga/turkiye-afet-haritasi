@@ -14,7 +14,7 @@ export class LayerControlHUD {
     hospitals: true,
     bloodCenters: true,
     pharmacies: true,
-    dutyOnly: true,
+    dutyOnly: false,
     earthquakes: true,
     buildings: true
   };
@@ -103,7 +103,7 @@ export class LayerControlHUD {
           <label class="flex items-center justify-between p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 cursor-pointer select-none">
             <span class="flex items-center gap-2 text-amber-300">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-              🌙 Yalnızca Nöbetçiler (19:00 Kuralı)
+              🌙 Yalnızca canlı nöbetçi verisi (şimdilik İzmir)
             </span>
             <input type="checkbox" data-layer="dutyOnly" ${this.states.dutyOnly ? 'checked' : ''} class="accent-amber-400 rounded" />
           </label>
