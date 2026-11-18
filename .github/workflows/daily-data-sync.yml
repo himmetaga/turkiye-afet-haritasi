@@ -36,13 +36,15 @@ jobs:
       - name: Validate Data Before Publishing
         run: node scripts/validate-data.mjs --max-age-hours=2
 
+      # Commit mesajına [skip ci] EKLEMEYİN: Cloudflare Pages bu etiketi görünce
+      # yayını atlar ve güncel veri canlı siteye hiç ulaşmaz.
       - name: Commit and Push Changes If Updated
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [[ -n $(git status --porcelain public/data/) ]]; then
             git add public/data/
-            git commit -m "chore(data): daily automated GIS & pharmacy sync [skip ci]"
+            git commit -m "chore(data): daily automated GIS & pharmacy sync"
             git push origin main
           else
             echo "No data changes detected. Everything is up to date."
