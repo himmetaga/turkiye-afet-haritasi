@@ -181,7 +181,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '28px system-ui, -apple-system, sans-serif';
-    const p1Loc = p1 ? `📍 ${p1.district}, ${p1.city} • Kapasite: ${(p1.capacity || 2500).toLocaleString()} kişi` : '';
+    const p1Loc = p1 ? `📍 ${p1.district}, ${p1.city} ${p1.areaSqM ? ` • Alan: ${p1.areaSqM.toLocaleString('tr-TR')} m²` : ''}` : '';
     ctx.fillText(p1Loc, 110, y + 195);
 
     ctx.fillStyle = '#34d399';
@@ -222,7 +222,7 @@ export class SocialShareCard {
     const p2DistStr = `${p2Dist.toLocaleString()} metre (~${estimateWalkingMinutes(p2Dist)} dk)`;
     ctx.fillText(p2DistStr, 110, y + 225);
 
-    // CARD 3: En Yakın 7/24 Acil Hastane
+    // CARD 3: En Yakın Hastane
     y += 290;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
@@ -234,7 +234,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#f43f5e';
     ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
-    ctx.fillText('🏥 EN YAKIN 7/24 ACİL SERVİS HASTANESİ', 110, y + 55);
+    ctx.fillText('🏥 EN YAKIN HASTANE', 110, y + 55);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
@@ -460,7 +460,7 @@ export class SocialShareCard {
 
               <!-- Hospital -->
               <div class="p-2 rounded-xl bg-white/5 border border-white/10 text-[10px]">
-                <span class="text-rose-400 font-bold">🏥 7/24 Acil Hastane:</span>
+                <span class="text-rose-400 font-bold">🏥 En Yakın Hastane:</span>
                 <span class="text-gray-200 block truncate">${hospital ? hospital.facility.name : 'Bölge Acil Hastanesi'}</span>
               </div>
             </div>

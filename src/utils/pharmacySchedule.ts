@@ -31,7 +31,7 @@ export function evaluatePharmacyStatus(
   if (facility.category !== 'pharmacy') {
     return {
       isOpen: true,
-      statusText: '7/24 Kesintisiz Hizmet',
+      statusText: 'Arayarak teyit edin',
       badgeClass: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
       isDuty: false
     };

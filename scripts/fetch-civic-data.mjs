@@ -97,14 +97,11 @@ async function main() {
                 city: cityName,
                 district,
                 neighborhood: hood,
-                address: p.adres || `${district}, ${cityName}`,
+                address: p.adres || '',
                 tabelaKod: p.tabelaKod || '',
-                capacity: Math.max(500, Math.round((p.alanM2 || 1200) * 1.5)),
-                areaSqM: p.alanM2 || 1200,
-                hasWater: true,
-                hasElectricity: true,
-                hasTentArea: true,
-                hasGenerator: true
+                // Kaynakta yalnızca alan (m²) var. Kapasite, su, elektrik, çadır
+                // bilgisi kaynakta YOK; tahmin edilip yazılmaz.
+                areaSqM: Number(p.alanM2) > 0 ? Number(p.alanM2) : 0
               }
             });
           }
@@ -146,14 +143,8 @@ async function main() {
                     city: a.il_adi || il,
                     district: a.ilce_adi || ilce,
                     neighborhood: a.mahalle_adi || mahalle,
-                    address: a.acik_adres || `${mahalle} Mah. ${ilce}`,
-                    tabelaKod: a.tabela_kod || '',
-                    capacity: 2500,
-                    areaSqM: 1800,
-                    hasWater: true,
-                    hasElectricity: true,
-                    hasTentArea: true,
-                    hasGenerator: true
+                    address: a.acik_adres || '',
+                    tabelaKod: a.tabela_kod || ''
                   }
                 });
               }
@@ -202,16 +193,6 @@ async function main() {
         if (hospitalNamesSet.has(hKey)) continue;
         hospitalNamesSet.add(hKey);
 
-        const isTrauma =
-          name.includes('Şehir') ||
-          name.includes('Eğitim') ||
-          name.includes('Araştırma') ||
-          name.includes('Fakülte') ||
-          name.includes('Devlet') ||
-          name.includes('Numune');
-
-        const isHeli = name.includes('Şehir') || name.includes('Eğitim') || name.includes('Çam ve Sakura');
-
         hospitalFeatures.push({
           type: 'Feature',
           id: `hosp-${hospitalFeatures.length + 1}`,
@@ -224,12 +205,10 @@ async function main() {
             name,
             category: 'hospital',
             city: m.city,
-            district: m.city,
-            typeText: isTrauma ? 'Acil Travma & Bölge Şehir Hastanesi' : 'Genel Acil Servis Hastanesi',
-            emergencyBeds: isTrauma ? 750 : 250,
-            hasTraumaCenter: isTrauma,
-            helipad: isHeli,
-            phone: '112 / 182'
+            district: '',
+            typeText: 'Hastane',
+            phone: '',
+            source: 'geogow'
           }
         });
       }
@@ -260,6 +239,8 @@ async function main() {
           name.includes('Şehir Hastanesi');
 
         if (!isHospital) continue;
+        // Diş ve fizik tedavi hastanelerinde acil servis yoktur; afet haritasında yanıltıcı olur.
+        if (/Ağız ve Diş|Fizik Tedavi/i.test(type) || /Ağız ve Diş|Diş Hastanesi|Fizik Tedavi/i.test(name)) continue;
 
         const lat = parseFloat(d.xaxisCoordinate);
         const lon = parseFloat(d.yaxisCoordinate);
@@ -268,8 +249,6 @@ async function main() {
         const hKey = `${city}|${name.toLowerCase()}`;
         if (hospitalNamesSet.has(hKey)) continue;
         hospitalNamesSet.add(hKey);
-
-        const isTrauma = (d.unitCapacity && d.unitCapacity >= 200) || name.includes('Şehir') || name.includes('Araştırma');
 
         hospitalFeatures.push({
           type: 'Feature',
@@ -285,11 +264,11 @@ async function main() {
             city,
             district: d.address ? (d.address.split('/').pop()?.trim() || city) : city,
             address: d.address || '',
-            phone: d.phone || '112 / 182',
-            typeText: type || 'Acil Hastane',
-            emergencyBeds: d.unitCapacity || 150,
-            hasTraumaCenter: isTrauma,
-            helipad: Boolean(d.unitCapacity && d.unitCapacity >= 500)
+            phone: d.phone || '',
+            typeText: type || 'Hastane',
+            source: 'healthturkiye',
+            // HealthTurkiye "unitCapacity": kurumun bildirdiği yatak kapasitesi. 0 ise bilinmiyor.
+            ...(Number(d.unitCapacity) > 0 ? { bedCapacity: Number(d.unitCapacity) } : {})
           }
         });
       }
@@ -298,7 +277,11 @@ async function main() {
     console.warn('[hastane] HealthTurkiye API uyarısı:', e.message);
   }
 
-  console.log(`[hastane] Toplam ${hospitalFeatures.length} doğrulanmış acil servis hastanesi eklendi.`);
+  const cleanedHospitals = cleanHospitals(hospitalFeatures);
+  console.log(`[hastane] ${hospitalFeatures.length - cleanedHospitals.length} tekrar/acil servissiz kayıt çıkarıldı.`);
+  hospitalFeatures.length = 0;
+  hospitalFeatures.push(...cleanedHospitals);
+  console.log(`[hastane] Toplam ${hospitalFeatures.length} hastane eklendi.`);
 
   // -------------------------------------------------------------
   // 4. Eczaneler: OpenStreetMap gerçek eczane konumları (ODbL)
@@ -325,57 +308,27 @@ async function main() {
   console.log(`[eczane] Toplam ${pharmacyFeatures.length} OpenStreetMap eczanesi eklendi.`);
 
   // -------------------------------------------------------------
-  // 4b. Türk Kızılay Bölge Kan Merkezleri ve Kan Bağış Noktaları
+  // 4b. Kan bağış merkezleri: OpenStreetMap healthcare=blood_donation (ODbL)
+  //     Önceki elle yazılmış liste kaldırıldı: koordinat ve adresleri
+  //     doğrulanamıyordu. OSM erişilemezse mevcut OSM kayıtları korunur.
   // -------------------------------------------------------------
-  console.log('[kızılay] Türk Kızılay bölge ve afet kan bağış merkezleri derleniyor...');
-  const bloodCenterList = [
-    { name: 'Türk Kızılay Kuzey Marmara Bölge Kan Merkezi', city: 'İstanbul', district: 'Kartal', address: 'Cevizli Mah. Tugay Yolu Cad. No:6 Kartal / İstanbul', phone: '168 / (0216) 458 05 00', lon: 29.1764, lat: 40.9168 },
-    { name: 'Türk Kızılay Avrupa Bölge Kan Merkezi', city: 'İstanbul', district: 'Fatih', address: 'Topkapı Mah. Turgut Özal Millet Cad. No:114 Çapa Fatih / İstanbul', phone: '168 / (0212) 631 00 20', lon: 28.9392, lat: 41.0185 },
-    { name: 'Türk Kızılay Kadıköy Kan Bağış Merkezi', city: 'İstanbul', district: 'Kadıköy', address: 'Rıhtım Cad. İskele Yanı Kadıköy / İstanbul', phone: '168', lon: 29.0235, lat: 40.9912 },
-    { name: 'Türk Kızılay Beşiktaş Kan Bağış Merkezi', city: 'İstanbul', district: 'Beşiktaş', address: 'Sinanpaşa Mah. Beşiktaş Meydanı / İstanbul', phone: '168', lon: 29.0065, lat: 41.0428 },
-    { name: 'Türk Kızılay Bakırköy Kan Bağış Merkezi', city: 'İstanbul', district: 'Bakırköy', address: 'Cevizlik Mah. Özgürlük Meydanı Bakırköy / İstanbul', phone: '168', lon: 28.8728, lat: 40.9782 },
-    { name: 'Türk Kızılay Orta Anadolu Bölge Kan Merkezi', city: 'Ankara', district: 'Çankaya', address: 'Ehlibeyt Mah. 1242. Cad. No:16 Balgat Çankaya / Ankara', phone: '168 / (0312) 287 01 00', lon: 32.8198, lat: 39.8974 },
-    { name: 'Türk Kızılay Karanfil Kan Bağış Merkezi', city: 'Ankara', district: 'Çankaya', address: 'Kızılay Mah. Karanfil Sokak No:1 Çankaya / Ankara', phone: '168', lon: 32.8552, lat: 39.9198 },
-    { name: 'Türk Kızılay Ege Bölge Kan Merkezi', city: 'İzmir', district: 'Bornova', address: 'Kazımdirik Mah. Sanayi Cad. No:18 Bornova / İzmir', phone: '168 / (0232) 461 40 40', lon: 27.1985, lat: 38.4485 },
-    { name: 'Türk Kızılay Konak Kan Bağış Merkezi', city: 'İzmir', district: 'Konak', address: 'Konak Meydanı Saat Kulesi Yanı Konak / İzmir', phone: '168', lon: 27.1287, lat: 38.4189 },
-    { name: 'Türk Kızılay Güney Marmara Bölge Kan Merkezi', city: 'Bursa', district: 'Osmangazi', address: 'Kükürtlü Mah. Çekirge Cad. No:77 Osmangazi / Bursa', phone: '168 / (0224) 234 50 50', lon: 29.0354, lat: 40.1982 },
-    { name: 'Türk Kızılay Güney Anadolu Bölge Kan Merkezi', city: 'Adana', district: 'Seyhan', address: 'Döşeme Mah. Erdal Acet Cad. No:12 Seyhan / Adana', phone: '168 / (0322) 457 80 00', lon: 35.3182, lat: 36.9925 },
-    { name: 'Türk Kızılay Güneydoğu Anadolu Bölge Kan Merkezi', city: 'Gaziantep', district: 'Şehitkamil', address: 'Mücahitler Mah. Ali Fuat Cebesoy Bulv. Şehitkamil / Gaziantep', phone: '168', lon: 37.3712, lat: 37.0725 },
-    { name: 'Türk Kızılay Diyarbakır Bölge Kan Merkezi', city: 'Diyarbakır', district: 'Kayapınar', address: 'Peyas Mah. Şanlıurfa Yolu Üzeri Kayapınar / Diyarbakır', phone: '168', lon: 40.1754, lat: 37.9352 },
-    { name: 'Türk Kızılay Batı Akdeniz Bölge Kan Merkezi', city: 'Antalya', district: 'Muratpaşa', address: 'Varlık Mah. Piri Reis Cad. Muratpaşa / Antalya', phone: '168 / (0242) 249 10 00', lon: 30.6821, lat: 36.8924 },
-    { name: 'Türk Kızılay Orta Karadeniz Bölge Kan Merkezi', city: 'Samsun', district: 'İlkadım', address: 'Karasamsun Mah. Barış Bulvarı İlkadım / Samsun', phone: '168', lon: 36.3154, lat: 41.2825 },
-    { name: 'Türk Kızılay Doğu Karadeniz Bölge Kan Merkezi', city: 'Trabzon', district: 'Ortahisar', address: 'İnönü Mah. Maraş Cad. Ortahisar / Trabzon', phone: '168', lon: 39.7125, lat: 40.9984 },
-    { name: 'Türk Kızılay Doğu Anadolu Bölge Kan Merkezi', city: 'Erzurum', district: 'Yakutiye', address: 'Muratpaşa Mah. Haşıl Efendi Cad. Yakutiye / Erzurum', phone: '168', lon: 41.2721, lat: 39.9082 },
-    { name: 'Türk Kızılay Van Kan Bağış Merkezi', city: 'Van', district: 'İpekyolu', address: 'Cumhuriyet Cad. Soydan Kavşağı İpekyolu / Van', phone: '168', lon: 43.3854, lat: 38.4982 },
-    { name: 'Türk Kızılay İç Anadolu Bölge Kan Merkezi', city: 'Konya', district: 'Selçuklu', address: 'Musalla Bağları Mah. Belh Cad. Selçuklu / Konya', phone: '168', lon: 32.5024, lat: 37.8925 },
-    { name: 'Türk Kızılay Fırat Bölge Kan Merkezi', city: 'Malatya', district: 'Battalgazi', address: 'İnönü Cad. Valilik Civarı Battalgazi / Malatya', phone: '168', lon: 38.3154, lat: 38.3524 },
-    { name: 'Türk Kızılay Hatay Kan Bağış Merkezi', city: 'Hatay', district: 'İskenderun', address: 'Atatürk Bulvarı Sahil İskele Yanı İskenderun / Hatay', phone: '168', lon: 36.1724, lat: 36.5892 },
-    { name: 'Türk Kızılay Kahramanmaraş Kan Bağış Merkezi', city: 'Kahramanmaraş', district: 'Onikişubat', address: 'Haydar Bey Mah. Barbaros Cad. Onikişubat / Kahramanmaraş', phone: '168', lon: 36.8824, lat: 37.5824 }
-  ];
-
-  const bloodCenterFeatures = bloodCenterList.map((bc, idx) => ({
-    type: 'Feature',
-    id: `blood-${idx + 1}`,
-    geometry: {
-      type: 'Point',
-      coordinates: [Number(bc.lon.toFixed(6)), Number(bc.lat.toFixed(6))]
-    },
-    properties: {
-      id: `blood-${idx + 1}`,
-      name: bc.name,
-      category: 'blood_center',
-      city: bc.city,
-      district: bc.district,
-      address: bc.address,
-      phone: bc.phone,
-      typeText: 'Türk Kızılay Kan Bağış Merkezi',
-      emergencyBeds: 0,
-      hasTraumaCenter: false,
-      helipad: false
+  console.log('[kan] OpenStreetMap üzerinden kan bağış merkezleri alınıyor...');
+  let bloodCenterFeatures = null;
+  const bloodElements = await fetchOverpass(OSM_BLOOD_QUERY, MIN_OSM_BLOOD_CENTERS, 'kan');
+  if (bloodElements) {
+    bloodCenterFeatures = bloodElements.map(osmBloodElementToFeature).filter(Boolean);
+  } else {
+    try {
+      const existing = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'emergency-facilities.geojson'), 'utf8'));
+      bloodCenterFeatures = (existing.features || []).filter(
+        (f) => f.properties?.category === 'blood_center' && f.properties?.source === 'osm'
+      );
+      console.warn(`[kan] OSM erişilemedi; önceki ${bloodCenterFeatures.length} OSM kaydı korunuyor.`);
+    } catch {
+      bloodCenterFeatures = [];
     }
-  }));
-
-  console.log(`[kızılay] Toplam ${bloodCenterFeatures.length} adet doğrulanmış Türk Kızılay kan merkezi eklendi.`);
+  }
+  console.log(`[kan] Toplam ${bloodCenterFeatures.length} OpenStreetMap kan bağış noktası eklendi.`);
 
   // -------------------------------------------------------------
   // 5. GeoJSON Dosyalarını Kaydetme
@@ -410,7 +363,10 @@ async function main() {
     bloodCentersCount: bloodCenterFeatures.length,
     provinces: Array.from(provincesSet).sort((a, b) => a.localeCompare(b, 'tr')),
     sources: {
-      pharmacies: '© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez.'
+      assemblyPoints: 'AFAD toplanma alanı verisinin GitHub aynaları (Ilyas-jpg/geogow, RKursatV). Kapasite ve donanım bilgisi içermez.',
+      hospitals: 'T.C. Sağlık Bakanlığı HealthTürkiye kurum kaydı + geogow altyapı envanteri. Acil servis/travma/helipad bilgisi içermez.',
+      pharmacies: '© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez.',
+      bloodCenters: '© OpenStreetMap katkıcıları (ODbL), healthcare=blood_donation.'
     },
     updatedAt: new Date().toISOString()
   };
@@ -423,9 +379,63 @@ async function main() {
 
   console.log('[civic-data] Veri derleme tamamlandı:');
   console.log(`  - Resmi AFAD Toplanma Alanları: ${assemblyFeatures.length}`);
-  console.log(`  - Doğrulanmış Hastaneler (Bina GPS): ${hospitalFeatures.length}`);
+  console.log(`  - Hastaneler: ${hospitalFeatures.length}`);
   console.log(`  - Eczaneler (OpenStreetMap): ${pharmacyFeatures.length}`);
+  console.log(`  - Kan bağış noktaları (OpenStreetMap): ${bloodCenterFeatures.length}`);
   console.log(`  - İl Sayısı: ${summary.provinces.length}`);
+}
+
+// -------------------------------------------------------------
+// Hastane temizliği
+// -------------------------------------------------------------
+// geogow altyapı envanterinde poliklinik, aile sağlık merkezi, diş kliniği gibi
+// acil servisi olmayan yerler ve Sağlık Bakanlığı kaydıyla aynı hastanenin
+// ikinci (çoğu zaman yazım hatalı) kopyası bulunuyor.
+const NON_EMERGENCY_NAME =
+  /Ağız ve Diş|Diş Hastanesi|Diş Sağlığı|Diş Hekimi|Poliklini|Polikinli|Aile Sağlık|Termal|Fizik Tedavi|Rehabilitasyon|Reahabilitasyon|Veteriner|Güzellik|İşitme/i;
+const NAME_STOPWORDS = new Set([
+  'ozel', 'hastanesi', 'hastane', 'hastahanesi', 'hospital', 'tip', 'merkezi', 'universitesi', 've',
+  'egitim', 'arastirma', 'uygulama', 'devlet', 'sehir', 'fakultesi', 'private', 'dr', 'prof', 'op'
+]);
+function nameTokens(name) {
+  return new Set(
+    normalizeSlugWords(name).filter((t) => t.length >= 3 && !NAME_STOPWORDS.has(t))
+  );
+}
+function normalizeSlugWords(str) {
+  return (str || '')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+    .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+function metersBetween([lon1, lat1], [lon2, lat2]) {
+  const toR = (x) => (x * Math.PI) / 180;
+  const x = toR(lon2 - lon1) * Math.cos(toR((lat1 + lat2) / 2));
+  const y = toR(lat2 - lat1);
+  return Math.sqrt(x * x + y * y) * 6371e3;
+}
+/**
+ * Sağlık Bakanlığı (HealthTürkiye) kaydı esas alınır. geogow kaydı; acil servisi
+ * olmayan bir yerse veya 150 m içinde ortak ad kelimesi taşıyan bir Bakanlık
+ * kaydı (ya da 30 m içinde herhangi bir Bakanlık kaydı) varsa çıkarılır.
+ */
+export function cleanHospitals(features) {
+  const official = features.filter((f) => f.properties.source === 'healthturkiye');
+  const officialTokens = official.map((f) => nameTokens(f.properties.name));
+  return features.filter((f) => {
+    if (f.properties.source !== 'geogow') return true;
+    const name = (f.properties.name || '').trim();
+    if (/^hastane$/i.test(name) || NON_EMERGENCY_NAME.test(name)) return false;
+    const tokens = nameTokens(name);
+    for (let i = 0; i < official.length; i++) {
+      const dist = metersBetween(f.geometry.coordinates, official[i].geometry.coordinates);
+      if (dist < 30) return false;
+      if (dist < 150 && [...tokens].some((t) => officialTokens[i].has(t))) return false;
+    }
+    return true;
+  });
 }
 
 // -------------------------------------------------------------
@@ -504,7 +514,13 @@ function provinceFromTags(tags) {
   return null;
 }
 
-async function fetchOsmPharmacies() {
+const OSM_BLOOD_QUERY =
+  '[out:json][timeout:120];area["ISO3166-1"="TR"][admin_level=2]->.tr;nwr["healthcare"="blood_donation"](area.tr);out center tags;';
+// 2026-11'de Türkiye'de ~50 kayıt vardı; çok altı bozuk yanıt demektir.
+const MIN_OSM_BLOOD_CENTERS = 20;
+
+/** Overpass sorgusunu uç noktalar arasında yük devriyle çalıştırır; başarısızsa null döner. */
+async function fetchOverpass(query, minCount, label) {
   for (const endpoint of OVERPASS_ENDPOINTS) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
@@ -514,22 +530,54 @@ async function fetchOsmPharmacies() {
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'afet.live-data-sync/1.0 (+https://github.com/himmetaga/turkiye-afet-haritasi)'
           },
-          body: new URLSearchParams({ data: OSM_PHARMACY_QUERY }),
+          body: new URLSearchParams({ data: query }),
           signal: AbortSignal.timeout(280_000)
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         const elements = Array.isArray(json.elements) ? json.elements : [];
-        if (elements.length < MIN_OSM_PHARMACIES) {
-          throw new Error(`yalnızca ${elements.length} eczane döndü (beklenen en az ${MIN_OSM_PHARMACIES})`);
+        if (elements.length < minCount) {
+          throw new Error(`yalnızca ${elements.length} kayıt döndü (beklenen en az ${minCount})`);
         }
-        return elements.map(osmElementToFeature).filter(Boolean);
+        return elements;
       } catch (e) {
-        console.warn(`[eczane] ${endpoint} deneme ${attempt} başarısız: ${e.message}`);
+        console.warn(`[${label}] ${endpoint} deneme ${attempt} başarısız: ${e.message}`);
       }
     }
   }
   return null;
+}
+
+async function fetchOsmPharmacies() {
+  const elements = await fetchOverpass(OSM_PHARMACY_QUERY, MIN_OSM_PHARMACIES, 'eczane');
+  return elements ? elements.map(osmElementToFeature).filter(Boolean) : null;
+}
+
+export function osmBloodElementToFeature(el) {
+  const base = osmElementToFeature(el);
+  if (!base) return null;
+  const tags = el.tags || {};
+  const rawName = (tags.name || '').trim();
+  // OSM'de birçok kayıt yalnızca "Türk Kızılayı" adını taşıyor; etiket kan bağışı olduğu için türü ekliyoruz.
+  const name = !rawName
+    ? 'Kan Bağış Noktası'
+    : /^türk kızılay(ı)?$/i.test(rawName)
+    ? 'Türk Kızılay Kan Bağış Noktası'
+    : rawName;
+  const { openingHours, isDuty, ...rest } = base.properties;
+  const id = `osm-blood-${el.type[0]}${el.id}`;
+  return {
+    ...base,
+    id,
+    properties: {
+      ...rest,
+      id,
+      name,
+      category: 'blood_center',
+      typeText: 'Kan bağış noktası',
+      ...(openingHours ? { openingHours } : {})
+    }
+  };
 }
 
 function osmElementToFeature(el) {
@@ -568,7 +616,8 @@ function osmElementToFeature(el) {
   };
 }
 
-main().catch((e) => {
+// Yalnızca doğrudan çalıştırıldığında veri çek (yardımcılar başka betiklerden içe aktarılabilsin).
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) main().catch((e) => {
   console.error(e);
   process.exit(1);
 });

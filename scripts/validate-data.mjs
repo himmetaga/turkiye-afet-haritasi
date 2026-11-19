@@ -11,9 +11,17 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = path.join(ROOT, 'public', 'data');
 
-const MIN = { assembly: 20000, hospitals: 1000, pharmacies: 15000 };
+const MIN = { assembly: 20000, hospitals: 800, pharmacies: 15000, bloodCenters: 20 };
 const BBOX = { minLon: 25.5, maxLon: 44.8, minLat: 35.8, maxLat: 42.2 };
 const ALLOWED_PHARMACY_SOURCES = new Set(['osm']);
+const ALLOWED_HOSPITAL_SOURCES = new Set(['healthturkiye', 'geogow']);
+const ALLOWED_BLOOD_SOURCES = new Set(['osm']);
+
+// Kaynakta bulunmayan, eskiden addan/varsayımdan üretilen alanlar. Geri gelirlerse yayın durur.
+const FORBIDDEN_FIELDS = {
+  assembly: ['capacity', 'hasWater', 'hasElectricity', 'hasTentArea', 'hasGenerator'],
+  facility: ['emergencyBeds', 'hasTraumaCenter', 'helipad']
+};
 
 const errors = [];
 const warnings = [];
@@ -58,6 +66,18 @@ function checkFeatures(name, fc) {
   return fc.features;
 }
 
+function checkForbiddenFields(label, features, fields) {
+  for (const field of fields) {
+    const n = features.filter((f) => f.properties && field in f.properties).length;
+    if (n > 0) fail(`${label}: ${n} kayıtta kaynakta olmayan "${field}" alanı var (tahmini veri yayınlanamaz)`);
+  }
+}
+
+function checkSources(label, features, allowed) {
+  const bad = features.filter((f) => !allowed.has(f.properties?.source));
+  if (bad.length > 0) fail(`${label}: ${bad.length} kaydın kaynağı izinli değil (izinli: ${[...allowed].join(', ')})`);
+}
+
 /** Uydurma verinin tipik izleri: aynı adres/telefonun farklı kayıtlarda tekrar tekrar geçmesi. */
 function checkFabricationPatterns(label, features) {
   const byAddress = new Map();
@@ -89,6 +109,7 @@ const assembly = checkFeatures('assembly-points.geojson', readJson('assembly-poi
 if (assembly.length < MIN.assembly) {
   fail(`Toplanma alanı sayısı ${assembly.length} (beklenen en az ${MIN.assembly})`);
 }
+checkForbiddenFields('toplanma alanları', assembly, FORBIDDEN_FIELDS.assembly);
 
 // --- Acil tesisler ---
 const facilities = checkFeatures('emergency-facilities.geojson', readJson('emergency-facilities.geojson'));
@@ -109,6 +130,13 @@ const staticDuty = pharmacies.filter((f) => f.properties?.isDuty);
 if (staticDuty.length > 0) {
   fail(`${staticDuty.length} eczane statik veride "nöbetçi" işaretli; nöbet bilgisi yalnızca canlı resmi kaynaktan gelmeli`);
 }
+const bloodCenters = facilities.filter((f) => f.properties?.category === 'blood_center');
+checkForbiddenFields('acil tesisler', facilities, FORBIDDEN_FIELDS.facility);
+checkSources('hastaneler', hospitals, ALLOWED_HOSPITAL_SOURCES);
+checkSources('kan merkezleri', bloodCenters, ALLOWED_BLOOD_SOURCES);
+if (bloodCenters.length < MIN.bloodCenters) {
+  fail(`Kan bağış noktası sayısı ${bloodCenters.length} (beklenen en az ${MIN.bloodCenters})`);
+}
 checkFabricationPatterns('eczaneler', pharmacies);
 checkFabricationPatterns('hastaneler', hospitals);
 
@@ -126,7 +154,7 @@ if (summary && summary.pharmaciesCount !== pharmacies.length) {
 
 // --- Rapor ---
 console.log(
-  `[validate] toplanma: ${assembly.length}, hastane: ${hospitals.length}, eczane: ${pharmacies.length}`
+  `[validate] toplanma: ${assembly.length}, hastane: ${hospitals.length}, eczane: ${pharmacies.length}, kan: ${bloodCenters.length}`
 );
 for (const w of warnings) console.warn(`[validate] UYARI: ${w}`);
 if (errors.length > 0) {

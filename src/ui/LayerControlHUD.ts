@@ -71,7 +71,7 @@ export class LayerControlHUD {
           <label class="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer select-none">
             <span class="flex items-center gap-2 text-white">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-              Diri Fay Hatları (MTA)
+              Fay Zonları (basitleştirilmiş)
             </span>
             <input type="checkbox" data-layer="faults" ${this.states.faults ? 'checked' : ''} class="accent-rose-500 rounded" />
           </label>
@@ -79,7 +79,7 @@ export class LayerControlHUD {
           <label class="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer select-none">
             <span class="flex items-center gap-2 text-white">
               <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-              Acil Servis Hastaneleri
+              Hastaneler
             </span>
             <input type="checkbox" data-layer="hospitals" ${this.states.hospitals ? 'checked' : ''} class="accent-cyan-500 rounded" />
           </label>

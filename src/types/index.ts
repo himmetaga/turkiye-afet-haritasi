@@ -4,12 +4,8 @@ export interface AssemblyPoint {
   city: string;
   district: string;
   coordinates: [number, number]; // [lng, lat]
-  capacity: number;
+  /** Kaynakta (AFAD verisi) bildirilen alan, m². 0 = bilinmiyor. Kapasite ve donanım bilgisi kaynakta yok. */
   areaSqM: number;
-  hasWater: boolean;
-  hasElectricity: boolean;
-  hasTentArea: boolean;
-  hasGenerator: boolean;
   distanceMeters?: number;
   walkingMinutes?: number;
   bearingDegrees?: number;
@@ -65,9 +61,8 @@ export interface EmergencyFacility {
   address?: string;
   phone?: string;
   typeText: string;
-  emergencyBeds: number;
-  hasTraumaCenter: boolean;
-  helipad: boolean;
+  /** Kurumun bildirdiği yatak kapasitesi (HealthTurkiye). Yoksa bilinmiyor; tahmin edilmez. */
+  bedCapacity?: number;
   coordinates: [number, number];
   distanceMeters?: number;
   walkingMinutes?: number;

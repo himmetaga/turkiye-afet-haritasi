@@ -393,12 +393,7 @@ export class MapEngine {
         city: props.city,
         district: props.district,
         coordinates: coords,
-        capacity: Number(props.capacity || 0),
-        areaSqM: Number(props.areaSqM || 0),
-        hasWater: props.hasWater === true || props.hasWater === 'true',
-        hasElectricity: props.hasElectricity === true || props.hasElectricity === 'true',
-        hasTentArea: props.hasTentArea === true || props.hasTentArea === 'true',
-        hasGenerator: props.hasGenerator === true || props.hasGenerator === 'true'
+        areaSqM: Number(props.areaSqM || 0)
       };
 
       if (this.onAssemblyPointClickCallback) {
@@ -423,9 +418,7 @@ export class MapEngine {
         address: props.address,
         phone: props.phone,
         typeText: props.typeText,
-        emergencyBeds: Number(props.emergencyBeds || 0),
-        hasTraumaCenter: props.hasTraumaCenter === true || props.hasTraumaCenter === 'true',
-        helipad: props.helipad === true || props.helipad === 'true',
+        bedCapacity: Number(props.bedCapacity) > 0 ? Number(props.bedCapacity) : undefined,
         coordinates: coords,
         isDuty: props.isDuty === true || props.isDuty === 'true',
         closingHour: props.closingHour,

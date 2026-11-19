@@ -1,9 +1,9 @@
 {
   "assemblyPointsCount": 27331,
-  "facilitiesCount": 26676,
-  "hospitalsCount": 1212,
+  "facilitiesCount": 26627,
+  "hospitalsCount": 953,
   "pharmaciesCount": 25442,
-  "bloodCentersCount": 22,
+  "bloodCentersCount": 45,
   "provinces": [
     "Adana",
     "Adıyaman",
@@ -75,7 +75,10 @@
     "Zonguldak"
   ],
   "sources": {
-    "pharmacies": "© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez."
+    "assemblyPoints": "AFAD toplanma alanı verisinin GitHub aynaları (Ilyas-jpg/geogow, RKursatV). Kapasite ve donanım bilgisi içermez.",
+    "hospitals": "T.C. Sağlık Bakanlığı HealthTürkiye kurum kaydı + geogow altyapı envanteri. Acil servis/travma/helipad bilgisi içermez.",
+    "pharmacies": "© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez.",
+    "bloodCenters": "© OpenStreetMap katkıcıları (ODbL), healthcare=blood_donation."
   },
-  "updatedAt": "2026-11-18T22:42:38.463Z"
+  "updatedAt": "2026-11-19T18:07:13.925Z"
 }

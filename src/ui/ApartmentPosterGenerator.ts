@@ -139,7 +139,7 @@ export class ApartmentPosterGenerator {
       ctx.font = 'bold 38px system-ui, -apple-system, sans-serif';
       ctx.fillText('APARTMAN ACİL DURUM VE AFET BİLGİ PANOSU', 50, 65);
       ctx.font = '500 22px system-ui, -apple-system, sans-serif';
-      ctx.fillText('afet.live — T.C. İçişleri Bakanlığı AFAD Onaylı Resmi Koordinatlar', 50, 105);
+      ctx.fillText('afet.live — AFAD açık verisinden toplanma alanları (resmi kurum yayını değildir)', 50, 105);
 
       // Sub-header Info (Building Name & Location)
       ctx.fillStyle = '#0f172a';
@@ -174,7 +174,7 @@ export class ApartmentPosterGenerator {
 
         ctx.fillStyle = '#64748b';
         ctx.font = '18px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`${item.point.district || ''}, ${item.point.city || ''} ${item.point.capacity ? `• Kapasite: ${item.point.capacity.toLocaleString()} kişi` : ''}`, 75, yPos + 72);
+        ctx.fillText(`${item.point.district || ''}, ${item.point.city || ''} ${item.point.areaSqM ? `• Alan: ${item.point.areaSqM.toLocaleString('tr-TR')} m²` : ''}`, 75, yPos + 72);
 
         // Distance Badge
         ctx.fillStyle = '#059669';
@@ -191,7 +191,7 @@ export class ApartmentPosterGenerator {
       ctx.fillRect(50, yPos, width - 100, 48);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-      ctx.fillText('🏥 EN YAKIN 7/24 ACİL HASTANE & NÖBETÇİ ECZANE', 70, yPos + 32);
+      ctx.fillText('🏥 EN YAKIN HASTANE & ECZANE', 70, yPos + 32);
 
       yPos += 70;
       // Hospital Box
@@ -205,7 +205,7 @@ export class ApartmentPosterGenerator {
 
       ctx.fillStyle = '#0369a1';
       ctx.font = 'bold 20px system-ui, -apple-system, sans-serif';
-      ctx.fillText('Acil Servis Hastanesi', 70, yPos + 35);
+      ctx.fillText('En Yakın Hastane', 70, yPos + 35);
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
       const hospName = nearestHospital ? nearestHospital.facility.name : 'Acil Sağlık Merkezi';
@@ -227,10 +227,10 @@ export class ApartmentPosterGenerator {
 
       ctx.fillStyle = '#b45309';
       ctx.font = 'bold 20px system-ui, -apple-system, sans-serif';
-      ctx.fillText('Nöbetçi / Acil Eczane', pBoxX + 20, yPos + 35);
+      ctx.fillText('En Yakın Eczane', pBoxX + 20, yPos + 35);
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
-      const pharmName = nearestPharmacy ? nearestPharmacy.facility.name : 'Nöbetçi Eczane';
+      const pharmName = nearestPharmacy ? nearestPharmacy.facility.name : 'Bulunamadı';
       ctx.fillText(pharmName.slice(0, 32), pBoxX + 20, yPos + 65);
       ctx.fillStyle = '#64748b';
       ctx.font = '16px system-ui, -apple-system, sans-serif';
@@ -412,7 +412,7 @@ export class ApartmentPosterGenerator {
                         <h4 class="text-sm font-bold text-gray-900">${item.point.name}</h4>
                         ${i === 0 ? '<span class="text-[10px] font-bold text-emerald-800 bg-emerald-200/60 px-1.5 py-0.5 rounded">1. ÖNCELİKLİ BULUŞMA ALANI</span>' : ''}
                       </div>
-                      <p class="text-xs text-gray-600 ml-7 mt-0.5">${item.point.district || ''}, ${item.point.city || ''} ${item.point.capacity ? `• Kapasite: ${item.point.capacity.toLocaleString()} kişi` : ''}</p>
+                      <p class="text-xs text-gray-600 ml-7 mt-0.5">${item.point.district || ''}, ${item.point.city || ''} ${item.point.areaSqM ? `• Alan: ${item.point.areaSqM.toLocaleString('tr-TR')} m²` : ''}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                       <span class="font-mono text-sm font-bold text-emerald-800">${item.distanceMeters.toLocaleString()} metre</span>
@@ -430,7 +430,7 @@ export class ApartmentPosterGenerator {
               <div class="p-3.5 rounded-xl bg-sky-50 border border-sky-300">
                 <div class="flex items-center gap-1.5 text-sky-800 font-bold text-xs uppercase mb-1">
                   <span>🏥</span>
-                  <span>En Yakın 7/24 Acil Hastane</span>
+                  <span>En Yakın Hastane</span>
                 </div>
                 <div class="text-sm font-bold text-gray-900">${nearestHospital ? nearestHospital.facility.name : 'Sağlık Tesisi'}</div>
                 <p class="text-xs text-gray-600 mt-0.5">${nearestHospital?.facility.address || nearestHospital?.facility.district || 'Bölge Hastanesi'}</p>
@@ -442,9 +442,9 @@ export class ApartmentPosterGenerator {
               <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-300">
                 <div class="flex items-center gap-1.5 text-amber-800 font-bold text-xs uppercase mb-1">
                   <span>🌙</span>
-                  <span>En Yakın Nöbetçi / Acil Eczane</span>
+                  <span>En Yakın Eczane (nöbetçi için e-Devlet)</span>
                 </div>
-                <div class="text-sm font-bold text-gray-900">${nearestPharmacy ? nearestPharmacy.facility.name : 'Nöbetçi Eczane'}</div>
+                <div class="text-sm font-bold text-gray-900">${nearestPharmacy ? nearestPharmacy.facility.name : 'Bulunamadı'}</div>
                 <p class="text-xs text-gray-600 mt-0.5">${nearestPharmacy?.facility.address || nearestPharmacy?.facility.district || 'Eczane'}</p>
                 <div class="mt-2 text-xs font-semibold text-amber-900 font-mono">
                   ${nearestPharmacy ? `${nearestPharmacy.distanceMeters.toLocaleString()} m • Tel: ${nearestPharmacy.facility.phone || '11880'}` : ''}

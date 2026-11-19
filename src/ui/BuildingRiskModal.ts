@@ -176,7 +176,7 @@ export class BuildingRiskModal {
     const text =
       `🏢 afet.live Bina ve Zemin Sismik Ön Değerlendirme Özeti\n` +
       `• Değerlendirme: ${risk.level} (${risk.score}/100 Puan)\n` +
-      `• En Yakın Fay: ${risk.faultInfo ? `${risk.faultInfo.fault.name} (${risk.faultInfo.distanceKm} km)` : 'MTA Zonu'}\n` +
+      `• En Yakın Fay: ${risk.faultInfo ? `${risk.faultInfo.fault.name} (${risk.faultInfo.distanceKm} km)` : 'Bilinmiyor'}\n` +
       `• Tahmini Yer İvmesi (PGA): ${risk.pgaEstimate}\n` +
       `• Acil Toplanma Alanı: ${nearestName}\n` +
       `\nKendi binanızı ve toplanma alanınızı haritada görün: https://afet.live/?mod=bina-risk`;
@@ -248,7 +248,7 @@ export class BuildingRiskModal {
                 </span>
               </div>
               <p class="text-[11px] text-gray-400">
-                MTA Diri Fay Hattı mesafesi + yapısal faktörlerle hızlı sismik farkındalık analizi
+                Basitleştirilmiş fay zonu mesafesi + yapısal faktörlerle kaba farkındalık tahmini (resmi analiz değildir)
               </p>
             </div>
           </div>
@@ -266,7 +266,7 @@ export class BuildingRiskModal {
                 ${Icons.alertTriangle('w-4 h-4')}
               </span>
               <div class="min-w-0">
-                <div class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Konumunuza En Yakın MTA Diri Fay</div>
+                <div class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Konumunuza En Yakın Fay Zonu (basitleştirilmiş)</div>
                 <div class="text-xs font-bold text-white truncate" title="${fault ? fault.fault.name : 'Diri Fay Katmanı'}">
                   ${fault ? fault.fault.name : 'Fay hattı katmanı inceleniyor'}
                 </div>

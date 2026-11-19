@@ -28,15 +28,16 @@ export class PointDetailHUD {
     const category = (point as any).category || 'assembly';
     const fac = point as any;
 
-    let badgeText = '🛡️ Valilik & AFAD Onaylı Toplanma Sahası';
+    let badgeText = '🛡️ AFAD Toplanma Alanı';
     let badgeColor = 'text-emerald-400';
-    let statusLabel = 'Açık Saha';
+    let statusLabel = 'Açık alan';
     let statusClass = 'text-emerald-400';
 
     if (category === 'hospital') {
-      badgeText = '🏥 Sağlık Bakanlığı Tescilli Hastane';
+      badgeText = '🏥 Hastane';
       badgeColor = 'text-cyan-400';
-      statusLabel = fac.hasTraumaCenter ? 'Acil Travma & 7/24 Açık' : '7/24 Acil Servis Aktif';
+      // Acil servisin açık olup olmadığı bilgisi kaynakta yok; tahmin yürütülmez.
+      statusLabel = 'Acil durumda 112';
       statusClass = 'text-cyan-400';
     } else if (category === 'pharmacy') {
       const isDuty = fac.isDuty === true;
@@ -52,9 +53,9 @@ export class PointDetailHUD {
         statusClass = 'text-yellow-400';
       }
     } else if (category === 'blood_center') {
-      badgeText = '🩸 Türk Kızılay Kan Bankası';
+      badgeText = '🩸 Türk Kızılay Kan Merkezi';
       badgeColor = 'text-rose-400';
-      statusLabel = 'Acil Kan Bağış Merkezi';
+      statusLabel = 'Arayarak teyit edin';
       statusClass = 'text-rose-400';
     }
 
@@ -92,23 +93,23 @@ export class PointDetailHUD {
 
         <div class="grid grid-cols-2 gap-2 my-3 text-xs">
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Acil Yatak' : category === 'pharmacy' ? 'Hizmet Türü' : category === 'blood_center' ? 'Kurum' : 'Kapasite'}</span>
+            <span class="text-[10px] text-gray-400 block">${category === 'hospital' ? 'Yatak Kapasitesi' : category === 'pharmacy' ? 'Hizmet Türü' : category === 'blood_center' ? 'Kurum' : 'Alan'}</span>
             <span class="text-xs font-semibold text-white font-mono">
               ${
-                fac.emergencyBeds
-                  ? `${fac.emergencyBeds} yatak`
+                category === 'hospital'
+                  ? fac.bedCapacity ? `${fac.bedCapacity} yatak` : 'Bilinmiyor'
                   : category === 'pharmacy'
                   ? fac.isDuty ? '24 Saat Nöbetçi' : 'Eczane'
                   : category === 'blood_center'
                   ? 'Türk Kızılay'
-                  : fac.capacity
-                  ? `${fac.capacity.toLocaleString()} kişi`
-                  : 'Aktif Tesis'
+                  : fac.areaSqM
+                  ? `${fac.areaSqM.toLocaleString('tr-TR')} m²`
+                  : 'Bilinmiyor'
               }
             </span>
           </div>
           <div class="p-2 rounded-xl bg-white/5">
-            <span class="text-[10px] text-gray-400 block">Çalışma Saati</span>
+            <span class="text-[10px] text-gray-400 block">${category === 'assembly' ? 'Tür' : 'Durum'}</span>
             <span class="text-xs font-semibold ${statusClass} font-mono">
               ${statusLabel}
             </span>
@@ -144,6 +145,18 @@ export class PointDetailHUD {
           </a>
           <p class="-mt-2 mb-3 text-[10px] text-gray-500">Kaynak: © OpenStreetMap katkıcıları</p>
         `
+            : ''
+        }
+
+        ${
+          category === 'hospital' || category === 'blood_center'
+            ? `<p class="-mt-1 mb-3 text-[10px] text-gray-500">${
+                fac.source === 'healthturkiye'
+                  ? 'Kaynak: T.C. Sağlık Bakanlığı (HealthTürkiye kurum kaydı). Acil servis durumunu arayarak teyit edin; acil durumda 112.'
+                  : fac.source === 'osm'
+                  ? 'Kaynak: © OpenStreetMap katkıcıları'
+                  : 'Acil servis durumunu arayarak teyit edin; acil durumda 112.'
+              }</p>`
             : ''
         }
 

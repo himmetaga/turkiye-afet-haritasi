@@ -41,7 +41,7 @@
 6 Şubat 2023 Kahramanmaraş depremleri ve geçmiş Marmara afetleri göstermiştir ki; afet anında hücresel baz istasyonları dakikalar içinde kilitlenmekte, merkezi sunucular çökmekte, internet erişimi kesilmekte ve elektrik şebekesi devre dışı kalmaktadır.
 
 Bu hayati gereksinim doğrultusunda **afet.live**, **"Sıfır Sunucu Bağımlılığı (Zero Server Dependency)"** ilkesiyle tasarlanmıştır:
-- Uygulama tarayıcıya veya telefona bir kez yüklendiğinde (PWA), hücresel veri, fiber internet ve Wi-Fi tamamen kopsa dahi **27.331 toplanma alanı, 1.212 hastane, 25.442 eczane, ana fay zonları ve hayatta kalma araçları çevrimdışı çalışmaya devam eder.** (Verilerin nereden geldiği ve sınırları için [Veri Kaynakları](#4-veri-kaynakları--doğruluk) bölümüne bakın.)
+- Uygulama tarayıcıya veya telefona bir kez yüklendiğinde (PWA), hücresel veri, fiber internet ve Wi-Fi tamamen kopsa dahi **27.331 toplanma alanı, 953 hastane, 25.442 eczane, ana fay zonları ve hayatta kalma araçları çevrimdışı çalışmaya devam eder.** (Verilerin nereden geldiği ve sınırları için [Veri Kaynakları](#4-veri-kaynakları--doğruluk) bölümüne bakın.)
 - Kullanıcının GPS konumu, kimliği veya tıbbi verileri asla harici bir sunucuya kaydedilmez; tüm hesaplamalar (Haversine mesafe, açı, triyaj, klorlama dozajı) doğrudan kullanıcının cihaz işlemcisinde yerel olarak gerçekleştirilir.
 
 ---
@@ -241,7 +241,7 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
     - **P2P İhtiyaç & Barter Takas Defteri:** Bankacılık sistemi çöktüğünde eldeki fazla malzemeler (bebek maması, kışlık mont) ile acil ihtiyaçları listeler ve çapraz eşleştirir.
     - **DASK 15 Günlük Yasal İhbar Süre Takibi:** Afet anından itibaren işleyen kasko ve DASK yasal başvuru süre sayacı.
 24. **Türk Kızılay Kan Bağış Merkezleri & Donör Eşleşme Portalı:**
-    - 22 Kızılay kan merkezi (elle derlenmiş liste; adres ve koordinatları doğrulanmayı bekliyor), 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
+    - OpenStreetMap'te kayıtlı kan bağış noktaları, 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
 25. **Afet İlaç & Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi):**
     - Kronik ilaçlar için sahra eşdeğer etken madde rehberi ve Zeer Pot buharlaşmalı soğuk zincir koruma kılavuzu.
 26. **Çevrimdışı Vektör Harita Paketleri (İl & Bölge Bazlı Offline Cache İndirme):**
@@ -320,13 +320,13 @@ afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **i
 
 | Veri Seti | Kaynak | Kapsam ve Sınırlar |
 | :--- | :--- | :--- |
-| **Toplanma Alanları** | AFAD / e-Devlet verisinin açık kaynak GitHub aynaları ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27.331 alan, 68 il. Su, elektrik, çadır alanı ve kapasite bilgisi kaynakta yok; arayüzdeki bu alanlar henüz tahmini (düzeltilecek, bkz. [Yardım Aranan Konular](#yardım-aranan-konular)). |
-| **Hastaneler** | Sağlık Bakanlığı HealthTurkiye API + geogow altyapı verisi | 1.212 hastane. Acil yatak, helikopter pisti ve travma merkezi bilgisi şu an hastane adından tahmin ediliyor (düzeltilecek). |
+| **Toplanma Alanları** | AFAD / e-Devlet verisinin açık kaynak GitHub aynaları ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27.331 alan, 68 il. Kaynakta alan (m²) var, gösteriliyor. Su, elektrik, çadır alanı ve kişi kapasitesi kaynakta yok, bu yüzden gösterilmiyor. |
+| **Hastaneler** | T.C. Sağlık Bakanlığı HealthTürkiye kurum kayıtları + geogow altyapı verisi (6 büyükşehir) | Ad, konum, telefon, kurum türü ve kurumun bildirdiği yatak kapasitesi. Diş ve fizik tedavi hastaneleri hariç. Acil servis, travma merkezi ve helikopter pisti bilgisi kaynakta olmadığı için gösterilmiyor. |
 | **Eczaneler** | [OpenStreetMap](https://www.openstreetmap.org/copyright) katkıcıları (ODbL), Overpass API | 25.442 eczane; 21 binden fazlasında telefon kayıtlı. **Nöbet bilgisi içermez.** |
 | **Nöbetçi Eczaneler** | İzmir Büyükşehir Belediyesi Açık Veri API'si (yalnızca İzmir) | Diğer illerde uygulama [e-Devlet Nöbetçi Eczane Sorgulama](https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama) hizmetine yönlendirir. |
 | **Son Depremler** | Kandilli ve AFAD ([api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr) üzerinden), EMSC, USGS | Dört kaynak sırayla denenir. |
 | **Fay Hatları** | Elle çizilmiş, basitleştirilmiş katman | 7 ana fay zonu. **MTA Diri Fay Haritası değildir**; bina ölçeğinde risk değerlendirmesi için kullanılmamalıdır. |
-| **Kan Bağış Merkezleri** | Elle derlenmiş liste | 22 Kızılay merkezi. Adres ve koordinatlar doğrulanmayı bekliyor. |
+| **Kan Bağış Merkezleri** | [OpenStreetMap](https://www.openstreetmap.org/copyright) `healthcare=blood_donation` (ODbL) | OSM'de kayıtlı kan bağış noktaları. Eksikler OSM'ye eklendiğinde ertesi gün haritaya gelir. |
 | **Sel ve Yağış** | [Open-Meteo](https://open-meteo.com) Flood API (GloFAS) ve Forecast API | Nehir debisi ve yağış tahmini. |
 | **Hava Kalitesi** | Open-Meteo Air Quality API (Copernicus CAMS) | AQI, PM2.5, PM10, CO. |
 | **Harita Altlığı** | [OpenFreeMap](https://openfreemap.org) (OpenStreetMap verisi) | Vektör karolar. |
@@ -388,10 +388,10 @@ afet.live tek kişinin gönüllü emeğiyle başladı ve kamu yararına açık k
 
 ### Yardım Aranan Konular
 
-- **Toplanma alanı olanakları:** Su, elektrik, çadır alanı ve kapasite bilgisi şu an tahmini. Kaynakta olmayan bilgi kaldırılmalı, gerçek veri bulunan illerde (belediye açık verileri) eklenmeli.
-- **Hastane bilgileri:** Acil yatak, helikopter pisti ve travma merkezi bilgisi için güvenilir kaynak gerekiyor.
+- **Toplanma alanı olanakları:** Su, elektrik, çadır alanı ve kapasite bilgisi kaynakta yok. Gerçek verisi olan illerden (belediye açık verileri) eklenmeli.
+- **Hastane bilgileri:** Acil servis, helikopter pisti ve travma merkezi bilgisi için resmi ve güvenilir bir kaynak gerekiyor.
 - **Nöbetçi eczane verisi:** İzmir dışındaki iller için izinli ve resmi bir kaynak (il eczacı odaları, belediye açık veri portalları).
-- **Kan merkezlerinin doğrulanması:** 22 kaydın adres ve koordinatlarının teyidi.
+- **Kan bağış noktaları:** Bölgenizdeki Kızılay kan merkezini OpenStreetMap'e `healthcare=blood_donation` etiketiyle ekleyin; haritaya otomatik gelir.
 - **Gerçek fay verisi:** Basitleştirilmiş katman yerine lisansı uygun, kaynağı belli bir diri fay verisi.
 - **Testler:** Henüz otomatik test yok; yardımcı fonksiyonlar için birim testleri ve temel uçtan uca testler.
 - **SEO ve erişilebilirlik:** Var olmayan adreslerin gerçek 404 döndürmesi ve WCAG uyumluluğu.
@@ -446,7 +446,7 @@ npm run preview
 During major catastrophic events (such as the February 6, 2023 Kahramanmaraş earthquakes), cellular mobile networks fail within minutes due to congestion, physical mast damage, and power grid collapse.
 
 To ensure uninterrupted availability when communication lines are dead, **afet.live is built on a "Zero-Server-Dependency" architecture**:
-- Once cached or installed as a Progressive Web App (PWA), **27,331 assembly points, 1,212 hospitals, 25,442 pharmacies, major fault zones, and the survival tools keep working offline.** (See [Data Sources](#4-telemetry--data-sources) for where the data comes from and its limits.)
+- Once cached or installed as a Progressive Web App (PWA), **27,331 assembly points, 953 hospitals, 25,442 pharmacies, major fault zones, and the survival tools keep working offline.** (See [Data Sources](#4-telemetry--data-sources) for where the data comes from and its limits.)
 - All geospatial, proximity, bearing, triage, and water chlorination computations execute client-side on the user's hardware.
 - No user location, personal data, or distress messages are tracked, stored, or sent to any central server.
 
@@ -491,7 +491,7 @@ graph TD
         U[Pharmacies: OpenStreetMap + İzmir live duty API]
         V[GloFAS River Discharge & Flood Radar - ECMWF]
         W[Open-Meteo Air Quality, Asbestos & Smoke Radar]
-        X[Turkish Red Crescent 22 Regional Blood Centers]
+        X[Blood Donation Points from OpenStreetMap]
         Y[TRAC & PMR 446 Emergency Radio Catalog]
     end
 
@@ -577,7 +577,7 @@ The toolset is organized into **4 logical categories based on immediate survival
     - Pre-caches assembly zones, emergency hospitals, and pharmacies for entire provinces/regions to browser `CacheStorage` before infrastructure blackouts.
     - Regional packages for Marmara, Aegean, Mediterranean, Central Anatolia, Eastern and Southeastern regions with storage space monitoring (`navigator.storage.estimate`).
 17. **Turkish Red Crescent Blood Centers & Donor Portal:**
-    - 22 Kızılay blood centers (manually compiled list; addresses and coordinates still need verification).
+    - Blood donation points from OpenStreetMap (`healthcare=blood_donation`).
     - Interactive 8-group donor-recipient compatibility matrix (0- universal donor, AB+ universal recipient).
     - Broadcasts verified emergency blood requests over the BitChat crisis mesh.
 18. **Emergency Chronic Prescription Passport & Generic Equivalent Guide:**
@@ -642,13 +642,13 @@ The toolset is organized into **4 logical categories based on immediate survival
 
 | Dataset | Source | Coverage & Limits |
 | :--- | :--- | :--- |
-| **Assembly Points** | Open-source GitHub mirrors of AFAD / e-Government data ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27,331 sites in 68 provinces. Water, power, tent-area and capacity are not in the source; the UI currently shows estimates (to be fixed). |
-| **Hospitals** | Ministry of Health HealthTurkiye API + geogow infrastructure data | 1,212 hospitals. Emergency beds, helipad and trauma-center flags are currently guessed from the name (to be fixed). |
+| **Assembly Points** | Open-source GitHub mirrors of AFAD / e-Government data ([geogow](https://github.com/Ilyas-jpg/geogow), [afad-toplanma-alani-acik-veri](https://github.com/RKursatV/afad-toplanma-alani-acik-veri)) | 27,331 sites in 68 provinces. Area (m²) comes from the source and is shown. Water, power, tent area and headcount capacity are not in the source, so they are not shown. |
+| **Hospitals** | Ministry of Health HealthTürkiye facility records + geogow infrastructure data (6 metros) | Name, location, phone, facility type and the bed capacity reported by the facility. Dental and physiotherapy hospitals excluded. ER, trauma-center and helipad info is not in the source, so it is not shown. |
 | **Pharmacies** | [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL), Overpass API | 25,442 pharmacies, 21k+ with phone numbers. **No on-duty information.** |
 | **On-Duty Pharmacies** | İzmir Metropolitan Municipality open-data API (İzmir only) | Elsewhere the app links to the official [e-Devlet on-duty pharmacy lookup](https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama). |
 | **Live Earthquakes** | Kandilli & AFAD (via [api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr)), EMSC, USGS | Four sources tried in order. |
 | **Fault Lines** | Hand-drawn simplified layer | 7 major fault zones. **Not the MTA Active Fault Map**; do not use for building-level risk. |
-| **Blood Donation Centers** | Manually compiled list | 22 Kızılay centers; addresses and coordinates need verification. |
+| **Blood Donation Centers** | [OpenStreetMap](https://www.openstreetmap.org/copyright) `healthcare=blood_donation` (ODbL) | Blood donation points mapped in OSM; additions to OSM show up the next day. |
 | **Flood & Rainfall** | [Open-Meteo](https://open-meteo.com) Flood API (GloFAS) and Forecast API | River discharge and precipitation forecasts. |
 | **Air Quality** | Open-Meteo Air Quality API (Copernicus CAMS) | AQI, PM2.5, PM10, CO. |
 | **Basemap** | [OpenFreeMap](https://openfreemap.org) (OpenStreetMap data) | Vector tiles. |

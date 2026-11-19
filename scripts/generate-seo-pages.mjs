@@ -144,7 +144,7 @@ const DISASTER_TOOLS = [
     slug: 'bina-risk',
     aliases: ['risk'],
     title: 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
-    desc: 'MTA diri fay haritası entegrasyonuyla binanızın en yakın aktif faya olan mesafesi, bina yaşı ve zemin ivmesi analizi.',
+    desc: 'Binanızın büyük fay zonlarına yaklaşık mesafesi ve bina yaşına göre kaba sismik farkındalık tahmini. Resmi analiz değildir.',
     h1: 'Bina Sismik Risk ve Diri Fay Sorgulama',
     badge: 'Erken Önlem'
   },
@@ -377,7 +377,7 @@ Host: https://afet.live
 
 function renderProvinceHtml(templateHtml, prov) {
   const title = `${prov.name} AFAD Toplanma Alanları ve Deprem Haritası 2026 — afet.live`;
-  const desc = `${prov.name} genelinde resmi AFAD toplanma alanları, acil servis hastaneleri, eczaneler ve diri fay hattı sorgulama. Çevrimdışı ve ücretsiz.`;
+  const desc = `${prov.name} genelinde AFAD toplanma alanları, hastaneler, eczaneler ve fay zonları. Çevrimdışı ve ücretsiz.`;
   const canonicalUrl = `https://afet.live/${prov.slug}`;
 
   // Replace Title & Meta Description & Canonical
@@ -446,7 +446,7 @@ function renderProvinceHtml(templateHtml, prov) {
           "name": "${prov.name} diri fay hatları nereden geçiyor?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "MTA resmi 1:25.000 ölçekli Türkiye Diri Fay Haritası katmanı ile ${prov.name} ve ilçelerindeki aktif kırık hatları, fay mesafesi ve sismik risk kartı üzerinden anında sorgulanabilir."
+            "text": "afet.live'daki basitleştirilmiş fay zonları katmanı ${prov.name} için büyük fay zonlarına yaklaşık mesafeyi gösterir. Bu katman MTA'nın resmi Diri Fay Haritası değildir; kesin bilgi için MTA'ya başvurun."
           }
         }
       ]
@@ -470,7 +470,7 @@ function renderProvinceHtml(templateHtml, prov) {
         ${prov.name} AFAD Toplanma Alanları ve Deprem Haritası
       </h1>
       <p style="font-size:12px;line-height:1.5;color:#cbd5e1;margin:0 0 14px 0;">
-        ${prov.name} genelindeki resmi AFAD toplanma alanları, acil servis hastaneleri, eczaneler ve MTA diri fay hattı sorgulama sistemi. %100 internetsiz ve ücretsizdir.
+        ${prov.name} genelindeki AFAD toplanma alanları, hastaneler, eczaneler ve fay zonları haritası. %100 internetsiz ve ücretsizdir.
       </p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;text-align:center;">
         <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);">

@@ -29,7 +29,7 @@ Türkiye 3D Afet ve Toplanma Atlası, açık kaynaklı ve kamu yararını gözet
 
 - Toplanma alanları koordinatları `[Boylam (lng), Enlem (lat)]` GeoJSON standardına uygun olmalıdır.
 - Yeni bir il veya ilçe eklerken resmi AFAD ve belediye açık veri portallarından teyit edilmiş toplanma alanlarını baz alınız.
-- `scripts/fetch-civic-data.mjs` dosyasına ekleme yaparken alan adı, il/ilçe, tahmini kapasite ve temel altyapı olanaklarını (su, elektrik, çadır sahası) eksiksiz giriniz.
+- `scripts/fetch-civic-data.mjs` dosyasına ekleme yaparken yalnızca kaynakta gerçekten bulunan alanları (ad, il/ilçe, adres, alan m²) yazın. Kapasite, su, elektrik veya çadır bilgisi kaynakta yoksa eklemeyin; `validate-data.mjs` bu alanları gördüğünde hata verir.
 
 ## Veri Dürüstlüğü (Zorunlu)
 

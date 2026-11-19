@@ -389,8 +389,8 @@ export class NearestPointsHUD {
                                   ? `• ${neighborhood}`
                                   : (p as any).typeText
                                   ? `• ${(p as any).typeText}`
-                                  : p.capacity
-                                  ? `• Kapasite: ${p.capacity.toLocaleString()}`
+                                  : p.areaSqM
+                                  ? `• Alan: ${p.areaSqM.toLocaleString('tr-TR')} m²`
                                   : ''
                               }
                             </p>
@@ -420,15 +420,9 @@ export class NearestPointsHUD {
                             ${
                               this.activeCategory === 'assembly'
                                 ? `
-                                  <span class="flex items-center gap-0.5 ${(p as any).hasWater ? 'text-cyan-400' : 'opacity-30'}">
-                                    ${Icons.water('w-3 h-3')} Su
-                                  </span>
-                                  <span class="flex items-center gap-0.5 ${(p as any).hasElectricity ? 'text-amber-400' : 'opacity-30'}">
-                                    ${Icons.bolt('w-3 h-3')} Elektrik
-                                  </span>
-                                  <span class="flex items-center gap-0.5 ${(p as any).hasTentArea ? 'text-emerald-400' : 'opacity-30'}">
-                                    ${Icons.tent('w-3 h-3')} Çadır
-                                  </span>
+                                  <span class="text-gray-400 font-medium">${
+                                    (p as any).neighborhood && p.areaSqM ? `Alan: ${p.areaSqM.toLocaleString('tr-TR')} m²` : 'AFAD toplanma alanı'
+                                  }</span>
                                 `
                                 : this.activeCategory === 'pharmacies'
                                 ? (p as any).isDuty
@@ -441,11 +435,9 @@ export class NearestPointsHUD {
                                   : `<span class="text-gray-400 font-medium">${
                                       (p as any).openingHours ? `Saat: ${(p as any).openingHours}` : 'Eczane'
                                     }</span>`
-                                : (p as any).hasTraumaCenter
-                                ? '<span class="text-rose-400 font-semibold">Travma Merkezi</span>'
-                                : (p as any).emergencyBeds
-                                ? `<span class="text-cyan-400 font-mono">${(p as any).emergencyBeds} Acil Yatak</span>`
-                                : '<span class="text-cyan-400 font-medium">7/24 Acil Servis</span>'
+                                : (p as any).bedCapacity
+                                ? `<span class="text-cyan-400 font-mono">${(p as any).bedCapacity} yatak</span>`
+                                : '<span class="text-cyan-400 font-medium">Hastane</span>'
                             }
                             ${
                               phone

@@ -597,12 +597,7 @@ class DisasterAtlasApp {
         city: f.properties.city,
         district: f.properties.district,
         coordinates: f.geometry.coordinates as [number, number],
-        capacity: Number(f.properties.capacity || 0),
-        areaSqM: Number(f.properties.areaSqM || 0),
-        hasWater: f.properties.hasWater ?? true,
-        hasElectricity: f.properties.hasElectricity ?? true,
-        hasTentArea: f.properties.hasTentArea ?? true,
-        hasGenerator: f.properties.hasGenerator ?? true
+        areaSqM: Number(f.properties.areaSqM || 0)
       }));
 
       // Background persist to IndexedDB
@@ -697,9 +692,7 @@ class DisasterAtlasApp {
           closingHour: f.properties.closingHour,
           dutyDate: f.properties.dutyDate || todayStr,
           typeText: f.properties.typeText,
-          emergencyBeds: Number(f.properties.emergencyBeds || 0),
-          hasTraumaCenter: Boolean(f.properties.hasTraumaCenter),
-          helipad: Boolean(f.properties.helipad),
+          bedCapacity: Number(f.properties.bedCapacity) > 0 ? Number(f.properties.bedCapacity) : undefined,
           openingHours: f.properties.openingHours || undefined,
           source: f.properties.source || undefined,
           coordinates: f.geometry.coordinates as [number, number]

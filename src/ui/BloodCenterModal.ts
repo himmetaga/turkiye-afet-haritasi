@@ -206,7 +206,7 @@ export class BloodCenterModal {
           <!-- Closest Kızılay Blood Donation Centers List -->
           <div>
             <div class="text-xs font-bold text-white mb-2 flex items-center justify-between">
-              <span>En Yakın Türk Kızılay Kan Merkezleri</span>
+              <span>En Yakın Kan Bağış Noktaları</span>
               <span class="text-[10.5px] text-gray-400 font-normal">${bloodCenters.length} Doğrulanmış Merkez</span>
             </div>
 
