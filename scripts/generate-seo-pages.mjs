@@ -410,13 +410,6 @@ function renderProvinceHtml(templateHtml, prov) {
         "@type": "Organization",
         "name": "afet.live Sivil Afet Atlası",
         "url": "https://afet.live/${prov.slug}"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "reviewCount": "2840",
-        "bestRating": "5",
-        "worstRating": "1"
       }
     }
     </script>
@@ -530,12 +523,6 @@ function renderToolHtml(templateHtml, tool) {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "TRY"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "reviewCount": "2840",
-        "bestRating": "5"
       }
     }
     </script>
@@ -573,6 +560,68 @@ function renderToolHtml(templateHtml, tool) {
   return html;
 }
 
+/**
+ * Uygulamanın yol tabanlı açtığı araçlar (src/utils/deepLink.ts → TOOL_PATH_MAP).
+ * Statik SEO sayfası olmayanlar için index.html kopyası yazılır; böylece site
+ * bilinmeyen adreslere ana sayfa yerine gerçek 404 döndürebilir.
+ */
+function readAppToolPaths() {
+  const src = fs.readFileSync(path.join(ROOT_DIR, 'src', 'utils', 'deepLink.ts'), 'utf8');
+  const start = src.indexOf('TOOL_PATH_MAP');
+  const end = src.indexOf('export function parseDeepLink');
+  const block = src.slice(start, end);
+  const slugs = [...block.matchAll(/'([a-z0-9-]+)':\s*'/g)].map((x) => x[1]);
+  // Ayrıştırma bozulursa sessizce eksik sayfa üretmek yerine build'i durdur.
+  if (start < 0 || end < 0 || slugs.length < 50) {
+    throw new Error(`deepLink.ts TOOL_PATH_MAP okunamadı (${slugs.length} yol bulundu)`);
+  }
+  return [...new Set(slugs)];
+}
+
+/** Uygulama içi araç yolu: arayüz aynı, dizine eklenmez, kanonik adres ana sayfa. */
+function renderAppRouteHtml(templateHtml) {
+  return templateHtml.replace(
+    /<meta name="robots" content="[^"]*" \/>/,
+    '<meta name="robots" content="noindex, follow" />'
+  );
+}
+
+function render404Html() {
+  return `<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Sayfa bulunamadı · afet.live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #090a0f; color: #e5e7eb;
+         font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding: 16px; box-sizing: border-box; }
+  main { max-width: 420px; text-align: center; }
+  h1 { font-size: 20px; margin: 0 0 8px; color: #fff; }
+  p { font-size: 14px; line-height: 1.5; color: #9ca3af; margin: 0 0 20px; }
+  a { display: inline-block; margin: 4px; padding: 10px 16px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; }
+  .primary { background: #10b981; color: #052e16; }
+  .secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+  .code { font-family: ui-monospace, monospace; color: #34d399; font-size: 12px; letter-spacing: .1em; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="code">404</div>
+  <h1>Aradığınız sayfa bulunamadı</h1>
+  <p>Adres yanlış yazılmış ya da sayfa kaldırılmış olabilir. Toplanma alanları, hastaneler ve eczaneler haritada.</p>
+  <a class="primary" href="/">🗺️ Haritaya git</a>
+  <a class="secondary" href="/toplanma-alanlari">En yakın toplanma alanı</a>
+  <p style="margin-top:20px;font-size:12px">Acil durumda 112'yi arayın.</p>
+</main>
+</body>
+</html>
+`;
+}
+
 async function main() {
   console.log('[seo-gen] Google & Arama Motoru Zirve Statik Sayfa Üretimi Başlıyor...');
 
@@ -607,6 +656,22 @@ async function main() {
     }
   }
   console.log(`[seo-gen] ✓ Afet araçları için statik SEO sayfaları ve takma adlar üretildi (${toolCount} sayfa).`);
+
+  // 2b. Statik sayfası olmayan uygulama içi araç yolları
+  const appRouteHtml = renderAppRouteHtml(templateHtml);
+  let appRouteCount = 0;
+  for (const slug of readAppToolPaths()) {
+    const file = path.join(DIST_DIR, `${slug}.html`);
+    if (fs.existsSync(file)) continue;
+    fs.writeFileSync(file, appRouteHtml, 'utf8');
+    appRouteCount++;
+  }
+  console.log(`[seo-gen] ✓ Uygulama içi araç yolları için ${appRouteCount} sayfa üretildi (noindex).`);
+
+  // 2c. Gerçek 404 sayfası. Cloudflare Pages, dist/404.html varsa bilinmeyen
+  // adreslere ana sayfa (200) yerine bu sayfayı 404 durum koduyla döndürür.
+  fs.writeFileSync(path.join(DIST_DIR, '404.html'), render404Html(), 'utf8');
+  console.log('[seo-gen] ✓ 404.html yazıldı.');
 
   // 3. Generate Valid sitemap.xml
   const sitemapXml = generateSitemapXml();
