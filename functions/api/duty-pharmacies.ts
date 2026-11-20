@@ -73,7 +73,8 @@ export async function onRequest(context: any): Promise<Response> {
   const url = new URL(context.request.url);
   const provSlug = normalizeSlug((url.searchParams.get('province') || '').trim());
   const districtSlug = normalizeSlug((url.searchParams.get('district') || '').trim());
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Nöbet günü Türkiye saatine göre belirlenir (UTC gece yarısı ile 03:00 arası bir önceki günü verirdi).
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
 
   if (provSlug === 'izmir') {
     try {

@@ -44,14 +44,33 @@ export class FloodRadarModal {
       this.currentData = await floodRadarService.fetchFloodRadar(this.userCoords);
       this.render();
     } catch {
-      this.currentData = floodRadarService.getSimulationData('low', this.userCoords);
-      this.render();
+      // Veri alınamadı: örnek "düşük risk" göstermek yanıltıcı olur, hata açıkça yazılır.
+      this.currentData = null;
+      this.renderError();
     }
   }
 
   public hide(): void {
     this.isVisible = false;
     this.container.classList.add('hidden');
+  }
+
+  private renderError(): void {
+    this.container.innerHTML = `
+      <div class="relative w-full max-w-xl rounded-2xl bg-obsidian-900/95 border border-white/10 p-6 shadow-2xl backdrop-blur-xl text-white text-center">
+        <h3 class="text-base font-bold text-white tracking-wide">Sel ve yağış verisi alınamadı</h3>
+        <p class="text-xs text-gray-300 mt-2 leading-relaxed">
+          Hava ve nehir debisi servisine şu an ulaşılamıyor. Bu ekran risk durumunu gösteremiyor.
+          Güncel uyarılar için Meteoroloji Genel Müdürlüğü'nün (mgm.gov.tr) uyarılarına bakın; tehlike anında 112'yi arayın.
+        </p>
+        <div class="flex gap-2 justify-center mt-4">
+          <button id="btn-retry-flood" type="button" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-obsidian-950 font-bold text-xs active:scale-95 transition-all">Yeniden dene</button>
+          <button id="btn-close-flood" type="button" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs active:scale-95 transition-all">Kapat</button>
+        </div>
+      </div>
+    `;
+    this.container.querySelector('#btn-close-flood')?.addEventListener('click', () => this.hide());
+    this.container.querySelector('#btn-retry-flood')?.addEventListener('click', () => void this.show());
   }
 
   private renderLoading(): void {
@@ -328,6 +347,10 @@ export class FloodRadarModal {
     this.container.querySelector('#btn-share-flood')?.addEventListener('click', () => {
       if (!this.currentData) return;
       const d = this.currentData;
+      if (d.isSimulated) {
+        alert('Test senaryosu gerçek veri değildir ve paylaşılamaz.');
+        return;
+      }
       const text = `🌊 afet.live Sel & Taşkın Durum Raporu:\nRisk Seviyesi: ${cfg.label}\nAnlık Yağış: ${d.precipitationMmPerHour} mm/saat\nHava: ${d.weatherDescription}\nKonum: https://afet.live?mod=sel`;
       if (navigator.share) {
         navigator.share({ title: 'Sel Radarı', text }).catch(() => {});

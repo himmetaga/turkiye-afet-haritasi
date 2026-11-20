@@ -60,7 +60,7 @@ export class RouteNavigationHUD {
             <div class="flex items-center gap-1.5 mb-1">
               <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               <span class="text-[11px] font-mono text-emerald-400 font-semibold uppercase tracking-wider">
-                ${route.isOffline ? '🛡️ Güvenli Sokak Rotası' : '🚶 Canlı Yürüyüş Navigasyonu'}
+                ${route.isOffline ? '📐 Yaklaşık Yön (rota alınamadı)' : '🚶 Yürüyüş Rotası'}
               </span>
             </div>
             <h3 class="text-sm font-bold text-white leading-snug">
@@ -80,6 +80,14 @@ export class RouteNavigationHUD {
             ${Icons.close('w-4.5 h-4.5')}
           </button>
         </div>
+
+        ${
+          route.isOffline
+            ? `<p class="my-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200 leading-snug">
+                ⚠️ Sokak rotası alınamadı. Haritadaki çizgi gerçek sokakları göstermez; yalnızca hedefin yönünü ve yaklaşık mesafeyi verir. Çevrenize bakarak ilerleyin.
+              </p>`
+            : ''
+        }
 
         <div class="grid grid-cols-2 gap-2 my-2.5">
           <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">

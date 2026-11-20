@@ -52,7 +52,7 @@ export class SeismicFeedHUD {
         </div>
 
         ${
-          isOfflineCache
+          isOfflineCache && this.earthquakes.length > 0
             ? `<div class="mt-2 p-2 rounded-xl bg-amber-500/10 text-amber-300 text-[11px] flex items-center gap-1.5">
                 ${Icons.wifiOff('w-3.5 h-3.5')}
                 <span>Çevrimdışı Önbellek Verisi Görüntüleniyor</span>
@@ -75,7 +75,9 @@ export class SeismicFeedHUD {
 
         <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
           ${
-            filtered.length === 0
+            this.earthquakes.length === 0
+              ? '<p class="text-xs text-amber-200 text-center py-4 leading-relaxed">Deprem verisi şu an alınamıyor. İnternet bağlantınızı kontrol edin; güncel liste için AFAD ve Kandilli’nin resmi sayfalarına bakın.</p>'
+              : filtered.length === 0
               ? '<p class="text-xs text-gray-400 text-center py-4">Seçilen kritere uygun deprem bulunamadı.</p>'
               : filtered
                   .map((eq) => {

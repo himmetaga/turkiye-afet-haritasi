@@ -1,4 +1,5 @@
 import { ObstaclePoint } from '../types';
+import { sanitizeExternalText } from '../utils/safeText';
 import { haversineDistanceMeters } from '../utils/geoMath';
 
 export interface RouteStep {
@@ -15,7 +16,7 @@ export interface WalkingRouteResult {
   isOffline: boolean;
 }
 
-const ROUTE_CACHE_KEY = 'afet_walking_routes';
+const ROUTE_CACHE_KEY = 'afet_walking_routes_v2';
 
 function getCachedRoute(from: [number, number], to: [number, number]): WalkingRouteResult | null {
   try {
@@ -89,7 +90,7 @@ export async function fetchWalkingRoute(
               steps.push({
                 instruction: instr,
                 distanceMeters: Math.round(s.distance),
-                name: s.name || 'İsimsiz Sokak'
+                name: sanitizeExternalText(String(s.name || '')) || 'İsimsiz Sokak'
               });
             }
           }
@@ -99,9 +100,9 @@ export async function fetchWalkingRoute(
         if (obstacles.length > 0) {
           coordinates = applyObstacleDetours(coordinates, obstacles);
           steps.unshift({
-            instruction: '⚠️ Bildirilen sokak engelleri haritada dikkate alınarak rota güvenliği sağlandı',
+            instruction: '⚠️ Bildirilen engellerin çevresinden dolaşın',
             distanceMeters: 0,
-            name: 'Güvenli Tahliye'
+            name: 'yaklaşık çizim'
           });
         }
 
@@ -186,17 +187,16 @@ function generateStreetGridFallback(
   const distanceMeters = Math.round(totalDistance);
   const durationMinutes = Math.max(1, Math.round(distanceMeters / 75));
 
+  // Sokak verisi yok: dönüş talimatı UYDURULMAZ. Yalnızca hedefin yönü ve yaklaşık mesafe verilir.
   const steps: RouteStep[] = [
-    { instruction: 'Sokak boyunca ilerleyin', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Ana Cadde' },
-    { instruction: 'Sola dönün', distanceMeters: Math.round(distanceMeters * 0.4), name: 'Sokak' },
-    { instruction: 'Toplanma alanına ulaştınız', distanceMeters: Math.round(distanceMeters * 0.2), name: 'Afet Alanı' }
+    { instruction: 'Hedef yönünde ilerleyin', distanceMeters, name: 'sokaklar doğrulanmadı' }
   ];
 
   if (obstacles.length > 0) {
     steps.unshift({
-      instruction: '⚠️ Çevrimdışı güvenli koridor: Yıkıntı/enkaz engelleri rota dışı bırakıldı',
+      instruction: '⚠️ Bildirilen engellerin çevresinden dolaşın',
       distanceMeters: 0,
-      name: 'Güvenli Rota'
+      name: 'yaklaşık çizim'
     });
   }
 

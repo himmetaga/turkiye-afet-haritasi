@@ -61,6 +61,10 @@ class FloodRadarService {
       const weatherData = weather.status === 'fulfilled' ? weather.value : null;
       const floodData = flood.status === 'fulfilled' ? flood.value : null;
 
+      // Yağış verisi olmadan risk hesaplanamaz. Eskiden 0 mm varsayılıp "düşük risk"
+      // gösteriliyordu; bu, veri yokken güven veren uydurma bir sonuçtu.
+      if (!weatherData) throw new Error('Hava verisi alınamadı');
+
       const precip = weatherData?.precipitation ?? 0;
       const windSpeed = weatherData?.windSpeed ?? 0;
       const humidity = weatherData?.humidity ?? 50;
@@ -92,9 +96,10 @@ class FloodRadarService {
 
       this.cache.set(cacheKey, { data: result, expiresAt: Date.now() + this.CACHE_TTL_MS });
       return result;
-    } catch {
-      // Fallback in case of complete network failure
-      return this.getOfflineFallback(lat, lng);
+    } catch (err) {
+      // Süresi dolmuş olsa da son bir saat içinde alınmış gerçek ölçüm varsa o gösterilir; yoksa hata yükseltilir.
+      if (cached && Date.now() - cached.data.fetchedAt < 60 * 60 * 1000) return cached.data;
+      throw err;
     }
   }
 
@@ -294,25 +299,6 @@ class FloodRadarService {
       ],
       directives: this.getDirectivesForRisk(tier, precip),
       isSimulated: true,
-      fetchedAt: Date.now()
-    };
-  }
-
-  private getOfflineFallback(lat: number, lng: number): FloodRadarData {
-    return {
-      latitude: lat,
-      longitude: lng,
-      precipitationMmPerHour: 0,
-      riverDischargeM3s: null,
-      riverDischargeMaxM3s: null,
-      windSpeedKmH: 0,
-      humidityPct: 55,
-      weatherCode: 0,
-      weatherDescription: 'Çevrimdışı / Kayıtlı Güvenlik Modu',
-      riskTier: 'low',
-      riskScore: 10,
-      hourlyForecast: [],
-      directives: this.getDirectivesForRisk('low', 0),
       fetchedAt: Date.now()
     };
   }

@@ -108,41 +108,11 @@ class FeltReportsService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        this.reports = JSON.parse(raw);
-      } else {
-        // Initial simulated recent community reports for realism
-        this.reports = [
-          {
-            id: 'felt-init-1',
-            intensity: 4,
-            intensityRoman: 'IV',
-            intensityLabel: 'Hissedildi (Avizeler Sallandı)',
-            intensityColor: '#10B981',
-            timestamp: Date.now() - 1000 * 60 * 18,
-            timeString: '18 dk önce',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            coordinates: [29.0275, 40.9885],
-            buildingType: 'Betonarme Apartman',
-            floor: 4,
-            comment: 'Yatakta hafif sallandık, avizeler 5-6 saniye salındı.'
-          },
-          {
-            id: 'felt-init-2',
-            intensity: 5,
-            intensityRoman: 'V',
-            intensityLabel: 'Orta Şiddet (Kapı & Pencereler Çarptı)',
-            intensityColor: '#F59E0B',
-            timestamp: Date.now() - 1000 * 60 * 35,
-            timeString: '35 dk önce',
-            city: 'Yalova',
-            district: 'Çınarcık',
-            coordinates: [29.122, 40.643],
-            buildingType: 'Müstakil Ev',
-            floor: 1,
-            comment: 'Derinden gelen bir sesle birlikte 8 saniye sürdü.'
-          }
-        ];
+        const parsed = JSON.parse(raw);
+        // Eski sürümlerin yazdığı örnek kayıtlar (felt-init-*) gerçek bildirim değildir.
+        this.reports = Array.isArray(parsed)
+          ? parsed.filter((r) => r && typeof r.id === 'string' && !r.id.startsWith('felt-init-'))
+          : [];
       }
     } catch {
       this.reports = [];

@@ -1,4 +1,5 @@
 import { feltReportsService, FeltReport } from '../services/feltReportsService';
+import { escapeHtml } from '../utils/safeText';
 import { Icons } from './icons';
 
 export class FeltReportModal {
@@ -58,7 +59,7 @@ export class FeltReportModal {
                 Depremi Hissettiniz mi? (Felt Report)
               </h3>
               <p class="text-[11px] text-gray-400">
-                Mercalli şiddet ölçeğiyle bildirimde bulunarak topluluk haritasını güncelleyin
+                Hissettiğiniz şiddeti Mercalli ölçeğiyle kaydedin. Kayıt yalnızca bu cihazda saklanır.
               </p>
             </div>
           </div>
@@ -136,26 +137,27 @@ export class FeltReportModal {
           id="btn-submit-felt"
           class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-obsidian-950 font-bold text-sm shadow-glow-emerald active:scale-95 transition-all mb-2"
         >
-          ✓ Bildirimi Topluluk Haritasına Gönder
+          ✓ Bildirimi Bu Cihaza Kaydet
         </button>
         <p class="text-[10px] text-gray-500 text-center mb-4 leading-tight">
-          ⚖️ Sivil afet dayanışma ağıdır. Resmi AFAD/112 yerine geçmez. Kullanıcı beyanlarından platform sorumlu tutulamaz.
+          Bu kayıt başka kullanıcılara veya resmi kurumlara iletilmez. Resmi bildirim için AFAD'ın "Depremi Hissettiniz mi?" formunu kullanın; acil durumda 112'yi arayın.
         </p>
 
         <!-- Recent Reports Preview -->
         <div class="border-t border-white/10 pt-3">
-          <h4 class="text-xs font-semibold text-gray-400 mb-2">Bölgenizdeki Son Topluluk Bildirimleri:</h4>
+          <h4 class="text-xs font-semibold text-gray-400 mb-2">Bu cihazdaki son kayıtlarınız:</h4>
           <div class="space-y-1.5">
+            ${recentReports.length === 0 ? '<p class="text-[11px] text-gray-500">Henüz kayıt yok.</p>' : ''}
             ${recentReports
               .map(
                 (r) => `
               <div class="p-2 rounded-lg bg-white/5 flex items-center justify-between text-[11px]">
                 <div class="flex items-center gap-2">
-                  <span class="font-mono font-bold text-amber-400">${r.intensityRoman}</span>
-                  <span class="text-white font-medium">${r.district}, ${r.city}</span>
-                  <span class="text-gray-400 truncate max-w-[180px]">${r.comment || r.intensityLabel}</span>
+                  <span class="font-mono font-bold text-amber-400">${escapeHtml(r.intensityRoman)}</span>
+                  <span class="text-white font-medium">${escapeHtml(r.district)}, ${escapeHtml(r.city)}</span>
+                  <span class="text-gray-400 truncate max-w-[180px]">${escapeHtml(r.comment || r.intensityLabel)}</span>
                 </div>
-                <span class="text-gray-500 font-mono text-[10px]">${r.timeString}</span>
+                <span class="text-gray-500 font-mono text-[10px]">${escapeHtml(r.timeString)}</span>
               </div>
             `
               )
