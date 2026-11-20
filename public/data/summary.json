@@ -1,8 +1,8 @@
 {
   "assemblyPointsCount": 27331,
-  "facilitiesCount": 26442,
-  "hospitalsCount": 953,
-  "pharmaciesCount": 25442,
+  "facilitiesCount": 26438,
+  "hospitalsCount": 951,
+  "pharmaciesCount": 25440,
   "bloodCentersCount": 47,
   "provinces": [
     "Adana",
@@ -80,5 +80,5 @@
     "pharmacies": "© OpenStreetMap katkıcıları (ODbL). Nöbet bilgisi içermez.",
     "bloodCenters": "© OpenStreetMap katkıcıları (ODbL), healthcare=blood_donation."
   },
-  "updatedAt": "2026-11-19T22:59:04.287Z"
+  "updatedAt": "2026-11-20T22:22:57.630Z"
 }
