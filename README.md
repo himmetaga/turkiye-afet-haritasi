@@ -1,316 +1,156 @@
-# afet.live — Türkiye Afet, Deprem ve Acil Durum Atlası
-### Turkey Disaster Resilience, Earthquake & Emergency Survival Atlas
+# afet.live — Türkiye Afet ve Toplanma Alanları Haritası
+### Türkiye disaster, earthquake and assembly point map
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
-[![PWA Ready](https://img.shields.io/badge/PWA-Offline--First-blue.svg)](https://afet.live)
+[![PWA](https://img.shields.io/badge/PWA-installable-blue.svg)](https://afet.live)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Bundler-Vite%206-purple.svg)](https://vitejs.dev/)
-[![Zero Server Tracking](https://img.shields.io/badge/Privacy-100%25%20Zero--Telemetry-brightgreen.svg)](https://afet.live)
 
-🌐 **Canlı Uygulama / Live Site:** [https://afet.live](https://afet.live)
+🌐 **Site:** [https://afet.live](https://afet.live)
+
+> Gönüllü, bağımsız bir projedir; bir kamu kurumu yayını değildir. Acil durumda **112**'yi arayın.
+> An independent volunteer project, not a government service. In an emergency call **112**.
 
 ---
 
 ## 📌 Dil Seçimi / Language Selection
-- [🇹🇷 Türkçe Dokümantasyon](#-türkçe-afetlive--türkiye-afet-ve-acil-durum-atlası)
-  - [1. Genel Bakış ve Misyon](#1-genel-bakış-ve-misyon)
-  - [2. Sistem ve Yazılım Mimarisi (8 Sütun & iOS 27)](#2-sistem-ve-yazılım-mimarisi-8-ana-mimari-sütun--ios-27-spatial-glass)
-  - [3. Faydaya Göre Modül Kataloğu (44 Araç)](#3-faydaya-göre-modül-kataloğu-40-araç)
+- [🇹🇷 Türkçe](#-türkçe-afetlive--türkiye-afet-ve-toplanma-alanları-haritası)
+  - [1. Genel Bakış ve Amaç](#1-genel-bakış-ve-amaç)
+  - [2. Mimari](#2-mimari)
+  - [3. Araçlar](#3-araçlar)
   - [4. Veri Kaynakları & Doğruluk](#4-veri-kaynakları--doğruluk)
-  - [5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)](#5-gizlilik--sıfır-veri-kaybı-zero-data-retention)
-  - [6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği](#6-manipülasyon-önleme--hukuki-sorumluluk-güvenliği)
+  - [5. Gizlilik](#5-gizlilik)
+  - [6. Sohbet Korumaları ve Sorumluluk Reddi](#6-sohbet-korumaları-ve-sorumluluk-reddi)
   - [7. Kurulum ve Yerel Çalıştırma](#7-kurulum-ve-yerel-çalıştırma)
 - [🤝 Katkıda Bulunun / Contributing](#katkıda-bulunun)
-- [🇬🇧 English Documentation](#-english-afetlive--turkiye-disaster-resilience-and-emergency-atlas)
-  - [1. Overview & Core Mission](#1-overview--core-mission)
+- [🇬🇧 English](#-english-afetlive--türkiye-disaster-and-assembly-point-map)
+  - [1. Overview & Purpose](#1-overview--purpose)
   - [2. System Architecture](#2-system-architecture)
-  - [3. Feature Catalog by Utility (44 Modules)](#3-feature-catalog-by-utility-33-modules)
+  - [3. Tools](#3-tools)
   - [4. Telemetry & Data Sources](#4-telemetry--data-sources)
-  - [5. Privacy & Zero Tracking Architecture](#5-privacy--zero-tracking-architecture)
-  - [6. Anti-Manipulation & Legal Zero-Liability Architecture](#6-anti-manipulation--legal-zero-liability-architecture)
+  - [5. Privacy](#5-privacy)
+  - [6. Chat Safeguards & Disclaimer](#6-chat-safeguards--disclaimer)
   - [7. Installation & Local Development](#7-installation--local-development)
 
 ---
 
-# 🇹🇷 Türkçe: afet.live — Türkiye Afet ve Acil Durum Atlası
+# 🇹🇷 Türkçe: afet.live — Türkiye Afet ve Toplanma Alanları Haritası
 
-## 1. Genel Bakış ve Misyon
+## 1. Genel Bakış ve Amaç
 
-**afet.live**, Türkiye ve komşu coğrafyalarda meydana gelebilecek deprem, sel, heyelan, orman yangını, bina çökmesi ve tsunami gibi afet anlarında ve sonrasında sivil halkın, arama kurtarma gönüllülerinin ve sahra ekiplerinin hayatta kalmasını desteklemek amacıyla geliştirilmiş **açık kaynaklı, bağımsız ve çevrimdışı (offline-first)** bir sivil afet atlasıdır.
+**afet.live**, deprem, sel ve benzeri afetlerde en yakın toplanma alanını, hastaneyi ve eczaneyi bulmayı kolaylaştıran, yanında afet hazırlık araçları sunan **açık kaynaklı, bağımsız ve gönüllü** bir web uygulamasıdır. Bir kamu kurumu yayını değildir; acil durumda her zaman **112**'yi arayın ve yetkili kurumların duyurularını izleyin.
 
-6 Şubat 2023 Kahramanmaraş depremleri ve geçmiş Marmara afetleri göstermiştir ki; afet anında hücresel baz istasyonları dakikalar içinde kilitlenmekte, merkezi sunucular çökmekte, internet erişimi kesilmekte ve elektrik şebekesi devre dışı kalmaktadır.
+Ne yapar, ne yapmaz:
 
-Bu hayati gereksinim doğrultusunda **afet.live**, **"Sıfır Sunucu Bağımlılığı (Zero Server Dependency)"** ilkesiyle tasarlanmıştır:
-- Uygulama tarayıcıya veya telefona bir kez yüklendiğinde (PWA), hücresel veri, fiber internet ve Wi-Fi tamamen kopsa dahi **27.331 toplanma alanı, 953 hastane, 25.442 eczane, ana fay zonları ve hayatta kalma araçları çevrimdışı çalışmaya devam eder.** (Verilerin nereden geldiği ve sınırları için [Veri Kaynakları](#4-veri-kaynakları--doğruluk) bölümüne bakın.)
-- Kullanıcının GPS konumu, kimliği veya tıbbi verileri asla harici bir sunucuya kaydedilmez; tüm hesaplamalar (Haversine mesafe, açı, triyaj, klorlama dozajı) doğrudan kullanıcının cihaz işlemcisinde yerel olarak gerçekleştirilir.
+- **Harita ve veri:** 27.331 toplanma alanı, 953 hastane, 25.442 eczane, kan bağış noktaları ve basitleştirilmiş fay zonları tek haritada. Verilerin nereden geldiği ve sınırları [Veri Kaynakları](#4-veri-kaynakları--doğruluk) bölümünde.
+- **Çevrimdışı kullanım (kısmi):** Uygulama bir PWA'dır. İnternet varken açılıp veriler kaydedildiyse toplanma alanları ve hastaneler çoğu durumda internetsiz de görüntülenebilir. Tarayıcı kayıtlı veriyi silebilir; çevrimdışı açılış kesin değildir. Harita görüntüsü, yürüyüş rotası, son depremler, sel/hava verisi ve sohbet internet gerektirir.
+- **Erken uyarı değildir:** Son depremler listesi olayı sarsıntıdan sonra gösterir. Uygulama deprem, tsunami ya da sel için erken uyarı vermez.
+- **Kimseye haber vermez:** Uygulama 112'ye ya da başka bir kuruma kendiliğinden bildirim göndermez. SMS ve paylaşım düğmeleri yalnızca telefonunuzda bir taslak açar; alıcıyı siz seçersiniz.
+- **Konum:** Acil durum mesajlarına koordinat yalnızca cihazın gerçek GPS ölçümü varsa eklenir. Konum izni yoksa uygulama bunu açıkça söyler.
+- **Veri uydurulmaz:** Kaynakta olmayan bilgi "bilinmiyor" olarak gösterilir; bağlantı yokken örnek ya da tahmini veri gösterilmez.
 
 ---
 
-## 2. Sistem ve Yazılım Mimarisi (8 Ana Mimari Sütun & iOS 27 Spatial Glass)
-
-afet.live; sıfır sunucu bağımlılığı, ultra düşük pil sarfiyatı, enkaz altı donanım otomasyonu ve bilişsel yükü sıfırlayan **iOS 27 Spatial Neo-Glassmorphism** arayüzü üzerine 8 ana sütunda inşa edilmiştir:
+## 2. Mimari
 
 ```mermaid
 graph TD
-    subgraph UI ["1. iOS 27 Sade Arayüz & Bilişsel Yük Yönetimi"]
-        A[Dinamik Ada - Dynamic Island Kapsülü]
-        B[Yüzen Cam Dock - Floating Spatial Dock]
-        C[Bento Grid Kontrol Merkezi & Canlı Filtreleme]
-        D[Hold-to-Confirm: 3sn Kazara Basma Koruması]
-        E[OLED Ekstrem Güç Kalkanı: Pitch-Black 15-30Hz]
+    subgraph Client ["Tarayıcı (PWA)"]
+        A[Arayüz: TypeScript + Tailwind, şablon tabanlı]
+        B[Harita: MapLibre GL + OpenFreeMap vektör karoları]
+        C[Yerel kayıt: localStorage / IndexedDB / Cache Storage]
+        D[Cihaz sensörleri: konum, pusula, ivmeölçer, mikrofon, fener]
     end
-
-    subgraph Hardware ["2. Enkaz Altı Donanım Otomasyonu & Sensörler"]
-        F[3.5 - 4.2 kHz Geofon Sismik Rezonans Sentezi]
-        G[Pik Darbeli Optik LED SOS: 10ms Flaş - %95 Pil Koruması]
-        H[Ortam Işığı ALS: 0 Lux Enkaz Çökme Doğrulaması]
-        I[Barometrik Kat & Göçük Deplasman Analitiği]
-        J[Taktik Manyetometre Pusula & Yapısal Deformasyon]
-        K[Bilinç Yoklaması Titreşimi & Dead-Man Kara Kutu]
+    subgraph Static ["Cloudflare Pages (statik)"]
+        E[public/data: toplanma alanları, tesisler, fay zonları GeoJSON]
+        F[81 il ve araç sayfaları, sitemap, 404]
+        G[Pages Function: /api/duty-pharmacies — yalnızca İzmir]
     end
-
-    subgraph Network ["3. Altyapısız İletişim & Hibrit Mesh Ağı"]
-        L[DNS Tünelleme - Captive Portal Bypass: a3f2.sos.afet.live]
-        M[Store-and-Forward DTN: Fiziksel İnsan Kurye Veri Ağı]
-        N[Ultrasonik Yakın Alan Akustik Chirp: 18-20 kHz]
-        O[LoRa & Meshtastic Donanım Köprüsü: 433/868 MHz]
-        P[Nostr & WebRTC DataChannel P2P: BitChat Kriz Odası]
-        Q[Dinamik Wi-Fi Hotspot SSID: SOS_A-RH+_1KISI_BILINCLI]
+    subgraph Daily ["Günlük veri eşitleme (GitHub Actions)"]
+        H[fetch-civic-data.mjs: kaynaklardan indir]
+        I[validate-data.mjs: uydurma/eksik veriyi engelle]
     end
-
-    subgraph Intelligence ["4. Karar Destek, Triyaj & Hukuki Koruma"]
-        R[110 BPM Sahra CPR Metronomu & Ezilme Sendromu Kılavuzu]
-        S[START Sahra Triyaj Motoru & Turnike 120 Dk Zamanlayıcısı]
-        T[Bina Hasar Tespiti, X-Çatlak Analizi & DASK 15 Gün Süre]
-        U[WHO WASH Su Dezenfeksiyonu & Klorlama Dozajlayıcı]
-        V[KBRN, Radyasyon & Nükleer Serpinti Sığınağı Kılavuzu]
-        W[Mülkiyet Kasası & Çevrimdışı Verifiable Credentials]
-        X[P2P İhtiyaç & Barter Takas Defteri]
+    subgraph External ["Tarayıcının doğrudan bağlandığı dış servisler"]
+        J[Deprem listeleri: Kandilli/AFAD aynası, EMSC, USGS]
+        K[Open-Meteo: yağış, GloFAS nehir debisi, hava kalitesi]
+        L[OSRM: yürüyüş rotası]
+        M[Nostr aktarıcıları: herkese açık sohbet]
+        N[ipapi.co: konum izni yoksa şehir düzeyinde tahmin]
     end
-
-    UI --> Hardware
-    Hardware --> Network
-    Network --> Intelligence
+    H --> I --> E
+    A --> B
+    A --> C
+    A --> D
+    E --> A
+    G --> A
+    J --> A
+    K --> A
+    L --> A
+    M --> A
+    N --> A
 ```
 
-### 🏛️ 8 Ana Mimari Sütun
-
-#### Sütun 1: Dağıtım ve Altyapısız İletişim
-- **Sunucusuz ve Statik Çekirdek:** Uygulamanın tüm mantıksal katmanları sıfır sunucu taraflı hesaplama (client-side execution) yapacak şekilde derlenmiştir; Cloudflare Edge ve GitHub Pages üzerinden global CDN ağına dağıtılır. İlk saniyelerde 10 milyon eşzamanlı giriş olsa bile sistem sıfır maliyetle kesintisiz ayakta kalır.
-- **Offline-First Service Worker & IndexedDB:** PWA `Cache-First` kuralıyla tüm static asset'ler, fontlar, ses sentezleyiciler ve vektör harita karoları tek seferde önbelleğe yazılır; uçak modunda veya baz istasyonları tamamen yokken dahi 1 milisaniye gecikme olmadan çalışır.
-- **Captive Portal & DNS Tünelleme (Walled Garden Bypass):** Dış internete çıkışı kapalı veya şifreli sahra Wi-Fi ağlarında UDP 53 (DNS) portunun açık kalmasından yararlanarak, enkaz koordinatı ve hayati durum verilerini Base64 formatında DNS sorgularına gömerek (`a3f2.sos.afet.live`) dış dünyaya aktarır.
-- **Store-and-Forward DTN (Delay-Tolerant Networking) Taşıyıcı Modeli:** Enkaz altından BLE ile sağılan paketler, bölgeden geçen sivillerin ve sahra araçlarının cihazlarında yerel kuyruğa alınır (Data Mule); internet olan ilk sahra çadırına veya Starlink terminaline ulaştırılır.
-- **Ultrasonik Yakın Alan Akustik Veri Aktarımı (18 kHz – 20 kHz):** Bluetooth yongası fiziksel darbeyle bozulmuş veya anteni kırılmış cihazlarda, dahili hoparlör ve mikrofon üzerinden insan kulağının duymadığı ses dalgalarıyla kimlik, kan grubu ve konum telemetrisi aktarılır.
-- **LoRa & Meshtastic Donanım Köprüsü:** Web Bluetooth API ve Web Serial üzerinden 433/868 MHz harici LoRa telsiz modüllerine bağlanarak menzili 15 kilometreye çıkarır.
-- **WebRTC P2P Yerel Ağ Kümelenmesi:** Dış kablosu kopmuş yerel yönlendiricilerde (Wi-Fi router) cihazlar mDNS üzerinden birbirini bulup doğrudan WebRTC DataChannel ile mesajlaşır.
-
-#### Sütun 2: Erken Uyarı, Sensör Fiziği ve Algoritmik Karar Katmanı
-- **P-Dalgası Diferansiyel İvmeölçer Analizi:** `DeviceMotionEvent` API ile 100 Hz frekansta ivme verisi okunur; yıkıcı ana sarsıntıyı getiren S dalgası bölgeye ulaşmadan 3 ila 45 saniye önce kaçış ve yaşam üçgeni payı kazandırır.
-- **FFT Tabanlı Sahte Sarsıntı Filtreleme:** Cihazda yerel çalışan Hızlı Fourier Dönüşümü (FFT) ile sarsıntı frekans spektrumu analiz edilir; adımlama ve masa çarpması gibi 5-15 Hz titreşimler elenerek yalnızca gerçek sismik frekanslarda (0.5 – 5 Hz) alarm verilir.
-- **Ortam Işığı Sensörü (ALS) ile Enkaz Doğrulama Korelasyonu:** Şiddetli darbe ivmesinde dahili ortam ışık sensörünün 0 lux (mutlak karanlık) verip vermediği kontrol edilir; cebinde yere düşen telefon ile tavanı çöken enkazı anında ayrıştırarak yardım sinyalinin güvenilirlik puanını %99'a çıkarır.
-- **Barometrik Kat ve Göçük Deplasman Analitiği:** Dahili barometre (hava basıncı sensörü) verileri hPa cinsinden sürekli izlenerek deprem anındaki son GPS rakımı ile hava basıncı irtifası karşılaştırılır; kazazedenin zemin seviyesinden kaç metre aşağıda/yukarıda olduğu santimetre hassasiyetinde hesaplanır.
-- **Manyetometre (Manyetik Pusula) Yapısal Deformasyon Tespiti:** Binanın kolonlarındaki betonarme donatı demirlerinin manyetik alan sapmaları analiz edilerek enkaz tavanındaki beton kütlesinin eğilme yönü ve güvenli sürünme vektörü belirlenir.
-- **Bölgesel Sensör Konsensüsü:** Aynı GeoHash hücresindeki en az 10 cihazın eşzamanlı mikro-sarsıntı üretmesi durumunda yerel ağa alarm yayını yapılır.
-
-#### Sütun 3: Enkaz Altı Donanım Otomasyonu ve Hayat İkaz Protokolleri
-- **Akustik-Sismik Dinleme Frekansı Modülatörü:** Hoparlör, arama kurtarma sismik yer mikrofonlarının (geofon ve akustik dinleme probları) en iyi yakaladığı 3.5 kHz – 4.2 kHz frekans bandında kesikli rezonans darbeleri üretir; ses dalgalarının beton kütlelerden soğurulmasını minimize ederek 10-15 metre derinlikten duyulmasını sağlar.
-- **Pik Darbeli Optik LED Sinyalleme (High-Intensity SOS Pulse):** Bataryayı hızla tüketen sürekli flaş yerine her 5 saniyede bir 10 milisaniyelik ultra yüksek lümenli S-O-S optik darbeleri atar; bataryayı günlerce korurken gece dronları ve termal kameraların tespitini sağlar.
-- **Dinamik Wi-Fi Hotspot Beaconing:** Wi-Fi kartını yerel erişim noktası moduna geçirip SSID'yi dinamik olarak `SOS_[KanGrubu]_[KişiSayısı]_[BilinçDurumu]_[Pil]` şeklinde şifresiz yayınlar; enkaz üstündeki görevlinin Wi-Fi tarama ekranında kazazede durumunu anında görmesini sağlar.
-- **BLE Raw Advertising Telemetri Paketi:** Standart 31 baytlık BLE reklam paketleri içine enlem, boylam, irtifa ve batarya yüzdesi gömülerek telefon kilitli ve SIM kartsız olsa bile 500 ms aralıklarla sinyal fırlatır.
-- **Haptik Geri Bildirimli Bilinç Yoklaması:** Her 45 dakikada bir cihazı 2 saniye hafifçe titreterek dokunma veya ses bekler; tepki alınamadığında telemetri paketindeki durumu "Bilinç Kapalı / Kritik" statüsüne yükselterek ekiplerin önceliğini değiştirir.
-- **Kara Kutu Bellek Dökümü (Dead-Man Buffer):** Batarya %1 seviyesine indiği an; son ivme kayıtlarını, enkaz derinliğini ve çevre telemetrilerini yerel kalıcı hafızanın korunan sektörüne mühürler; cihaz kapansa dahi kurtarma ekiplerinin durumu okuyabilmesini sağlar.
-
-#### Sütun 4: Çevrimdışı CBS, 3D Haritalama ve Kaçış Navigasyonu
-- **PMTiles Tabanlı Vektör Karo Mimarisi:** Tüm il veya bölge haritası tek bir `.pmtiles` arşivi olarak sunulur; HTTP Range Request mantığını yerel IndexedDB üzerinde taklit ederek eski cihazlarda dahi sıfır donmayla 60 FPS akar.
-- **GPU Hızlandırmalı 3D WebGL Arazi ve Bina Render:** MapLibre GL WebGL katmanıyla binalar 3 boyutlu yükseklik ve yapı malzemesi verileriyle ekrana basılır; dar sokak silüetleri ve viyadük altları 3 boyutta taranabilir.
-- **Yerel A* Çevrimdışı Rota Motoru:** Harici sunucuya gitmeden cihaz üzerinde yerel çalışan yol ağı grafı ile en yakın toplanma alanına ve sahra hastanesine güvenli yürüyüş rotasını milisaniyeler içinde çizer.
-- **Dinamik Tehlike Çemberi Çizimi:** "Çöken Bina", "Yarık Yol", "Gaz Sızıntısı Kokusu", "Kopan Yüksek Gerilim Hattı" pinleri etrafına otomatik 50 metrelik güvenlik çemberi örerek rotayı güvenli yan sokaklara saptırır.
-- **Su Kaynakları ve Yangın Hidrantları Katmanı:** Aktif artezyen kuyuları, yangın hidrantları, pınarlar ve sarnıçların debi ve içilebilirlik durum bilgisi haritada gösterilir.
-
-#### Sütun 5: Sahra Lojistiği, Triyaj ve Çevrimdışı Kaynak Yönetimi
-- **Dijital START Triyaj Motoru:** Solunum, nabız ve mental duruma göre 30 saniyede karar veren adım adım dijital protokol (Siyah: Eks, Kırmızı: Hayati Tehlike, Sarı: Ağır Yaralı, Yeşil: Hafif Yaralı); yaralılara taranabilir benzersiz QR kodlar atar.
-- **Çapraz İkmal ve İhtiyaç Takas Defteri (P2P Barter Ledger):** Para ve bankacılık sisteminin çöktüğü toplanma alanlarında ihtiyaç fazlası malzemeleri ve acil ihtiyaçları yerel veritabanında tutar; cihazlar birbirinin Bluetooth alanına girdiğinde otomatik çapraz eşleştirme bildirimi üretir.
-- **Sahra Eczanesi ve Soğuk Zincir İzleme:** İnsülin, aşı ve antibiyotik sahra dolaplarının kalan buz aküsü süresi ve stok durumunu takip eder.
-- **Organik Gönüllü Ekip Oluşturucu (Ad-Hoc Task Force):** Sivilleri yetkinlik formlarına göre ("İş makinesi operatörü", "Hemşire", "İnşaat ustası", "Dağcı", "Tercüman") 5-6 kişilik organize timlere böler.
-- **Kadavra ve Sahra Morgu İzolasyon Katmanı:** Geçici defin noktaları, sahra morgları ve tıbbi atık çukurlarının koordinatları sivil haritada "Karantinalı Sağlık Alanı" olarak işaretlenir.
-
-#### Sütun 6: Bilişsel Yük, Arayüz Felsefesi ve Batarya Yönetimi
-- **Sıfır Panik Arayüzü (iOS 27 Spatial Neo-Glassmorphism):** Karmaşık menüler ve 35'ten fazla dağınık buton ekranı terk etmiştir. Üstte ortalanmış **iOS 27 Dinamik Ada (Dynamic Island)** kapsülü, altta **Yüzen Cam Dock (Floating Spatial Dock)** ve tek dokunuşla açılan **Bento Grid Kontrol Merkezi** ile tek elle ve eldivenle kullanılabilir devasa dokunma alanları sunulur.
-- **Kazara Basma Korumalı Kritik Eylemler (Hold-to-Confirm):** S.O.S ve kritik acil eylemler 3 saniye basılı tutma mekaniğiyle tetiklenerek cep sürtünmelerinden kaynaklanan sahte ihbarları önler.
-- **OLED Ekstrem Güç Kalkanı (Pitch-Black):** Acil modda tüm DOM elementleri saf siyaha (`#000000`) dönüştürülür; ekran yenileme hızı 15-30 Hz bandına çekilerek OLED pikseller kapatılır ve telefonun açık kalma süresi 3 güne kadar uzatılır.
-- **Uyarlanabilir Donanım Uykusu (Wake-Lock Cycling):** Arka plan sensör dinleyicileri 500 ms dinleme / 4500 ms derin uyku döngüsüne girerek batarya ısınmasını engeller.
-
-#### Sütun 7: Adli Kanıt Zinciri, Mülkiyet ve Hukuki Koruma
-- **Donanım İmzalı Delil Kayıtçısı:** Çekilen çatlak ve hasar fotoğrafları cihazın Secure Enclave donanım anahtarıyla imzalanır; son bilinen GPS koordinatı, ivme doğrulaması ve UTC zamanı geri döndürülemez şekilde mühürlenerek DASK, kasko ve ceza davalarında yasal delil niteliği kazandırılır.
-- **Mülkiyet ve Hak Sahipliği Kasası:** Tapu senetleri, kira kontratları, ruhsatlar ve kimlik kayıtları asimetrik şifrelemeyle (Ed25519) güvenli hafızada saklanır; belediye arşivleri yıkılsa dahi tek bir çevrimdışı QR kod ile ispatlanır.
-- **Otomatik Enkaz Yağma ve Güvenlik Alarmları:** Tahliye edilen ev veya dükkanda bırakılan yedek telefon ivmeölçer ve mikrofondan kapı zorlama, cam kırılması ve ayak seslerini dinleyen yerel bir nöbetçiye dönüşür; şüpheli harekette çevredeki kolluk BLE ağına ikaz atar.
-
-#### Sütun 8: Veri Güvenliği, Kriptografi ve Açık Kaynak Standartları
-- **Sıfır Bilgi İspatı ile Kimlik Doğrulama (ZKP-Based Anonymity):** TC kimlik, e-posta veya telefon kaydetmeye gerek kalmadan deterministik kriptografik açık anahtarlarla (Public Key) anonim kimlikleme yapılır.
-- **Uçtan Uca Şifreli Acil Sağlık Kapsülü (E2EE Medical Capsule):** Kan grubu, kronik hastalıklar ve acil irtibatlar yalnızca kurtarma ekiplerinin elindeki resmi master anahtarlarla çözülebilecek şekilde asimetrik şifrelenir.
-- **Uluslararası CAP ve GeoJSON Standartları:** Üretilen tüm telemetriler AFAD, AKUT, Kızılay, INSARAG ve UN OCHA sistemlerine Common Alerting Protocol (CAP v1.2) ve GeoJSON standartlarında doğrudan aktarılabilir formattadır.
-- **Tamamen Açık Kaynak Kod Tabanı:** Tüm algoritmalar, Service Worker mimarisi ve kriptografik mekanizmalar GitHub üzerinde açık kaynak lisansıyla (MIT) bağımsız güvenlik denetimine açıktır.
+- **Yığın:** Vite 6, TypeScript, Tailwind CSS, MapLibre GL, vite-plugin-pwa, Cloudflare Pages ve Pages Functions.
+- **Sunucu tarafı:** Kullanıcı verisi tutan bir sunucu yoktur. Tek sunucu işlevi, İzmir Büyükşehir Belediyesi açık verisinden günün nöbetçi eczanelerini aktaran `/api/duty-pharmacies` işlevidir.
+- **Veri hattı:** Veriler günde bir kez kaynaklarından indirilir; `validate-data.mjs` eksik, Türkiye dışında kalan, kaynağı belirsiz ya da kaynakta olmayan alanları içeren veriyi yayına çıkarmaz.
+- **Dış kaynaklı metin:** OpenStreetMap, deprem ve rota servisleri ile sohbet içerikleri sayfaya yazılmadan önce temizlenir ([`src/utils/safeText.ts`](src/utils/safeText.ts)). Sohbetteki Nostr olaylarının imzası doğrulanır.
+- **Konum kaynağı:** [`src/utils/locationState.ts`](src/utils/locationState.ts) konumun GPS, önceki GPS kaydı, IP tahmini ya da paylaşılan bağlantıdan gelip gelmediğini izler.
 
 ---
 
-## 3. Faydaya Göre Modül Kataloğu (49 Araç)
+## 3. Araçlar
 
-afet.live menüsü, bilişsel yükü azaltmak amacıyla sadeleştirilmiş ve **iOS 27 Bento Grid Kontrol Merkezi** içinde 4 ana kategoride yapılandırılmıştır. Ekranın ana görünümünde yalnızca **Dinamik Ada (İl Seçimi & Canlı Sayaç)** ve alttaki **Yüzen Cam Dock** yer alır:
+Araçların tamamı genel bilgilendirme ve hazırlık amaçlıdır; ilk yardım eğitiminin, yetkili kurum uyarılarının ya da uzman değerlendirmesinin yerini tutmaz.
 
-### 🚨 Kategori 1: Acil Müdahale & S.O.S (12 Araç)
-1. **Afet Düdüğü & Akustik Enkaz Sinyali (2.9 kHz + 3.5 kHz Geofon + 18.5 kHz K9 Arama Köpeği):**
-   - **2.9 kHz SOS Düdüğü:** Beton ve moloz yığınlarını delip geçen, insan kulağının en hassas olduğu akustik frekansta aralıksız çalar.
-   - **3.5 kHz Geofon Sonar Darbesi:** AFAD ve uluslararası INSARAG arama kurtarma ekiplerinin sismik dinleme mikrofonları için optimize edilmiş kesikli rezonans darbeleri.
-   - **18.5 kHz K9 Arama Köpeği Çağrısı:** İnsan kulağını yormayan ancak enkaz köpeklerinin kilometrelerce uzaktan duyabildiği ultrasonik frekans.
-   - **Kamera LED Flaşörü & Ekran Strobosu:** Gece arama kurtarma dronları ve termal kameralar için senkronize donanım flaşı.
-   - **Screen WakeLock:** Telefon ekranının kilitlenmesini veya uyku moduna geçmesini engelleyerek kesintisiz sinyal yayar.
-2. **Pik Darbeli Optik LED Sinyalleme & Geofon Rezonans Vericisi:**
-   - 10 milisaniyelik ultra yüksek lümenli kamera LED flaş darbeleriyle bataryayı %95 oranında korurken gece operasyonu yapan kurtarma ekiplerine ışık sinyali yayar.
-   - Web Audio API ile 3.8 kHz sismik dinleme tonu ve tam ekran stroboskopik kılavuz desteği sunar.
-3. **110 BPM Sahra CPR Koçu & Ezilme (Crush) Sendromu Klinik Rehberi:**
-   - Uluslararası AHA/ERC resüsitasyon standartlarına uygun 110 BPM sesli metronom, görsel nabız halkası ve haptik titreşim desteği.
-   - 30 göğüs basısı / 2 suni solunum faz sayacı ve döngü takibi.
-   - Enkaz altından kurtarılan kazazedelerde potasyum toksisitesi ve akut böbrek yetmezliğini önleyen hayati Crush Sendromu klinik müdahale direktifleri (damar yolu açılmadan kontrolsüz su vermeme kuralı).
-4. **Ultra Pil Tasarrufu (72 Saat Hayatta Kalma OLED Saf Siyah Modu):**
-   - 72 saatlik altın saatlerde telefon pilini koruyan OLED pitch-black (`#000000`) ekran mimarisi. Siyah piksellerin organik diyotlarını tamamen kapatarak ekran tüketimini %75 azaltır.
-   - WebGL harita animasyonlarını, arka plan GPS takibini ve CSS filtrelerini askıya alarak işlemciyi uyutur.
-5. **Akustik Enkaz Dinleme Radarı (Web Audio API Spektrum Analizi & Otomatik Düdük):**
-   - Kazazedenin bağırmasına veya enerji harcamasına gerek kalmadan enkaz dışındaki kurtarma ekiplerinin vuruşlarını dinleyen mikrofon tabanlı akustik analizör.
-   - `AnalyserNode` FFT frekans ve desibel ölçümü; belirlenen ses eşiği aşıldığında tam ses seviyesinde 2.9 kHz S.O.S düdüğünü otomatik devreye sokar.
-6. **Afet Triyaj Asistanı (START Sahra Protokolü):**
-   - Uluslararası Simple Triage and Rapid Treatment (START) standardı.
-   - 15 saniyelik solunum, kapiller geri dolum (dolaşım) ve bilinç kontrolleriyle kazazedeyi Kırmızı, Sarı, Yeşil ve Siyah olarak sınıflandırır.
-7. **Turnike Güvenlik Zamanlayıcısı (120 Dk Protokolü & Alın Damgası):**
-   - Akut atardamar kanamalarında doku kangrenini ve uzuv kaybını önleyen kesin sahra kronometresi.
-   - 45. ve 90. dakikalarda iskemi uyarısı ve sesli sinyal verir; sağlık ekipleri için yüksek kontrastlı alın damgası formatı üretir (Örn: `T: 14:35 - SAĞ BACAK`).
-8. **Tek Tuşla Acil Durum SMS & İhbar Hatları:**
-   - 3G/4G/5G veri bağlantısı koptuğunda, 2G hücresel baz istasyonlarının sinyal kuyruğundan iletilebilen yüksek öncelikli SMS.
-   - Kullanıcının kesin GPS koordinatlarını, Google Maps linkini ve durumunu içeren mesajı tek tuşla hazır SMS uygulamasına yükler.
-   - 112 Acil Çağrı, 122 AFAD, 187 Doğalgaz Kaçağı ve 186 Elektrik Arıza hızlı arama butonlarını barındırır.
-9. **BitChat Dağıtık P2P Afet Ağı & Nostr Kriz Odası:**
-   - Merkezi sunucu, üyelik veya GSM numarası gerektirmez; açık Nostr röleleri (`wss://relay.damus.io`, `wss://nos.lol`) ve WebRTC DataChannel ile telefondan telefona doğrudan P2P veri aktarımı sağlar.
-   - **Acil Sıfırlama (Emergency Wipe):** Tehlike anında cihazdaki tüm mesaj ve kimlik verilerini tek tıkla kalıcı olarak siler.
-10. **İnternetsiz Bas-Konuş Telsiz (PTT) & Sesli S.O.S Anons Döngüsü:**
-    - Altyapı ve baz istasyonları çöktüğünde telefon mikrofonunu ve hoparlörünü taktik telsize dönüştürür (PMR 1, 2, 8, 16 kanalları).
-    - **Otomatik Enkaz S.O.S Anons Döngüsü:** Kazazedenin sesini bir kez kaydedip, her 45 saniyede bir tam sesle otomatik tekrar ederek enkaz dışına ses duyurur.
-11. **Afet Telsizi & Frekans Rehberi (TRAC & PMR 446):**
-    - PMR 446 lisanssız el telsizi kanalları (Kanal 1 Genel, Kanal 8 Arama Kurtarma) ve TRAC 145.500 MHz VHF / 433.500 MHz UHF acil röle frekansları.
-12. **Gece Sismograf Nöbeti (Başucu Deprem Alarmı):**
-    - Cihaz şarjdayken veya komodinde sabitken mikro-ivme sarsıntılarını izleyen ve eşik aşıldığında siren çalan başucu güvenlik nöbetçisi.
+### Harita ve konum
 
----
+- **Toplanma alanları, hastaneler, eczaneler, kan bağış noktaları:** En yakın noktalar mesafe ve yön bilgisiyle listelenir. İzmir'de günün nöbetçi eczaneleri belediye açık verisinden gelir; diğer illerde e-Devlet sorgusuna bağlantı verilir.
+- **Son depremler:** Kandilli ve AFAD listelerinden son depremler; 20 saniyede bir yenilenir. Yakında yeni bir deprem listeye düşerse bildirim gösterir (erken uyarı değildir).
+- **Yürüyüş rotası:** İnternet varken OSRM ile sokak rotası çizer. Rota alınamazsa yalnızca yaklaşık yönü gösterir ve bunu belirtir.
+- **Toplanma alanı pusulası:** En yakın toplanma alanının yönünü gösterir; pusula sensörü ve konum gerekir.
+- **Plus Code:** Konumunuzu yaklaşık 14 metrelik kareyi gösteren koda çevirir, NATO fonetik alfabesiyle okunuşunu verir. Kod hesabı çevrimdışı çalışır.
+- **Çevrimdışı kullanım için kaydet:** Temel verileri ve çevrenizdeki harita karolarını cihaza kaydeder; kaç dosyanın kaydedildiğini gösterir.
 
-### 📡 Kategori 2: Taktik Navigasyon, Radarlar & Erken Uyarı (7 Araç)
-13. **Taktik Kerteriz Pusulası & Barometrik Kat Analitiği (AR HUD):**
-    - Donanım manyetometre (manyetik pusula) ile kullanıcının baktığı yönü hesaplar; en yakın toplanma alanına olan kerteriz açısını ve dönülmesi gereken yönü (`⤾ SAĞA 38° DÖNÜN`) sesli ve görsel bildirir.
-    - Dahili barometre (hava basıncı sensörü) verilerini milibar/hPa cinsinden izleyerek deprem anındaki son GPS rakımı ile mevcut hava basıncı irtifasını karşılaştırır; kazazedenin zemin seviyesinden kaç metre aşağıda/yukarıda olduğunu ve binanın tahmini kaçıncı katının çöktüğünü gösterir.
-14. **Canlı Sel & Taşkın Erken Uyarı Radarı (GloFAS & Open-Meteo):**
-    - Kullanıcının koordinatına özel anlık yağış oranı ($mm/saat$) ve Avrupa Komisyonu GloFAS nehir debisi ($m^3/s$) analizleri.
-    - 4 seviyeli taşkın risk indeksi (Normal, Dikkat, Yüksek, Kritik); 15 cm ve 30 cm sürüklenme kuralı.
-15. **Enkaz Tozu, Yangın & Hava Kalitesi Radarı (Open-Meteo):**
-    - AQI hava kalitesi, PM2.5, PM10, Karbonmonoksit (CO), $NO_2$, $SO_2$ ve Ozon değerleri; asbest lifleri ve silika tozuna karşı N95/FFP2 maske uyarısı.
-16. **Tsunami Erken Uyarı & Kıyı Tahliye Radarı (Marmara, Ege & Akdeniz):**
-    - Kıyı şeridi deniz tabanı depremleri sonrası "Kıyıdan en az 500 m iç kesime veya +15 m yüksekliğe tırman" direktifi ve yüksek kotlu toplanma rotası.
-17. **Sismik Erken Uyarı & P/S Dalgası Simülasyonu:**
-    - Birincil (P dalgası) ve ikincil (S dalgası) yayılım sürelerini hesaplayarak yıkıcı dalga gelmeden önceki kaçış payını gösterir.
-18. **Kalibre Edilebilir Cihaz Sismografı (STA/LTA Algoritması):**
-    - Donanım jiroskop ve ivmeölçer ile mikrosarsıntı analizi, zemin gürültüsü filtreleme ve Mercalli şiddet skalası tahmini.
-19. **Depremi Hissettim Bildirimi:**
-    - USGS "Did You Feel It?" standartlarına uygun Mercalli I-X ölçeğinde sarsıntı geri bildirimi.
+### Çevre ve risk tahminleri
 
----
+- **Sel ve taşkın riski tahmini:** Open-Meteo yağış verisi ve GloFAS nehir debisi tahminine dayalı kaba gösterge. Veri alınamazsa bunu söyler.
+- **Hava kalitesi:** Open-Meteo / Copernicus CAMS model tahmini. Kapalı alandaki karbonmonoksiti ya da enkaz tozunu ölçmez.
+- **Tsunami bilgi ve kıyı tahliye rehberi:** Sabit bilgilendirme metni; tsunami uyarısı vermez, deniz seviyesi ölçmez.
+- **Bina deprem farkındalık kartı:** Basitleştirilmiş fay zonlarına yaklaşık mesafe ve bina yaşına göre kaba tahmin. Mühendislik analizi değildir.
+- **Hasarlı binadan uzak durma mesafesi:** Bina yüksekliğinin en az 1,5 katı kuralıyla tahmini mesafe.
+- **Orman yangınında yön rehberi:** Sizin seçtiğiniz rüzgar yönüne göre rüzgara dik olası uzaklaşma yönleri. Yangının yerini bilmez.
+- **Çığ eğimi, rüzgar soğuğu ve hipotermi:** Rüzgar soğuğu hesabı ve telefonla eğim ölçümü. Çığ bülteni değildir.
+- **KBRN rehberi:** Kapalı alanda korunma ve rüzgara göre uzaklaşma için genel bilgi.
 
-### 🛡️ Kategori 3: Sivil Savunma, Hukuk & Sahra Lojistiği (11 Araç)
-20. **Bina Çatlak & Yapısal Hasar Tespit Değerlendiricisi (DASK Kanıt Tutanağı):**
-    - Deprem sonrası kolon, kiriş ve perde duvarlarda oluşan çatlakları FEMA ATC-20 standartlarına göre analiz eder:
-      - **Kritik X-Tipi Kesme Çatlağı:** Kolonda 45 derece çapraz yarık (Derhal acil tahliye uyarısı).
-      - **Kiriş Ayrılması:** Birleşim bölgelerinde ezilme ve donatı demirlerinin açığa çıkması (Yıkılma tehlikesi).
-      - **Yüzeysel Sıva Çatlağı:** Taşıyıcı olmayan duvarlarda ince kılcal çatlaklar.
-    - GPS koordinatı, ivme doğrulaması ve UTC zaman damgasıyla imzalanmış resmi **DASK & Kasko Hasar Tespit Tutanağı** metni üretir.
-21. **Sahra Su Arıtma & Klorlama Dozajlayıcısı (WHO WASH Standardı):**
-    - Dünya Sağlık Örgütü (WHO WASH) ve UNICEF standartlarına uygun kolera, dizanteri ve tifo önleyici sahra dezenfeksiyon hesaplayıcısı.
-    - 1 Litre, 5 Litre, 10 Litre ve 19L Damacana için ev tipi çamaşır suyu (%4-5 katkısız sodyum hipoklorit NaOCl damla sayısı) veya klor tableti hesabı.
-    - Bulanık/tortulu su modu (ön filtreleme kuralı) ve zorunlu 30 dakikalık klor temas süresi geri sayım sayacı.
-22. **KBRN, Radyasyon & Nükleer Serpinti Sığınağı Kılavuzu:**
-    - Nükleer patlama, serpinti veya kimyasal/biyolojik sızıntı anında hayatta kalma protokolleri.
-    - Radyasyon soğurma yarı-değer kalınlıkları (1 cm Kurşun = 6 cm Çelik = 20 cm Beton = 30 cm Toprak = 100 cm Ahşap).
-    - İlk 48 saatlik iç sığınak (Shelter-in-Place) hava geçirmez bantlama ve ters orantı kuralı ($I_2 = I_1 \times (t_1/t_2)^{1.2}$).
-    - Yaşa göre Potasyum İyodür (KI) tiroid koruma dozaj tablosu ve kontamine kıyafetlerin çıkarılması adımları.
-23. **Sivil Savunma Evrak Kasası, P2P Barter Defteri & DASK 15 Gün Süre Takibi:**
-    - **Çevrimdışı Mülkiyet Kasası:** Tapu senedi, kira kontratı, araç ruhsatı ve kimlik evraklarını yerel güvenli belleğe kaydeder.
-    - **P2P İhtiyaç & Barter Takas Defteri:** Bankacılık sistemi çöktüğünde eldeki fazla malzemeler (bebek maması, kışlık mont) ile acil ihtiyaçları listeler ve çapraz eşleştirir.
-    - **DASK 15 Günlük Yasal İhbar Süre Takibi:** Afet anından itibaren işleyen kasko ve DASK yasal başvuru süre sayacı.
-24. **Türk Kızılay Kan Bağış Merkezleri & Donör Eşleşme Portalı:**
-    - OpenStreetMap'te kayıtlı kan bağış noktaları, 8 kan grubu için interaktif uyumluluk matrisi ve acil çağrı yayınlama.
-25. **Afet İlaç & Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi):**
-    - Kronik ilaçlar için sahra eşdeğer etken madde rehberi ve Zeer Pot buharlaşmalı soğuk zincir koruma kılavuzu.
-26. **Çevrimdışı Vektör Harita Paketleri (İl & Bölge Bazlı Offline Cache İndirme):**
-    - Toplanma alanları, hastane ve eczaneleri tarayıcının yerel `CacheStorage` belleğine tek tıkla indirme.
-27. **Afet Sahra İhtiyaç & Yardım Masası (P2P Dağıtım & Çadırkent Koordinasyonu):**
-    - Acil ihtiyaç ve malzeme pusulası üretip BitChat P2P ağına yayınlama.
-28. **Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji):**
-    - Çadırkentlerin sıcak yemek, içilebilir su, WC ve jeneratör insani koşullarını puanlama ve bildirme masası.
-29. **Apartman Girişi & Asansör Acil Durum Afişi (A4 Formatı):**
-    - En yakın 3 toplanma alanı ve hastaneleri QR kodlu, doğrudan yazdırılabilir (Ctrl+P / PDF) A4 bina afişi olarak hazırlar.
-30. **Çevrimdışı QR Güvendeyim Durum Paketi:**
-    - Sıfır internet ve şebeke ortamında cihazlar arasında QR kod taramasıyla durum ve telemetri aktarımı.
+### İletişim ve paylaşım
 
----
+- **Acil durum SMS taslağı ve acil hatlar:** 112'yi arama düğmesi ve yakınlarınıza gönderilecek mesaj taslağı.
+- **SOS ve "güvendeyim" mesajı, QR durum paketi, aile afet kartı, apartman afişi:** Paylaşılabilir metin, QR ve yazdırılabilir çıktılar üretir.
+- **Afet sohbeti (BitChat):** Nostr aktarıcıları üzerinden herkese açık sohbet. İnternet gerekir, mesajları kimse teyit etmez, gönderilemeyen mesaj "iletilmedi" olarak işaretlenir. 112'nin yerini tutmaz.
+- **İhtiyaç listesi ve toplanma alanı durum notu:** Gönüllü notları; sohbet kanalında paylaşılır, teyitsizdir.
+- **Sesli not kaydı:** Kaydı yalnızca cihazda saklar ve hoparlörden çalar. Telsiz değildir, kimseye iletmez.
+- **PMR446 kanal listesi:** Lisanssız el telsizi kanalları ve frekansları. Belirlenmiş bir afet kanalı yoktur; amatör bantlar lisans gerektirir.
+- **Acil hatlar ve yardım bilgisi:** 112, Kızılay 168, ALO 184, ALO 144.
 
-### 🎒 Kategori 4: Hazırlık, Aile Güvenliği & Rehberler (10 Araç)
-31. **72 Saatlik Afet Çantası & Eksik Malzeme Takibi:**
-    - Su, gıda, ilk yardım, hijyen ve evrak kontrol listesi; eksikleri aile fertlerine SMS/WhatsApp ile iletme.
-32. **Bina ve Zemin Sismik Ön Değerlendirme Kartı:**
-    - En yakın diri fay hattı mesafesi, bina yapım yılı ve zemin sınıfı analizi.
-33. **Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE):**
-    - Ekran kilitliyken görülebilecek kan grubu, alerji ve acil irtibat tıbbi duvar kağıdı oluşturucu.
-34. **Ev İçi Deprem Tehlike Avı (Yapısal Olmayan Risk Denetimi & Ev Puanı):**
-    - Mobilya sabitleme denetimi ile %0-100 Ev Güvenlik Puanı ve DIY sabitleme raporu.
-35. **Pati & Evcil Hayvan Afet Güvenliği (Pati Pasaportu & HayTAP Tahliye Rehberi):**
-    - Can dostlarımız için dijital pati pasaportu, hayvan ilk yardım çantası ve enkaz tahliye rehberi.
-36. **Psikolojik İlk Yardım & Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi):**
-    - Sesli ve animasyonlu 4-4-4-4 Kutu Nefes egzersizi ve 5-4-3-2-1 duyusal topraklanma rehberi.
-37. **Afet Bebek ve Çocuk Beslenme Rehberi (UNICEF & DSÖ Standartları):**
-    - Biberon yerine steril kaşıkla besleme, relaktasyon teknikleri ve 70°C kaynamış su kuralları.
-38. **Çadırkent Kış Isınma Güvenliği & Karbonmonoksit (CO) Zehirlenme Testi:**
-    - Çadırkent sobaları için 6 belirti zehirlenme testi, 100 cm mesafe kuralı ve açık tepe havalandırma direktifleri.
-39. **Afet, Enkaz & İlkyardım Hayatta Kalma Rehberi:**
-    - Kapalı alanda, enkaz altında, açık alanda hayatta kalma; 3 vuruş akustik dinleme kodu ve temiz su protokolleri.
-40. **Aile Afet Buluşma Kartı & Deprem Tatbikat Simülatörü:**
-    - Sosyal medyada paylaşılabilir 9:16 Aile Buluşma Kartı ve siren sesleriyle Çök-Kapan-Tutun simülatörü.
+### Dikkat çekme ve telefon sensörleri
 
----
+- **Afet düdüğü:** Hoparlörden yaklaşık 3 kHz yüksek sesli ton ve aralıklı bip. Yalnızca yakındakiler duyar; ekran kapanırsa ses durabilir.
+- **Fener / ekran S.O.S ışığı:** Cihaz izin veriyorsa feneri, vermiyorsa ekranı S.O.S ritminde yakıp söndürür.
+- **Gürültü eşiği uyarıcısı (deneysel):** Mikrofondaki ses seviyesi eşiği aşınca bip çalar; sesin kaynağını ayırt edemez.
+- **Gece nöbeti:** Telefon sabitken güçlü ve sürekli sarsıntı algılarsa alarm çalar; çalacağı kesin değildir.
+- **Telefon ivmeölçer göstergesi:** Telefonun kendi titreşimini gösterir; deprem tespiti yapmaz.
+- **Pil tasarrufu modu:** Arayüzü siyaha çevirir, haritayı karartır, animasyonları kapatır. Tasarruf miktarı ölçülmemiştir.
 
+### İlk yardım ve sağlık (genel bilgi)
 
-41. **Google Open Location Code / Plus Codes (Taktik 14x14m SAR Grid & Telsiz Fonetik Kodlayıcı):**
-    - Açık Kaynak: `google/open-location-code` (Apache 2.0).
-    - Sokakların, binaların ve tabelaların yok olduğu afet sahasında enlem ve boylamı 10 haneli Plus Code'a (Örn: `8GG3VX2Q+9R`) dönüştürür.
-    - AFAD/AKUT/TRAC telsiz operatörleri için NATO ve Türkçe fonetik heceleme tablosu, sesli telsiz okuması, çevrimdışı koordinat çözücü ve haritada rota oluşturma.
-42. **AfetBilgi Doğrulanmış Barınma, Aşevi ve İhtiyaç Kataloğu:**
-    - Açık Kaynak: `alpaylan/afetbilgi.com` & `acikyazilimagi/afet-org`.
-    - Aşevleri, çadırkentler, bebek maması/bezi çadırları, sahra tuvaletleri, giysi/battaniye dağıtım noktaları, psikososyal destek çadırları ve sahra veteriner hastanelerini içeren %100 çevrimdışı doğrulanmış rehber.
-43. **INSARAG USAR Enkaz İşaretleme Sistemi (UN OCHA & AFAD Arama Kurtarma Kodlayıcı & Çözücü):**
-    - Açık Standart: UN OCHA INSARAG Guidelines Vol II: Operations, Manual B.
-    - Arama kurtarma ekiplerinin enkaz üzerine sprey boyayla çizdiği 1x1m kutuları (Tarih/Saat, Ekip Kodu, Canlı/Vefat sayısı, Gaz/Çökme tehlikeleri) çözüp sivil halka güvenli olup olmadığını açıklar ve sahra ekipleri için hatasız şablon üretir.
-44. **Sphere Project 72 Saat Hayatta Kalma Rasyonu ve Su Hesaplayıcısı:**
-    - Açık Standart: The Sphere Handbook (Humanitarian Charter and Minimum Standards in Disaster Response) & WHO Acil Beslenme Direktifleri.
-    - Hane halkı yapısına (yetişkin, çocuk, bebek, hamile) ve kış şartlarına göre ilk 72 saat ("Altın 72 Saat") ve 7 günlük minimum içme suyu (3.0 L/kişi/gün), hijyen suyu ve kalori (2.100 kcal + kış katsayısı) rasyonunu ve saatlik erzak tüketim çizelgesini hesaplar.
-45. **Orman ve Arazi Yangını Taktik Kaçış Koridoru (Rothermel ROS & 90° Çapraz Kanat Kaçış Vektörü):**
-    - Yangın Fiziği: Rothermel yüzey yayılma modeli, rüzgar hızı ($U^{1.35}$) ve yamaç eğim çarpanı (baca/chimney etkisi).
-    - Canlı radar pusulası üzerinde alev cephesi ölüm konisi (rüzgar altı yönü) ve alevlerin sağ/sol kanatlarına 90° dik güvenli kaçış açıları, NFPA 1051 4x alev boyu güvenlik çemberi, yanmış siyah kül arazisi (black zone) sığınma ve araç içi burnover protokolleri.
-46. **Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (USAR / FEMA 1.5 x H Kuralı & Ölüm Kanyonu Analizi):**
-    - USAR / INSARAG Standardı: $D_{\text{safe}} = 1.5 \times H$ standoff kuralı ve $2.0 \times H$ ağır parapet/cam fırlama menzili.
-    - Dar sokak genişliği ($W$) ile enkaz çemberi ($1.5H$) karşılaştırmalı kesit diyagramı: Sokak dar olduğunda karşı kaldırımın da doğrudan enkaz altında kalacağını hesaplayan kentsel ölüm kanyonu uyarısı ve artçı şok güvenli intikal yönergesi.
-47. **Çığ Riski, Yamaç Klinometresi & Kış Hipotermi Radarı (NOAA NWS & EAWS 30°-45° Çığ Tuzağı Analizi):**
-    - NOAA NWS Rüzgar Soğuğu (Wind Chill $T_{wc}$) ve donma süresi (Frostbite Time) hesaplayıcısı.
-    - Cihaz ivmeölçeriyle telefon gövdesini yamaca dayayarak yamaç açısını ölçen dijital klinometre ve 30°-45° kritik tabaka çığ tuzağı uyarısı.
-    - Dışarı -25°C iken içeriyi 0°C'de tutan acil durum kar mağarası mimari kesiti ve 4 adımlı inşa yönergesi.
-48. **Deprem Çantası Malzeme & İlaç SKT Rotasyon Takip Motoru:**
-    - Su (6 ay mikroplastik/bayatlama limiti), konserve (2 yıl botulizm toksini riski), reçeteli ilaç ve alkalin piller için gün bazlı otomatik geri sayım ve %100 üzerinden Çanta Hazırlık Skoru.
-    - Tek dokunuşla "+6 Ay Yenile / Rotasyon Yap" aksiyonu ve aile fertleriyle paylaşılabilecek resmi muayene tutanağı çıktısı.
-49. **Afet Gönüllü Sevk ve Sahra Akreditasyon Pasaportu (INSARAG & AFAD Uyumlu Çevrimdışı QR Kimlik):**
-    - Arama-kurtarma, acil sağlık, ağır iş makinesi operatörü, TRAC telsiz muhaberesi, sahra mutfağı ve yabancı dil çevirmenliği yetenek matrisi eşleştirmesi.
-    - Kriz masası ve jandarma kontrol noktalarında internet olmadan taranabilen şifreli çevrimdışı sahra QR kartı ve koordinasyon SMS şablonu.
+- **İlk yardım rehberi, kalp masajı metronomu (110/dk), turnike süre takibi, START triyaj yardımcısı** (çok yaralılı durumlar ve eğitimli kişiler için), **psikolojik ilk yardım ve kutu nefesi, bebek besleme rehberi, çadırda ısınma ve karbonmonoksit belirti listesi, su dezenfeksiyonu hesaplayıcısı.**
+- **İlaç listem ve kilit ekranı tıbbi kimlik kartı:** Yalnızca sizin yazdığınız bilgileri içerir; cihazda saklanır.
+
+### Hazırlık
+
+- **Deprem çantası kontrol listesi ve son kullanma tarihi takibi, aile su ve erzak hesaplayıcısı** (kişi başı günde toplam 15 litre su, yaklaşık 3 litresi içme; 2.100 kcal), **ev içi tehlike avı** (eşya sabitleme), **evcil hayvan hazırlık rehberi, deprem tatbikat simülatörü** (tatbikat olduğu ekranda belirtilir).
+- **Kişisel hasar notları, evrak notları, gönüllü bilgi kartı:** Kişisel kayıtlardır; belge, delil ya da yetki sayılmaz. Cihazda şifrelenmeden saklanır.
+- **Enkaz işaretlerini okuma yardımcısı:** Basitleştirilmiş kılavuz; arama ekiplerinin el kitabının yerini tutmaz.
 
 ---
 
@@ -342,43 +182,29 @@ Bu bir afet uygulaması: yanlış bir adres ya da telefon numarası, hiç bilgi 
 
 ---
 
-## 5. Gizlilik & Sıfır Veri Kaybı (Zero-Data-Retention)
+## 5. Gizlilik
 
-- **Sıfır Sunucu Kaydı:** afet.live sunucularında hiçbir kullanıcı hesabı, telefon numarası, GPS konumu veya kriz mesajı saklanmaz.
+- **Hesap ve kullanıcı veritabanı yok:** afet.live kullanıcı hesabı, telefon numarası, konum ya da mesaj saklamaz.
 - **Yerel Depolama:** Afet çantası, aile bilgileri ve ICE kilit ekranı verileri yalnızca kullanıcının telefonundaki `LocalStorage` ve `IndexedDB` belleğinde şifresiz tutulur ve üçüncü taraflarla paylaşılmaz.
-- **Kriptografik Anahtar Üretimi:** BitChat kimliği her cihaz için yerel olarak rastgele bir Ed25519 / Nostr pubkey üretir; telefon şebekesi kopsa dahi anonimlik korunur.
+- **Üçüncü taraf servisler isteklerinizi görür:** Tarayıcı harita karosu, deprem, hava ve rota servislerine doğrudan bağlanır. Rota ve hava istekleri sorduğunuz koordinatı içerir. Konum izni verilmezse uygulama IP adresinizden şehir düzeyinde tahmin için ipapi.co'ya sorar.
+- **Sohbet kimliği:** Cihazda bir Nostr anahtar çifti üretilir. Sıfırlama yeni anahtar oluşturur; daha önce gönderilen mesajlar aktarıcılarda kalır.
 - **BitChat mesajları herkese açıktır:** Nostr üzerinden gönderilen mesajlar afet.live'ın değil, üçüncü taraf Nostr relay'lerinin (ör. relay.damus.io, nos.lol) sunucularında saklanır ve herkes tarafından okunabilir. Kişisel bilgi, adres veya sağlık bilgisi paylaşmayın.
 - **Barındırma:** Site Cloudflare Pages üzerinde çalışır; Cloudflare standart erişim kayıtlarını (IP, tarayıcı bilgisi) kendi politikası doğrultusunda işler.
 
 ---
 
-## 6. Manipülasyon Önleme & Hukuki Sorumluluk Güvenliği
+## 6. Sohbet Korumaları ve Sorumluluk Reddi
 
-Kriz ve afet anlarında sivil açık iletişim kanallarının troller, botlar, asılsız ihbarlar ve panik tacirleri tarafından suistimal edilmesini engellemek ve uygulamanın geliştiricileri ile kullanıcılarını hukuki yaptırımlardan korumak için 6 aşamalı hibrit güvenlik katmanı uygulanmıştır:
+Sohbet herkese açıktır ve herkes yazabilir; bu yüzden mesajlar teyitsiz kabul edilmelidir. Uygulamanın gerçekten yaptıkları:
 
-1. **İstemci Taraflı İş İspatı (Proof-of-Work / NIP-13 PoW):**
-   - Merkezi sunucu, SMS doğrulaması veya e-Devlet girişi zorunluluğu olmadan otomatik botları engellemek üzere Web Crypto API (`crypto.subtle.digest`) ile **Hashcash / Nostr NIP-13 standardında 10-bit SHA-256 iş ispatı** zorunlu kılınmıştır.
-   - İnsan kullanıcının cihazında ~50-150 ms içinde çözülen bu matematiksel maliyet, saniyede yüzlerce sahte mesaj veya SOS yağdıran otonom komut dosyalarını ve scriptleri işlemci düzeyinde bloke eder.
-2. **Akıllı İstek Sınırlandırma (Token-Bucket Rate Limiter):**
-   - Kullanıcıların refleksle ardı ardına butonlara basarak kanalları kilitlemesini veya spam yapmasını engeller:
-     - **Acil S.O.S Çağrısı:** 30 saniye soğuma süresi
-     - **BitChat Mesajı:** 6 saniye soğuma süresi
-     - **Deprem Hissettim Bildirimi:** 60 saniye soğuma süresi
-     - **Sahra İkmal / Çadırkent Karnesi:** 20 saniye soğuma süresi
-     - **Telsiz Mandala Basma (PTT):** Frekans kilitlenmesi ve taciz önleyici mandallama koruması
-3. **Sezgisel Panik ve Dezenformasyon Algılayıcısı (Panic Heuristics):**
-   - *"Baraj patladı"*, *"10 büyüklüğünde deprem bekleniyor"*, *"Tahliye emri verildi"*, *"Nükleer sızıntı var"* gibi kitlesel infial ve kaos yaratabilecek kalıplar yerel regex kurallarıyla anında taranır.
-   - Tespit edilen mesajlar gönderilmeden önce kullanıcıya hukuki sorumluluk hatırlatmasıyla onaylatılır ve ağda kırmızı çerçeveli **"⚠️ Doğrulanmamış Panik Bildirimi"** başlığıyla etiketlenir.
-4. **Coğrafi Mesafe Çiti (Geofencing & Yerinde Doğrulama):**
-   - Bildirilen olayın veya çadırkentin GPS koordinatları ile cihazın gerçek donanım konumu Haversine formülüyle kıyaslanır:
-     - Mesafe $\le$ 3 km ise: **`📍 Yerinde Doğrulandı`** yeşil rozeti
-     - Mesafe > 3 km ise: **`⚠️ Uzaktan Bildirim`** sarı rozeti atanır. Masa başından sahte saha ihbarı yapanlar filtrelenir.
-5. **Topluluk Konsensüsü ve Teyit Ağı (Peer Quorum & Dispute):**
-   - Sahadaki diğer siviller mesajları tek tıkla `✓ Teyit Et` veya `⚠️ Asılsız Bildir` butonlarıyla oylayabilir.
-   - 2 veya daha fazla "Asılsız" oyu alan içerikler otomatik olarak sarı şüpheli çerçeveye alınarak diğer kullanıcılar uyarılır.
-6. **Hukuki Sorumluluk Reddi & TCK m. 217/A Uyumluluğu:**
-   - Platformun bağımsız, açık kaynaklı sivil bir rehber olduğu; hiçbir koşulda resmi 112 Acil Çağrı, AFAD veya mülki amirliklerin yerine geçmediği tüm acil durum pencerelerinde sabit bildirimlerle deklare edilir.
-   - Paylaşılan içeriklerin sorumluluğunun gönderene ait olduğu ve kasıtlı asılsız ihbarın **TCK m. 217/A (Halkı yanıltıcı bilgiyi alenen yayma suçu)** kapsamında cezai kovuşturma konusu olduğu net olarak hatırlatılır.
+- **İstek sınırlama:** SOS, sohbet, "hissettim" ve yardım mesajları için cihazda bekleme süreleri vardır; tek cihaz art arda basarak kanalı dolduramaz.
+- **Gönderimde iş ispatı:** Gönderen cihaz yayınlamadan önce küçük bir SHA-256 bulmacası çözer; bu toplu gönderimi yavaşlatır. Gelen mesajlar buna göre sıralanmaz ya da rozetlenmez.
+- **İmza denetimi:** İmzası geçersiz Nostr olayları atılır; her rumuzun yanında kısa bir açık anahtar öneki gösterilir, böylece bir isim sessizce taklit edilemez.
+- **Söylenti kalıbı denetimi:** Bilinen panik kalıplarına ("baraj patladı" gibi) uyan mesajlar gönderenin ve okuyanın ekranında uyarı etiketiyle gösterilir.
+- **Oy değil, kişisel not:** "Güvenilir / şüpheli" işaretleri yalnızca sizin cihazınızdaki notlardır; paylaşılmaz ve topluluk teyidi yoktur.
+- **Sorumluluk reddi:** Her iletişim ekranında afet.live'ın gönüllü bir rehber olduğu, 112'nin ve yetkili kurumların yerini tutmadığı yazar. TCK m. 217/A uyarınca bilerek yanıltıcı bilgi yaymak suçtur; mesajın sorumluluğu gönderene aittir.
+
+Mesajlar için konum teyidi ve moderasyon yoktur.
 
 ---
 
@@ -393,8 +219,9 @@ afet.live tek kişinin gönüllü emeğiyle başladı ve kamu yararına açık k
 - **Nöbetçi eczane verisi:** İzmir dışındaki iller için izinli ve resmi bir kaynak (il eczacı odaları, belediye açık veri portalları).
 - **Kan bağış noktaları:** Bölgenizdeki Kızılay kan merkezini OpenStreetMap'e `healthcare=blood_donation` etiketiyle ekleyin; haritaya otomatik gelir.
 - **Gerçek fay verisi:** Basitleştirilmiş katman yerine lisansı uygun, kaynağı belli bir diri fay verisi.
+- **Tıbbi ve güvenlik içeriğinin uzman gözüyle incelenmesi:** İlk yardım, triyaj, su dezenfeksiyonu, KBRN ve bebek besleme metinleri genel kaynaklardan derlendi; hekim ve afet uzmanı incelemesine ihtiyaç var.
 - **Testler:** Henüz otomatik test yok; yardımcı fonksiyonlar için birim testleri ve temel uçtan uca testler.
-- **SEO ve erişilebilirlik:** Var olmayan adreslerin gerçek 404 döndürmesi ve WCAG uyumluluğu.
+- **Erişilebilirlik:** WCAG uyumluluğu ve ekran okuyucu desteği.
 
 ### Yerel Kontroller
 
@@ -437,202 +264,123 @@ npm run preview
 
 <br />
 
-# 🇬🇧 English: afet.live — Turkiye Disaster Resilience and Emergency Atlas
+# 🇬🇧 English: afet.live — Türkiye Disaster and Assembly Point Map
 
-## 1. Overview & Core Mission
+## 1. Overview & Purpose
 
-**afet.live** is an open-source, civic-engineered, **offline-first disaster resilience and emergency survival platform** designed to provide instant, life-saving information during earthquakes, floods, landslides, wildfires, structural collapses, and tsunamis across Turkey and adjacent regions.
+**afet.live** is an **open-source, independent, volunteer-run** web app that helps people in Türkiye find the nearest assembly point, hospital and pharmacy during earthquakes, floods and other disasters, and offers a set of preparedness tools. It is not a government service. In an emergency, always call **112** and follow announcements from the authorities.
 
-During major catastrophic events (such as the February 6, 2023 Kahramanmaraş earthquakes), cellular mobile networks fail within minutes due to congestion, physical mast damage, and power grid collapse.
+What it does and does not do:
 
-To ensure uninterrupted availability when communication lines are dead, **afet.live is built on a "Zero-Server-Dependency" architecture**:
-- Once cached or installed as a Progressive Web App (PWA), **27,331 assembly points, 953 hospitals, 25,442 pharmacies, major fault zones, and the survival tools keep working offline.** (See [Data Sources](#4-telemetry--data-sources) for where the data comes from and its limits.)
-- All geospatial, proximity, bearing, triage, and water chlorination computations execute client-side on the user's hardware.
-- No user location, personal data, or distress messages are tracked, stored, or sent to any central server.
+- **Map and data:** 27,331 assembly points, 953 hospitals, 25,442 pharmacies, blood donation points and a simplified fault-zone layer on one map. See [Data Sources](#4-telemetry--data-sources) for origins and limits.
+- **Offline use (partial):** the app is a PWA. If it was opened and the data saved while online, assembly points and hospitals can usually be viewed without a connection. The browser may evict saved data, so offline start-up cannot be promised. Map imagery, walking routes, recent earthquakes, flood/air data and chat need the internet.
+- **Not an early warning system:** the earthquake list shows events after the shaking. The app gives no early warning for earthquakes, tsunamis or floods.
+- **It notifies nobody:** the app never contacts 112 or any authority by itself. SMS and share buttons only open a draft on your phone; you choose the recipient.
+- **Location:** coordinates are added to emergency messages only when the device has a real GPS fix. Without location permission the app says so.
+- **No invented data:** anything missing from the source is shown as "unknown"; no sample or estimated data is shown when a source is unreachable.
 
 ---
 
 ## 2. System Architecture
 
-The technical stack is engineered around low-latency performance, ultra-low battery consumption, and zero-network resilience:
-
 ```mermaid
 graph TD
-    subgraph UI ["1. Presentation Layer"]
-        A[HeaderHUD & Categorized Menu Matrix]
-        B[Floating BitChat Crisis Action Button]
-        C[3D Vector Map Engine - MapLibre GL]
-        D[NearestPointsHUD - Segmented Fast Access]
-        E[33 Specialized Disaster Modals]
+    subgraph Client ["Browser (PWA)"]
+        A[UI: TypeScript + Tailwind, template based]
+        B[Map: MapLibre GL + OpenFreeMap vector tiles]
+        C[Local storage: localStorage / IndexedDB / Cache Storage]
+        D[Device sensors: location, compass, accelerometer, microphone, torch]
     end
-
-    subgraph Logic ["2. State, Compute & Signal Processing Layer"]
-        F[GeoMath: Haversine, Bearings & Street Proximity]
-        G[STA/LTA Seismic Filter - 100Hz Accelerometer]
-        H[Early Warning: Seismic P & S Wave Kinematics]
-        I[START Protocol Triage Decision Tree]
-        J[Web Audio API DSP: 2.9kHz / 3.5kHz / 18.5kHz]
-        K[Water Chlorination Dosage Calculator]
+    subgraph Static ["Cloudflare Pages (static)"]
+        E[public/data: assembly points, facilities, fault zones GeoJSON]
+        F[81 province pages, tool pages, sitemap, 404]
+        G[Pages Function: /api/duty-pharmacies — İzmir only]
     end
-
-    subgraph Network ["3. Offline & Decentralized P2P Mesh Layer"]
-        L[Workbox Service Worker & CacheStorage]
-        M[Nostr Relays: wss://relay.damus.io - wss://nos.lol]
-        N[WebRTC DataChannel: Browser-to-Browser Mesh]
-        O[BroadcastChannel: Intra-Device Bus]
-        P[Air-Gapped Offline QR Status Exchange]
+    subgraph Daily ["Daily data sync (GitHub Actions)"]
+        H[fetch-civic-data.mjs: download from sources]
+        I[validate-data.mjs: block invented or missing data]
     end
-
-    subgraph Data ["4. Civic Telemetry & Open Data Layer"]
-        Q[AFAD 81 Provinces Assembly Points - 27,331 Sites]
-        R[MTA Active Geological Fault Lines DB]
-        S[Kandilli Observatory & AFAD Live Quake Stream]
-        T[Ministry of Health Certified Emergency ERs - 1,226]
-        U[Pharmacies: OpenStreetMap + İzmir live duty API]
-        V[GloFAS River Discharge & Flood Radar - ECMWF]
-        W[Open-Meteo Air Quality, Asbestos & Smoke Radar]
-        X[Blood Donation Points from OpenStreetMap]
-        Y[TRAC & PMR 446 Emergency Radio Catalog]
+    subgraph External ["Services the browser calls directly"]
+        J[Earthquake lists: Kandilli/AFAD mirror, EMSC, USGS]
+        K[Open-Meteo: rainfall, GloFAS river discharge, air quality]
+        L[OSRM: walking routes]
+        M[Nostr relays: public chat]
+        N[ipapi.co: city-level guess when location is denied]
     end
-
-    UI --> Logic
-    Logic --> Network
-    Network --> Data
+    H --> I --> E
+    A --> B
+    A --> C
+    A --> D
+    E --> A
+    G --> A
+    J --> A
+    K --> A
+    L --> A
+    M --> A
+    N --> A
 ```
 
----
-
-## 3. Feature Catalog by Utility (44 Modules)
-
-The toolset is organized into **4 logical categories based on immediate survival benefit**, while maintaining a clean, uncluttered main screen with primary quick actions:
-
-### 🚨 Category 1: Emergency Response & S.O.S (9 Modules)
-1. **Disaster Whistle & Acoustic Sonar Pulses (2.9 kHz + 3.5 kHz Geophone + 18.5 kHz K9 Ultrasonic):**
-   - **2.9 kHz Acoustic Whistle:** Synthesized at the human ear's peak resonance frequency to penetrate concrete and structural debris.
-   - **3.5 kHz Geophone Sonar Pulse:** Optimized for AFAD and INSARAG seismic listening microphones; fires 3 rapid acoustic/vibrational pulses every 15 seconds to conserve battery life over days.
-   - **18.5 kHz K9 Ultrasonic Hound Beacon:** Audible to rescue dogs at extreme distances while sparing human eardrums.
-   - **Camera LED Flash & Strobe:** Synchronized visual pulsing for nighttime search drones and thermal imaging.
-   - **Screen WakeLock:** Keeps the device awake and transmitting even when untouched.
-2. **72-Hour Ultra Battery Saver (OLED True Black #000000 Mode):**
-   - OLED pitch-black display design extinguishing black organic diodes completely, cutting screen power consumption by ~75% during the crucial 72-hour survival window.
-   - Suspends WebGL render loops, background GPS polling, and heavy CSS transitions to conserve CPU and GPU cycles.
-   - Live battery status monitoring (`navigator.getBattery()`) with survival time estimates and minimal one-tap S.O.S actions.
-3. **Acoustic Debris Listener Radar (Web Audio API & Auto S.O.S Whistle):**
-   - Microphone-powered acoustic frequency analyzer detecting external rescue taps or shouts without requiring trapped victims to scream and deplete oxygen.
-   - `AnalyserNode` FFT decibel meter and customizable trigger threshold; automatically sounds the 2.9 kHz maximum-volume distress whistle when rescue knocks are detected.
-4. **Disaster Field Triage Assistant (START Protocol):**
-   - Implements the international Simple Triage and Rapid Treatment decision tree.
-   - Evaluates respiration, capillary refill (perfusion), and mental status in under 15 seconds to categorize victims into Red (Immediate), Yellow (Delayed), Green (Minor), and Black (Deceased).
-   - Generates instant emergency medical directives and broadcasts directly to the BitChat crisis network.
-5. **Tourniquet Safety Timer & Forehead Stamp (120-Min Protocol):**
-   - High-precision field timer preventing ischemic tissue necrosis and limb amputations from prolonged tourniquets.
-   - Visual and audible alerts at 45 and 90 minutes; flags irreversible necrosis danger at 120 minutes.
-   - Generates high-contrast digital stamps (e.g., `T: 14:35 - RIGHT LEG`) to mark victims for trauma surgeons.
-6. **One-Tap Emergency SMS & Hotlines:**
-   - Pre-formats high-priority SMS containing precision GPS coordinates and a map link, capable of routing through 2G signaling channels when data connections fail.
-   - Direct dial shortcuts for 112 National Emergency, 122 AFAD, 187 Gas Leakage, and 186 Electric Grid Failure.
-7. **BitChat Decentralized P2P Mesh & Nostr Crisis Room:**
-   - Serverless, phone-number-free emergency messaging.
-   - Routes encrypted messages over open Nostr relays (`wss://relay.damus.io`, `wss://nos.lol`) and WebRTC browser-to-browser P2P channels.
-   - **Emergency Wipe:** Irreversibly purges local messages and identity keys in one click.
-   - **Floating Action Button (FAB):** Small, sleek main screen button showing live relay and mesh peer connectivity.
-8. **Offline Push-to-Talk (PTT) Walkie-Talkie & Debris Voice S.O.S Loop:**
-   - Transforms smartphones into tactical walkie-talkies when cellular infrastructure and voice lines collapse.
-   - 4 tactical PMR channels (Channel 1 Calling, Channel 2 Medical, Channel 8 SAR, Channel 16 Crisis Command).
-   - Press-and-hold PTT recording with Web Audio API squelch open noise bursts, 1200/1500 Hz Roger Beeps, and 1750 Hz repeater access tones.
-   - **Automated Debris Voice S.O.S Loop:** Allows a trapped victim to record a single voice distress beacon and automatically loops it at maximum volume every 45 seconds to alert rescue teams without exhausting the victim.
-   - Broadcasts audio transmissions directly to nearby devices over BitChat P2P.
-9. **Emergency Radio Guide (TRAC & PMR 446):**
-   - Offline guide for license-free PMR 446 channels (Channel 1 Calling, Channel 8 SAR) and TRAC 145.500 MHz VHF / 433.500 MHz UHF repeater frequencies.
-   - Crucial CTCSS tone bypass (CTCSS: 0) directive and Web Audio 1750 Hz repeater tone generator.
+- **Stack:** Vite 6, TypeScript, Tailwind CSS, MapLibre GL, vite-plugin-pwa, Cloudflare Pages and Pages Functions.
+- **Server side:** there is no server that stores user data. The only server function is `/api/duty-pharmacies`, which relays today's on-duty pharmacies from İzmir Metropolitan Municipality open data.
+- **Data pipeline:** data is downloaded from its sources once a day; `validate-data.mjs` blocks data that is missing, outside Türkiye, unsourced, or that contains fields the source does not provide.
+- **External text:** content from OpenStreetMap, the earthquake and routing services and the chat is sanitised before it is written to the page ([`src/utils/safeText.ts`](src/utils/safeText.ts)). Nostr events in the chat are signature-checked.
+- **Location source:** [`src/utils/locationState.ts`](src/utils/locationState.ts) tracks whether the position came from GPS, an earlier GPS fix, an IP guess or a shared link.
 
 ---
 
-### 📡 Category 2: Early Warning & Environmental Radars (6 Modules)
-10. **Live Flood & Surge Warning Radar (GloFAS & Open-Meteo):**
-    - Real-time rainfall rate ($mm/hr$) and European Commission GloFAS river discharge ($m^3/s$) for user coordinates.
-    - 4-tier flood risk index with critical 15 cm (ankle-height) and 30 cm (vehicle displacement) escape directives.
-11. **Debris Dust, Wildfire & Air Quality Radar (Open-Meteo):**
-    - European Air Quality Index (AQI), PM2.5, PM10, Carbon Monoxide (CO), $NO_2$, and $SO_2$ telemetry.
-    - Critical N95/FFP2 respirator warning against airborne asbestos from collapsed structures.
-    - Carbon Monoxide poisoning warnings for portable fuel generators operated near tents or indoor rooms.
-12. **Coastal Tsunami Warning & Evacuation Radar:**
-    - Kandilli Observatory and METU Coastal Engineering protocols for the Marmara, Aegean, and Mediterranean coastlines.
-    - Critical "Evacuate at least 500m inland or climb +15m elevation" directive.
-    - Sea recession awareness as the primary indicator of an approaching tsunami wave.
-    - One-tap route calculation to the nearest high-elevation AFAD assembly point.
-13. **Seismic Early Warning & P/S Wave Simulator:**
-    - Models compressive primary P-waves ($6-7\text{ km/s}$) and destructive shear S-waves ($3.5-4\text{ km/s}$).
-    - Calculates warning lead time in seconds before destructive shaking begins.
-14. **Calibrated Device Seismograph (STA/LTA Algorithm):**
-    - Uses internal device motion sensors to detect micro-tremors using the geophysical Short-Term / Long-Term Average algorithm.
-    - Displays real-time acceleration ($m/s^2$ and Gal) with Mercalli intensity estimates.
-15. **Did You Feel It? (Felt Shaking Report):**
-    - Community-driven Mercalli I-X intensity reporting to gather immediate ground-truth citizen telemetry.
+## 3. Tools
 
----
+All tools are for general information and preparedness. They do not replace first-aid training, warnings from the authorities or expert assessment.
 
-### 🎒 Category 3: Preparedness & Family Safety (9 Modules)
-16. **Offline Vector Map Packs (Province & Regional Cache Downloader):**
-    - Pre-caches assembly zones, emergency hospitals, and pharmacies for entire provinces/regions to browser `CacheStorage` before infrastructure blackouts.
-    - Regional packages for Marmara, Aegean, Mediterranean, Central Anatolia, Eastern and Southeastern regions with storage space monitoring (`navigator.storage.estimate`).
-17. **Turkish Red Crescent Blood Centers & Donor Portal:**
-    - Blood donation points from OpenStreetMap (`healthcare=blood_donation`).
-    - Interactive 8-group donor-recipient compatibility matrix (0- universal donor, AB+ universal recipient).
-    - Broadcasts verified emergency blood requests over the BitChat crisis mesh.
-18. **Emergency Chronic Prescription Passport & Generic Equivalent Guide:**
-    - Offline prescription passport for displaced chronic patients seeking generic drug replacements at field pharmacies.
-    - Searchable database mapping commercial brand names (*Beloc, Lantus, Ventolin*) to generic active compounds (*Metoprolol*, *Insulin Glargine*, *Salbutamol*).
-    - Evaporative clay pot (Zeer Pot) refrigeration guidelines for storing insulin without electrical power.
-19. **Home Earthquake Hazard Hunt & Non-Structural Safety Score:**
-    - Room-by-room interactive audit targeting falling furniture and unanchored appliances that cause 70% of quake injuries.
-    - Evaluates wardrobes, water heaters/boilers, kitchen cabinet latches, and escape corridors, calculating a 0-100% Home Safety Score with DIY anchoring tips.
-20. **Disaster Field Relief & Aid Needs Coordinator (P2P Mesh Distribution):**
-    - Categorizes acute tent camp shortages and surplus donations (baby formula, diapers, feminine hygiene kits, drinking water, thermal wear, sleeping bags, and generators).
-    - Generates standardized field relief manifests with GPS coordinates and tent numbers; broadcasts directly across the BitChat P2P network or copies to SMS/WhatsApp.
-21. **Pet Disaster Preparedness & Evacuation Guide (Pet ID & HayTAP Protocols):**
-    - Digital Pet Passport with 15-digit microchip record, owner emergency contact, and exportable high-contrast collar tag.
-    - Comprehensive Pet Disaster Go-Bag checklist (crate, 7-day food/water, collapsible bowls, leash, waste bags, and pet first-aid supplies).
-    - HayTAP and AFAD field animal rescue protocols, panic/escape prevention directives, and emergency animal hospital dispatch hotlines.
-22. **72-Hour Emergency Go-Bag Checklist:**
-    - Categorized checklist for food, water, medical supplies, tools, sanitation, and documents.
-    - One-tap sharing of missing items with family members via SMS or messaging apps.
-23. **Building & Seismic Fault Proximity Risk Card:**
-    - Measures direct distance to the nearest major fault zone (simplified 7-zone layer, not the MTA map), fault slip rate, and year-of-construction vulnerability analysis.
-24. **Lock-Screen Medical Emergency Wallpaper (ICE):**
-    - Generates customized lock-screen wallpapers displaying blood type, chronic conditions, emergency contacts, and the nearest assembly point for first responders.
+### Map and location
 
----
+- **Assembly points, hospitals, pharmacies, blood donation points:** nearest places listed with distance and direction. In İzmir, today's on-duty pharmacies come from municipal open data; elsewhere the app links to the e-Devlet lookup.
+- **Recent earthquakes:** from the Kandilli and AFAD lists, refreshed every 20 seconds. Shows a notice when a nearby event appears in the list (not an early warning).
+- **Walking route:** street route via OSRM when online. If no route is available it shows only the approximate direction and says so.
+- **Assembly point compass:** points to the nearest assembly point; needs a compass sensor and a location.
+- **Plus Code:** converts your position to a code for a square of roughly 14 metres and spells it in the NATO phonetic alphabet. The code maths works offline.
+- **Save for offline use:** saves the core datasets and nearby map tiles on the device and reports how many files were stored.
 
-### 📋 Category 4: Civic Guides, Public Posters & Field Care (9 Modules)
-25. **Psychological First Aid & Box Breathing (4-4-4-4 Panic & Shock Management):**
-    - Audio-visual guided 4-4-4-4 Box Breathing (Inhale, Hold, Exhale, Pause) to alleviate hyperventilation, panic attacks, and traumatic freeze responses.
-    - 5-4-3-2-1 sensory grounding techniques (See, Touch, Hear, Smell, Taste) and clinical psychological first aid protocols for traumatized adults and children.
-26. **Field Camp Infrastructure Report Card (P2P Hot Food, Water, Sanitation & Energy):**
-    - Crowdsourced situational assessment for tent cities and assembly areas tracking hot meals, drinking water, portable WC hygiene, tent density, generator power, and security.
-    - Generates standardized situational manifests for instant broadcast over the BitChat crisis mesh or SMS dispatch.
-27. **Infant & Child Disaster Feeding Guide (UNICEF & WHO Standards):**
-    - Life-saving protocols to eliminate deadly waterborne dysentery and diarrheal disease caused by unsterilized baby bottles in displaced tent camps.
-    - Mandatory cup-feeding directives (sterilized spoon or small cup instead of bottles and pacifiers).
-    - Skin-to-skin relactation techniques for traumatized mothers and 70°C water safety rules for infant formula preparation.
-28. **Disaster Tent Heating Safety & Carbon Monoxide (CO) Poisoning Checker:**
-    - Interactive 6-symptom diagnostic checker for odorless, colorless carbon monoxide gas emitted by stoves and heaters in winter tent cities.
-    - 5 golden rules: 100 cm clearance from tent canvas and bedding, mandatory 5 cm roof vent opening, strict bedtime fire extinguishing rule, and total ban on indoor generators.
-    - Galvanized chimney collar insulation directives and fresh-air triage resuscitation protocols.
-29. **Disaster Survival, First Aid & Sanitation Handbook:**
-    - **Indoor Safety:** The stairway collapse trap (never run to stairs during shaking), triangle of life, gas/electric shutoff.
-    - **Under Debris:** Oxygen management, 3-knock international acoustic tapping code ("TAP - TAP - TAP"), strict ban on open flames (preventing gas explosions).
-    - **Outdoor & Vehicle:** Leaving keys in ignition for rescue access, avoiding falling facades and glass showers.
-    - **Medical First Aid & Crush Syndrome:** Strict warning against giving uncontrolled water to crushed victims before IV access (preventing sudden hyperkalemia and renal failure), tourniquet timing rules.
-    - **Clean Water & Epidemic Prevention:** Water boiling protocols, emergency chlorination formula (3 drops of 5% unscented household bleach per 1 liter of clear water, 5-6 drops for turbid water; wait 30 minutes), latrine placement 50m away from water sources, quicklime application, and prevention of cholera, dysentery, typhoid, and scabies.
-30. **Apartment Building Entrance & Elevator Poster (A4 Printable):**
-    - Automatically formats an A4 printable sheet detailing the 3 nearest AFAD assembly zones, local hospitals, pharmacies, and a live QR code for apartment lobbies.
-31. **Family Emergency Meeting Card (9:16 Story Format):**
-    - Generates mobile-optimized graphic cards detailing meeting locations and emergency contacts for family sharing.
-32. **Earthquake Drill Simulator:**
-    - Interactive Drop-Cover-Hold drill with authentic seismic audio cues and evacuation timing.
-33. **Air-Gapped Offline QR Status Pack:**
-    - Allows devices without cellular or internet connectivity to exchange welfare status, GPS coordinates, and battery levels via optical QR codes.
+### Environment and risk estimates
+
+- **Flood risk estimate:** a rough indicator from Open-Meteo rainfall and GloFAS river-discharge forecasts. Says so when data is unavailable.
+- **Air quality:** an Open-Meteo / Copernicus CAMS model estimate. It does not measure indoor carbon monoxide or debris dust.
+- **Tsunami information and coastal evacuation guide:** static guidance; no tsunami warning, no sea-level data.
+- **Building earthquake awareness card:** approximate distance to the simplified fault zones plus a rough estimate from building age. Not an engineering analysis.
+- **Stand-off distance from a damaged building:** an estimate using at least 1.5 times the building height.
+- **Wildfire direction guide:** possible crosswind directions for the wind direction you select. It does not know where the fire is.
+- **Avalanche slope, wind chill and hypothermia:** wind-chill calculation and slope measurement with the phone. Not an avalanche bulletin.
+- **CBRN guide:** general information on sheltering indoors and moving away relative to the wind.
+
+### Communication and sharing
+
+- **Emergency SMS draft and hotlines:** a call-112 button and a message draft for your relatives.
+- **SOS and "I am safe" message, QR status pack, family meeting card, apartment poster:** shareable text, QR codes and printable sheets.
+- **Disaster chat (BitChat):** public chat over Nostr relays. Needs the internet, nobody verifies messages, and unsent messages are marked as not delivered. It does not replace 112.
+- **Needs list and assembly-area status note:** volunteer notes shared in the public chat, unverified.
+- **Voice note:** stores a recording on the device and plays it through the speaker. It is not a radio and transmits to nobody.
+- **PMR446 channel list:** licence-free handheld radio channels and frequencies. There is no designated disaster channel; amateur bands need a licence.
+- **Hotlines and help information:** 112, Kızılay 168, ALO 184, ALO 144.
+
+### Attention signals and phone sensors
+
+- **Disaster whistle:** a loud tone of about 3 kHz and intermittent beeps from the speaker. Only people nearby can hear it, and it may stop when the screen turns off.
+- **Torch / screen S.O.S light:** flashes the torch where the device allows it, otherwise the screen, in the S.O.S pattern.
+- **Noise threshold alert (experimental):** beeps when the microphone level passes a threshold; it cannot tell what made the sound.
+- **Night watch:** sounds an alarm if the resting phone detects strong, sustained shaking; it is not certain to trigger.
+- **Phone accelerometer display:** shows the phone's own vibration; it does not detect earthquakes.
+- **Battery saver mode:** turns the interface black, dims the map and disables animations. The saving has not been measured.
+
+### First aid and health (general information)
+
+- **First-aid guide, CPR metronome (110/min), tourniquet time tracker, START triage aid** (for multi-casualty situations and trained people), **psychological first aid and box breathing, infant feeding guide, tent heating and carbon-monoxide symptom list, water disinfection calculator.**
+- **My medication list and lock-screen medical ID card:** contain only what you type; stored on the device.
+
+### Preparedness
+
+- **Go-bag checklist and expiry-date tracker, family water and food calculator** (15 litres of water per person per day in total, about 3 litres for drinking; 2,100 kcal), **home hazard hunt** (securing furniture), **pet preparedness guide, earthquake drill simulator** (labelled as a drill on screen).
+- **Personal damage notes, document notes, volunteer info card:** personal records only; they are not documents, evidence or authorisation. Stored unencrypted on the device.
+- **Rubble marking reading aid:** a simplified guide; it does not replace the search teams' manual.
 
 ---
 
@@ -646,7 +394,7 @@ The toolset is organized into **4 logical categories based on immediate survival
 | **Hospitals** | Ministry of Health HealthTürkiye facility records + geogow infrastructure data (6 metros) | Name, location, phone, facility type and the bed capacity reported by the facility. Dental and physiotherapy hospitals excluded. ER, trauma-center and helipad info is not in the source, so it is not shown. |
 | **Pharmacies** | [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL), Overpass API | 25,442 pharmacies, 21k+ with phone numbers. **No on-duty information.** |
 | **On-Duty Pharmacies** | İzmir Metropolitan Municipality open-data API (İzmir only) | Elsewhere the app links to the official [e-Devlet on-duty pharmacy lookup](https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama). |
-| **Live Earthquakes** | Kandilli & AFAD (via [api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr)), EMSC, USGS | Four sources tried in order. |
+| **Recent Earthquakes** | Kandilli & AFAD (via [api.orhanaydogdu.com.tr](https://api.orhanaydogdu.com.tr)), EMSC, USGS | Four sources tried in order. |
 | **Fault Lines** | Hand-drawn simplified layer | 7 major fault zones. **Not the MTA Active Fault Map**; do not use for building-level risk. |
 | **Blood Donation Centers** | [OpenStreetMap](https://www.openstreetmap.org/copyright) `healthcare=blood_donation` (ODbL) | Blood donation points mapped in OSM; additions to OSM show up the next day. |
 | **Flood & Rainfall** | [Open-Meteo](https://open-meteo.com) Flood API (GloFAS) and Forecast API | River discharge and precipitation forecasts. |
@@ -657,43 +405,29 @@ The toolset is organized into **4 logical categories based on immediate survival
 
 ---
 
-## 5. Privacy & Zero Tracking Architecture
+## 5. Privacy
 
-- **No Central Tracking:** afet.live does not maintain any database of user identities, IP addresses, coordinates, or distress calls.
-- **Client-Side Storage:** All user configurations (emergency bag checklists, family data, ICE profiles) reside strictly in the browser's local `LocalStorage` and `IndexedDB`.
-- **Ephemeral Identity:** BitChat identities are generated locally as ephemeral Ed25519 / Nostr keypairs and can be wiped instantly at any time.
+- **No accounts, no user database:** afet.live keeps no database of user identities, coordinates or messages.
+- **Client-side storage:** your settings and notes (go-bag list, family data, medical ID, document notes) stay in the browser's `localStorage` and `IndexedDB`, unencrypted, and are lost if site data is cleared.
+- **Third-party services see your requests:** the browser calls the map tile, earthquake, weather and routing services directly. Routing and weather requests include the coordinates you ask about. If location permission is denied, the app asks ipapi.co for a city-level guess from your IP address.
+- **Chat identity:** a Nostr key pair is generated on the device. Resetting it creates a new key, but messages already sent stay on the relays.
 - **BitChat messages are public:** messages sent over Nostr are stored on third-party Nostr relays (e.g. relay.damus.io, nos.lol), not by afet.live, and anyone can read them. Do not share personal, address or health details.
 - **Hosting:** the site runs on Cloudflare Pages; Cloudflare processes standard access logs (IP, user agent) under its own policy.
 
 ---
 
-## 6. Anti-Manipulation & Legal Zero-Liability Architecture
+## 6. Chat Safeguards & Disclaimer
 
-In crisis situations, open civil communication lines are vulnerable to automated bot spam, malicious hoaxes, and manufactured mass hysteria. Simultaneously, platform operators must be protected from legal liabilities arising from user-generated reports. To resolve both challenges offline without central logins, afet.live deploys a 6-layer hybrid security engine:
+The chat is public and anyone can write to it, so messages must be treated as unverified. What the app actually does:
 
-1. **Client-Side Proof-of-Work (PoW / NIP-13 / SHA-256):**
-   - Imposes a computational cost on message issuance via the browser's native Web Crypto API (`crypto.subtle.digest`) requiring a 10-bit leading-zero SHA-256 Hashcash nonce.
-   - Takes ~50–150ms on human smartphones (imperceptible to survivors) but completely paralyzes automated bot attacks attempting to flood relays with thousands of fake SOS alerts.
-2. **Token-Bucket Rate Limiter:**
-   - Enforces deterministic local cooldowns per action type:
-     - **Distress SOS Beacon:** 30s cooldown
-     - **BitChat Civil Room Message:** 6s cooldown
-     - **"Did You Feel It?" Felt Report:** 60s cooldown
-     - **Field Aid Request & Camp Card:** 20s cooldown
-     - **Push-To-Talk (PTT) Mic Lock:** Cooldown guard preventing channel jamming and frequency harassment
-3. **Panic & Rumor Heuristic Engine:**
-   - Detects high-risk disinformation patterns (e.g., *"dam collapsed"*, *"M10 earthquake expected"*, *"evacuation ordered"*, *"radiation leak"*) in real-time.
-   - Flags suspicious transmissions with a conspicuous warning frame (`⚠️ Unverified Panic Report`) and prompts the sender with legal liability terms before broadcasting.
-4. **Hardware Geofencing & Local Proximity Validation:**
-   - Cross-references reported coordinates against the device's actual hardware GPS using the Haversine metric:
-     - Distance $\le$ 3 km: **`📍 Field Verified`** green badge
-     - Distance > 3 km: **`⚠️ Remote Report`** yellow warning badge, preventing arm-chair actors from posing as on-site witnesses.
-5. **Community Consensus & Peer Dispute Quorum:**
-   - Field responders and nearby citizens can instantly verify (`✓ Verify`) or flag (`⚠️ Dispute`) broadcasts.
-   - Reports receiving 2+ dispute flags are automatically quarantined into highlighted cautionary warning containers.
-6. **Civil Non-Liability Disclaimer & Legal Compliance:**
-   - Prominently informs all users across every modal (SOS, BitChat, Camp Status, PTT Walkie-Talkie, SMS) that afet.live is a civil, open-source guide and **under no circumstances replaces official emergency dispatchers (112 Emergency Call Center, AFAD, Police, or Coast Guard)**.
-   - Warns that intentional hoaxes, malicious distress signals, and defamatory rumors are subject to criminal prosecution under Article 217/A of the Turkish Penal Code (*Public Dissemination of Misleading Information*).
+- **Rate limiting:** local cooldowns for SOS, chat, felt-report and aid messages, so one device cannot flood the channel by repeated taps.
+- **Proof of work on send:** the sending device solves a small SHA-256 puzzle before publishing, which slows down bulk posting. Received messages are not ranked or badged by it.
+- **Signature check:** incoming Nostr events with an invalid signature are dropped, and a short public-key prefix is shown beside each alias so that names cannot be impersonated silently.
+- **Rumour wording check:** messages matching known panic patterns (for example "the dam has burst") get a warning label on the sender's and readers' screens.
+- **Personal notes, not votes:** "trustworthy / suspicious" marks are private notes on your own device; they are not shared and there is no community verification.
+- **Disclaimer:** every communication screen states that afet.live is a volunteer guide and does not replace 112 or the authorities. Under Article 217/A of the Turkish Penal Code, knowingly spreading false information is a crime; responsibility for a message lies with its sender.
+
+There is no location verification of messages and no moderation.
 
 ---
 

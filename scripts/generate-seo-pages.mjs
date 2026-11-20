@@ -1,7 +1,7 @@
 /**
  * generate-seo-pages.mjs
  * =============================================================================
- * afet.live — Google & Arama Motoru Zirve SEO Statik Sayfa Üreteci (SSG)
+ * afet.live — Arama motorları için statik sayfa üreteci (SSG)
  * =============================================================================
  * Googlebot ve diğer arama motorları JavaScript çalıştırmadan veya WebGL
  * yüklenmeden önce tam teşekküllü, zengin semantik HTML, Schema.org ve
@@ -10,7 +10,7 @@
  * Bu betik:
  * 1. 81 il için clean-URL statik sayfalar (/istanbul, /ankara, /hatay vb.)
  * 2. 20+ kritik afet aracı için statik sayfalar (/afet-dudugu, /son-depremler vb.)
- * 3. 100% Google Standartlarında sitemap.xml ve robots.txt üretir.
+ * 3. sitemap.xml ve robots.txt üretir.
  */
 
 import fs from 'node:fs';
@@ -111,194 +111,194 @@ const DISASTER_TOOLS = [
   {
     slug: 'afet-dudugu',
     aliases: ['duduk'],
-    title: 'Afet Düdüğü — 2.9 kHz Kesintisiz Enkaz S.O.S Düdüğü ve Flaşör',
-    desc: 'Enkaz altında telefon kilitliyken bile aralıksız çalan 2.9 kHz ve 3.5 kHz geofon sismik rezonans afet düdüğü. Kamera LED flaşörlü, internetsiz ve ücretsiz.',
-    h1: 'Afet ve Deprem Düdüğü (2.9 kHz SOS Sinyali)',
-    badge: 'Acil Müdahale & S.O.S'
+    title: 'Afet Düdüğü — Telefondan Yüksek Sesli Düdük Tonu',
+    desc: 'Telefon hoparlöründen yaklaşık 3 kHz yüksek sesli düdük tonu ve aralıklı bip çalar. Yalnızca yakındakiler duyar; ekran kapanırsa ses durabilir.',
+    h1: 'Afet Düdüğü (yüksek sesli düdük tonu)',
+    badge: 'Dikkat Çekme'
   },
   {
     slug: 'son-depremler',
     aliases: ['deprem-haritasi'],
-    title: 'Kandilli ve AFAD Son Depremler Canlı Haritası — afet.live',
-    desc: 'Türkiye ve çevresinde meydana gelen anlık sarsıntılar, merkez üssü, büyüklük (Mw) ve P/S dalga yayılım simülasyonu. 1 saniyede güncellenen canlı akış.',
-    h1: 'Canlı Son Depremler ve Sismik Dalga Simülasyonu',
-    badge: 'Canlı Sensörler'
+    title: 'Son Depremler Listesi ve Haritası (Kandilli / AFAD) — afet.live',
+    desc: 'Kandilli ve AFAD deprem listelerinden Türkiye ve çevresindeki son depremler: yer, büyüklük ve derinlik. Liste 20 saniyede bir yenilenir; erken uyarı değildir.',
+    h1: 'Son Depremler Listesi ve Haritası',
+    badge: 'Deprem Listesi'
   },
   {
     slug: 'toplanma-alanlari',
     aliases: ['toplanma'],
     title: 'AFAD Toplanma Alanları Sorgulama ve Haritası — afet.live',
-    desc: 'Türkiye genelinde 27.331 resmi AFAD toplanma alanı envanteri. Konumunuza en yakın güvenli park ve toplanma noktalarına çevrimdışı sokak yürüyüş rotası.',
-    h1: '81 İl Resmi AFAD Toplanma Alanı Sorgulama',
-    badge: 'Sivil Savunma'
+    desc: 'AFAD açık verisinden derlenen 27.331 toplanma alanı haritada. Konumunuza en yakın alanları mesafe ve yön bilgisiyle listeler. Resmi kurum yayını değildir.',
+    h1: '81 İlde AFAD Toplanma Alanı Sorgulama',
+    badge: 'Toplanma Alanları'
   },
   {
     slug: 'bina-hasar-tespiti',
     aliases: ['hasar-tespit'],
-    title: 'Deprem Sonrası Bina Çatlak ve Hasar Tespiti Kılavuzu — afet.live',
-    desc: 'Deprem sonrası kolon, kiriş ve perde duvarda X-çatlak analizi. FEMA ATC-20 standardında delil fotoğraflama ve resmi DASK hasar ihbar tutanağı hazırlayıcı.',
-    h1: 'Bina Çatlak ve Yapısal Hasar Tespiti',
-    badge: 'Hukuki Koruma'
+    title: 'Deprem Sonrası Kişisel Hasar Notları — afet.live',
+    desc: 'Deprem sonrası gördüğünüz çatlak ve hasarları kendi cihazınıza not edin. Bu notlar hasar tespiti veya delil sayılmaz; kesin karar için uzman incelemesi gerekir.',
+    h1: 'Kişisel Hasar Notları',
+    badge: 'Kişisel Not'
   },
   {
     slug: 'bina-risk',
     aliases: ['risk'],
-    title: 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
-    desc: 'Binanızın büyük fay zonlarına yaklaşık mesafesi ve bina yaşına göre kaba sismik farkındalık tahmini. Resmi analiz değildir.',
-    h1: 'Bina Sismik Risk ve Diri Fay Sorgulama',
-    badge: 'Erken Önlem'
+    title: 'Bina Deprem Farkındalık Kartı ve Fay Zonu Mesafesi — afet.live',
+    desc: 'Binanızın büyük fay zonlarına yaklaşık mesafesi ve bina yaşına göre kaba deprem farkındalık tahmini. Mühendislik analizi değildir.',
+    h1: 'Bina Deprem Farkındalık Kartı',
+    badge: 'Kaba Tahmin'
   },
   {
     slug: 'afetbilgi',
     aliases: ['asevi', 'barinma'],
-    title: 'AfetBilgi Doğrulanmış Aşevi, Çadırkent ve İaşe Kataloğu — afet.live',
-    desc: 'Afetzedeler için sıcak yemek aşevleri, Kızılay çadırkentleri, bebek maması ve sahra WC noktalarını gösteren %100 çevrimdışı doğrulanmış rehber.',
-    h1: 'AfetBilgi Doğrulanmış İnsani Yardım ve Barınma Kataloğu',
-    badge: 'Açık Yazılım Ağı'
+    title: 'Acil Hatlar ve Yardım Bilgisi — afet.live',
+    desc: 'Afet anında aranacak hatlar: 112 Acil, Kızılay 168, ALO 184 ve ALO 144. Açık yardım noktalarını AFAD ve Kızılay duyurur; bu sayfada güncel liste yoktur.',
+    h1: 'Acil Hatlar ve Yardım Bilgisi',
+    badge: 'Acil Hatlar'
   },
   {
     slug: 'pluscode',
     aliases: ['telsiz-grid'],
-    title: 'Google Plus Codes Taktik Telsiz Grid Kodlayıcı — afet.live',
-    desc: 'Sokak tabelaları ve binalar yıkıldığında GPS koordinatlarını 14x14m taktik Plus Koda ve NATO telsiz fonetik hecelemesine dönüştürür. %100 çevrimdışı.',
-    h1: 'Taktik Plus Code ve Telsiz Fonetik Grid',
-    badge: 'Google OLC'
+    title: 'Plus Code Konum Kodu ve Fonetik Okunuşu — afet.live',
+    desc: 'Konumunuzu yaklaşık 14 metrelik kareyi gösteren Plus Code\'a çevirir ve NATO fonetik alfabesiyle okunuşunu verir. Kod hesabı çevrimdışı çalışır.',
+    h1: 'Plus Code Konum Kodu ve Fonetik Okunuşu',
+    badge: 'Açık Konum Kodu'
   },
   {
     slug: 'insarag',
     aliases: ['enkaz-isaret'],
-    title: 'INSARAG USAR Enkaz İşaretleme Çözücü ve Oluşturucu — afet.live',
-    desc: 'Arama kurtarma ekiplerinin enkaz duvarlarına çizdiği sprey işaretleri çözer. Canlı kazazede sayısı, gaz tehlikesi ve arama durumunu görüntüler.',
-    h1: 'UN OCHA INSARAG Enkaz Arama ve İşaretleme Sistemi',
-    badge: 'Uluslararası USAR'
+    title: 'Enkaz Duvar İşaretlerini Okuma Yardımcısı — afet.live',
+    desc: 'Arama ekiplerinin enkaz duvarına yazdığı işaretleri okumaya yardım eden basitleştirilmiş kılavuz. Ekip el kitabının yerini tutmaz; işaret ne olursa olsun binaya girmeyin.',
+    h1: 'Enkaz İşaretlerini Okuma Yardımcısı',
+    badge: 'Basitleştirilmiş Kılavuz'
   },
   {
     slug: 'hayatta-kalma-rasyonu',
     aliases: ['rasyon'],
-    title: 'Sphere 72 Saat Hayatta Kalma Rasyonu ve Su Hesaplayıcısı — afet.live',
-    desc: 'The Sphere Project ve DSÖ standartlarında ilk 72 saat ("Altın Saatler") aile su stoku (3L/kişi/gün) ve 2.100 kcal erzak rasyonu planlayıcısı.',
-    h1: '72 Saat Hayatta Kalma Rasyonu ve Su Hesaplayıcısı',
-    badge: 'Sphere / WHO'
+    title: 'Aile Su ve Erzak Hesaplayıcısı — afet.live',
+    desc: 'Hane sayısına göre su ve erzak ihtiyacını hesaplar: kişi başı günde toplam 15 litre su (yaklaşık 3 litresi içme) ve 2.100 kcal. Sphere asgari değerlerine dayanır.',
+    h1: 'Aile Su ve Erzak Hesaplayıcısı',
+    badge: 'Hazırlık Planı'
   },
   {
     slug: 'deprem-cantasi',
     aliases: ['canta'],
-    title: 'Deprem Çantası Malzeme Kontrol Listesi (72 Saat) — afet.live',
-    desc: 'AFAD ve Kızılay standartlarında 72 saatlik deprem ve acil durum çantası eksik malzeme takip listesi. Eksikleri SMS veya WhatsApp ile paylaşın.',
-    h1: '72 Saatlik Afet ve Deprem Çantası Malzeme Listesi',
+    title: 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
+    desc: 'Deprem ve acil durum çantası için genel malzeme kontrol listesi. Eksikleri işaretleyin, listeyi SMS veya WhatsApp ile paylaşın.',
+    h1: 'Deprem Çantası Malzeme Kontrol Listesi',
     badge: 'Aile Hazırlığı'
   },
   {
     slug: 'apartman-afisi',
     aliases: ['afis'],
-    title: 'Apartman Girişi ve Asansör Acil Durum Afişi (A4) — afet.live',
-    desc: 'Binanıza en yakın 3 toplanma alanı, acil hastane ve dinamik QR kodlu yazdırılabilir (Ctrl+P / PDF) A4 apartman acil durum afişi üretici.',
+    title: 'Apartman Girişi Acil Durum Afişi (A4) — afet.live',
+    desc: 'Binanıza en yakın toplanma alanlarını, en yakın hastaneyi ve QR kodu içeren yazdırılabilir A4 apartman afişi. Veriler açık kaynaklardan gelir; yerinde doğrulayın.',
     h1: 'Apartman ve Site Girişi Acil Durum Afişi',
     badge: 'A4 Yazdırılabilir'
   },
   {
     slug: 'cpr-kocu',
     aliases: ['cpr'],
-    title: '110 BPM Kalp Masajı (CPR) Metronomu ve Crush Protokolü — afet.live',
-    desc: 'AHA resüsitasyon standartlarında 110 BPM sesli metronom ve enkazdan çıkarılan kazazedelerde ölümcül ezilme (crush) sendromu acil direktifleri.',
-    h1: '110 BPM Sahra CPR Koçu ve Ezilme Sendromu Kılavuzu',
+    title: 'Kalp Masajı (CPR) Metronomu — 110 Vuruş/Dakika — afet.live',
+    desc: 'Kalp masajı ritmini tutmanız için dakikada 110 vuruşluk sesli metronom ve temel hatırlatmalar. İlk yardım eğitiminin yerini tutmaz; önce 112\'yi arayın.',
+    h1: 'Kalp Masajı (CPR) Metronomu',
     badge: 'İlk Yardım'
   },
   {
     slug: 'turnike-zamanlayici',
     aliases: ['turnike'],
-    title: 'Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk) — afet.live',
-    desc: 'Uzuv kaybı ve kangreni önleyen 120 dakikalık turnike güvenlik sayacı ve ambulans hekimleri için yüksek kontrastlı dijital alın damgası formatı.',
-    h1: 'Turnike Güvenlik Zamanlayıcısı (120 Dk Protokolü)',
-    badge: 'Travma Cerrahisi'
+    title: 'Turnike Süre Takibi — afet.live',
+    desc: 'Turnikenin uygulandığı saati kaydeder ve geçen süreyi gösterir. Turnikeyi gevşetmeyin; 112\'yi arayın. İlk yardım eğitiminin yerini tutmaz.',
+    h1: 'Turnike Süre Takibi',
+    badge: 'İlk Yardım'
   },
   {
     slug: 'su-aritma',
     aliases: ['su'],
-    title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı (WHO WASH) — afet.live',
-    desc: 'Dünya Sağlık Örgütü standartlarında çamaşır suyu veya klor tableti ile kolera/tifo önleyici sahra su dezenfeksiyonu ve 30 dk temas sayacı.',
-    h1: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı',
-    badge: 'WHO WASH'
+    title: 'Acil Durumda Su Dezenfeksiyonu Hesaplayıcısı — afet.live',
+    desc: 'Kokusuz çamaşır suyu ile içme suyu dezenfeksiyonu için damla hesabı ve 30 dakikalık bekleme sayacı. Mümkünse suyu kaynatın; genel rehberdir.',
+    h1: 'Acil Durumda Su Dezenfeksiyonu',
+    badge: 'Genel Rehber'
   },
   {
     slug: 'kbrn',
     aliases: [],
-    title: 'KBRN, Radyasyon ve Nükleer Serpinti Sığınağı Rehberi — afet.live',
-    desc: 'Nükleer patlama, kimyasal ve biyolojik sızıntıda iç sığınak hazırlığı, Potasyum İyodür (KI) dozaj tablosu ve kontaminasyondan arınma kılavuzu.',
-    h1: 'KBRN, Radyasyon ve Nükleer Serpinti Güvenliği',
-    badge: 'Sivil Savunma'
+    title: 'KBRN ve Kimyasal Sızıntıda Korunma Rehberi — afet.live',
+    desc: 'Kimyasal, biyolojik, radyolojik ve nükleer olaylarda kapalı alanda korunma, rüzgara göre uzaklaşma ve arınma için genel bilgiler. Yetkililerin talimatı önceliklidir.',
+    h1: 'KBRN ve Kimyasal Sızıntıda Korunma Rehberi',
+    badge: 'Genel Rehber'
   },
   {
     slug: 'gece-nobeti',
     aliases: [],
-    title: 'Gece Sismograf Nöbeti ve Başucu Deprem Alarmı — afet.live',
-    desc: 'Telefon komodindeyken ivmeölçer ile mikrosarsıntıları dinleyen ve eşik aşıldığında tam ses seviyesinde siren çalan başucu deprem nöbetçisi.',
-    h1: 'Gece Sismograf Nöbeti (Başucu Deprem Alarmı)',
-    badge: 'Sismik Sensör'
+    title: 'Gece Nöbeti — Telefon Sarsıntı Alarmı — afet.live',
+    desc: 'Telefon sabit dururken ivmeölçeri güçlü ve sürekli sarsıntı algılarsa yüksek sesle alarm çalar. Ekran açık kalmalıdır; çalacağı kesin değildir.',
+    h1: 'Gece Nöbeti (telefon sarsıntı alarmı)',
+    badge: 'Telefon Sensörü'
   },
   {
     slug: 'sel-radari',
     aliases: ['sel'],
-    title: 'Canlı Sel ve Taşkın Erken Uyarı Radarı (GloFAS) — afet.live',
-    desc: 'Kullanıcının koordinatına özel anlık yağış oranı (mm/saat) ve Avrupa Komisyonu GloFAS nehir debisiyle 4 kademeli su baskını riski.',
-    h1: 'Canlı Sel ve Kentsel Taşkın Erken Uyarı Radarı',
-    badge: 'GloFAS / ECMWF'
+    title: 'Sel ve Taşkın Riski Tahmini (Open-Meteo / GloFAS) — afet.live',
+    desc: 'Konumunuz için Open-Meteo yağış verisi ve GloFAS nehir debisi tahminine dayalı kaba sel riski göstergesi. Meteoroloji uyarılarının yerini tutmaz.',
+    h1: 'Sel ve Taşkın Riski Tahmini',
+    badge: 'Open-Meteo / GloFAS'
   },
   {
     slug: 'tsunami-radari',
     aliases: ['tsunami'],
-    title: 'Tsunami ve Kıyı Tahliye Radarı — afet.live',
-    desc: 'Marmara, Ege ve Akdeniz kıyılarında deniz tabanı depremleri sonrası sahil tahliye rotaları ve yüksek kot güvenli toplanma rehberi.',
-    h1: 'Tsunami Erken Uyarı ve Kıyı Tahliye Radarı',
+    title: 'Tsunami Bilgi ve Kıyı Tahliye Rehberi — afet.live',
+    desc: 'Kıyıda güçlü ya da uzun süren sarsıntıdan sonra ne yapmalı: uyarı beklemeden yükseğe ve iç kesime gidin. Bu sayfa tsunami uyarısı vermez, deniz seviyesi ölçmez.',
+    h1: 'Tsunami Bilgi ve Kıyı Tahliye Rehberi',
     badge: 'Kıyı Güvenliği'
   },
   {
     slug: 'afet-telsizi',
     aliases: ['telsiz'],
-    title: 'TRAC ve PMR 446 Afet Telsiz Frekansları Rehberi — afet.live',
-    desc: 'Lisanssız PMR 446 telsiz kanalları (Kanal 1 Genel, Kanal 8 SAR) ve TRAC 145.500 MHz VHF acil afet röle frekansları rehberi.',
-    h1: 'Afet Telsizi ve Acil Durum Frekans Rehberi',
-    badge: 'Telsiz İletişimi'
+    title: 'PMR446 Telsiz Kanalları ve Frekans Listesi — afet.live',
+    desc: 'Lisans gerektirmeyen PMR446 el telsizi kanalları ve frekansları. Belirlenmiş bir afet kanalı yoktur; amatör telsiz bantları lisans gerektirir.',
+    h1: 'PMR446 Telsiz Kanalları ve Frekans Listesi',
+    badge: 'Telsiz Bilgisi'
   },
   {
     slug: 'yangin-kacis',
     aliases: ['yangin', 'orman-yangini'],
-    title: 'Orman ve Arazi Yangını Kaçış Koridoru (Rothermel ROS) — afet.live',
-    desc: 'Rothermel yüzey yangını yayılma hızı ve 90° yan kanat (flank) kaçış vektörü. Rüzgar altı ölüm konisinden ve yamaç baca etkisinden korunma protokolü.',
-    h1: 'Orman ve Arazi Yangını Taktik Kaçış Koridoru',
-    badge: 'Rothermel ROS'
+    title: 'Orman Yangınında Rüzgara Göre Yön Rehberi — afet.live',
+    desc: 'Seçtiğiniz rüzgar yönüne göre rüzgara dik olası uzaklaşma yönlerini gösterir. Yangının yerini bilmez; 112\'yi arayın, tahliye talimatı önceliklidir.',
+    h1: 'Orman Yangınında Rüzgara Göre Yön Rehberi',
+    badge: 'Genel Kural'
   },
   {
     slug: 'cig-radari',
     aliases: ['cig', 'hipotermi', 'ruzgar-sogugu'],
-    title: 'Çığ Riski, Yamaç Klinometresi ve Kış Hipotermi Radarı — afet.live',
-    desc: 'NOAA NWS Wind Chill rüzgar soğuğu formülü, EAWS 30°-45° kritik tabaka çığ tuzağı analizi, telefon ivmeölçeriyle yamaç eğim ölçümü ve hayatta kalma kar mağarası mimarisi.',
-    h1: 'Çığ Tehlikesi, Yamaç Klinometresi ve Kış Hipotermi Radarı',
-    badge: 'NOAA Wind Chill & EAWS'
+    title: 'Çığ Eğimi, Rüzgar Soğuğu ve Hipotermi Rehberi — afet.live',
+    desc: 'Rüzgar soğuğu (hissedilen sıcaklık) hesabı, telefonla yamaç eğimi ölçümü ve hipotermiye karşı genel bilgiler. Çığ bülteni değildir.',
+    h1: 'Çığ Eğimi, Rüzgar Soğuğu ve Hipotermi Rehberi',
+    badge: 'Kış Güvenliği'
   },
   {
     slug: 'canta-skt',
     aliases: ['deprem-cantasi-skt', 'miad-takibi', 'rotasyon'],
-    title: 'Deprem Çantası SKT ve Malzeme Miad Rotasyon Motoru — afet.live',
-    desc: 'Su, konserve, kuru gıda, reçeteli ilaç ve alkalin pil son kullanma tarihi takibi. Botulizm ve mikroplastik riskini önleyen 6 aylık otomatik rotasyon tutanağı.',
-    h1: 'Deprem Çantası Malzeme & İlaç SKT Rotasyon Takibi',
-    badge: 'Stok & Miad Takibi'
+    title: 'Deprem Çantası Son Kullanma Tarihi Takibi — afet.live',
+    desc: 'Çantanızdaki su, gıda, ilaç ve pillerin son kullanma tarihini ambalajdan okuyup girin; yaklaşan ve geçen tarihleri gösterir. Kayıt cihazınızda kalır.',
+    h1: 'Deprem Çantası Son Kullanma Tarihi Takibi',
+    badge: 'SKT Takibi'
   },
   {
     slug: 'afet-gonullu',
     aliases: ['gonullu-karti', 'sahra-pasaportu', 'gonullu'],
-    title: 'Afet Gönüllü Sevk ve Çevrimdışı Sahra Akreditasyon Pasaportu — afet.live',
-    desc: 'INSARAG ve AFAD standartlarında sahra gönüllü tanıtım kartı, kan grubu, uzmanlık eşleştirme (Arama-Kurtarma, Sağlık, Ağır İş Makinesi, Telsiz), internetsiz QR kimlik doğrulama.',
-    h1: 'Afet Gönüllü Sevk & Sahra Akreditasyon Pasaportu',
-    badge: 'INSARAG & AFAD'
+    title: 'Gönüllü Bilgi Kartı (kişisel beyan) — afet.live',
+    desc: 'Adınızı, kan grubunuzu ve becerilerinizi içeren kişisel beyan kartı ve QR kodu. Kimlik ya da yetki belgesi değildir. Gönüllülük başvurusu: gonullu.afad.gov.tr',
+    h1: 'Gönüllü Bilgi Kartı (kişisel beyan)',
+    badge: 'Kişisel Beyan'
   },
   {
     slug: 'enkaz-cemberi',
     aliases: ['yikilma-alani', 'moloz-golgesi'],
-    title: 'Hasarlı Bina Yıkılma ve Moloz Güvenlik Çemberi (1.5x H) — afet.live',
-    desc: 'USAR / FEMA 1.5x bina yüksekliği standoff güvenlik çemberi ve kentsel dar sokak ölüm kanyonu analizi. Artçı şoklarda enkaz altında kalmayı önleme rehberi.',
-    h1: 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5 x H)',
-    badge: 'USAR Standoff'
+    title: 'Hasarlı Binadan Uzak Durma Mesafesi (1,5 × yükseklik) — afet.live',
+    desc: 'Hasarlı binadan ne kadar uzak durmanız gerektiğini bina yüksekliğinin en az 1,5 katı kuralıyla tahmin eder. Kaba hesaptır; artçılarda binalardan uzak durun.',
+    h1: 'Hasarlı Binadan Uzak Durma Mesafesi',
+    badge: 'Tahmini Mesafe'
   }
 ];
 
@@ -377,7 +377,7 @@ Host: https://afet.live
 
 function renderProvinceHtml(templateHtml, prov) {
   const title = `${prov.name} AFAD Toplanma Alanları ve Deprem Haritası 2026 — afet.live`;
-  const desc = `${prov.name} genelinde AFAD toplanma alanları, hastaneler, eczaneler ve fay zonları. Çevrimdışı ve ücretsiz.`;
+  const desc = `${prov.name} genelinde AFAD açık verisinden toplanma alanları, hastaneler, eczaneler ve basitleştirilmiş fay zonları haritası. Ücretsiz.`;
   const canonicalUrl = `https://afet.live/${prov.slug}`;
 
   // Replace Title & Meta Description & Canonical
@@ -399,16 +399,16 @@ function renderProvinceHtml(templateHtml, prov) {
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "GovernmentService",
-      "name": "${prov.name} AFAD Toplanma Alanları ve Acil Durum Bilgi Ağı",
-      "serviceType": "Afet ve Acil Durum Toplanma Alanı Sorgulama",
+      "@type": "Service",
+      "name": "${prov.name} Toplanma Alanları Haritası (afet.live)",
+      "serviceType": "Toplanma alanı haritası (gönüllü, açık kaynak; kamu kurumu hizmeti değildir)",
       "areaServed": {
         "@type": "AdministrativeArea",
         "name": "${prov.name}, Türkiye"
       },
       "provider": {
         "@type": "Organization",
-        "name": "afet.live Sivil Afet Atlası",
+        "name": "afet.live (gönüllü açık kaynak proje)",
         "url": "https://afet.live/${prov.slug}"
       }
     }
@@ -423,7 +423,7 @@ function renderProvinceHtml(templateHtml, prov) {
           "name": "${prov.name}'de en yakın AFAD toplanma alanı nasıl bulunur?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "afet.live/${prov.slug} adresine girdiğinizde veya konum butonuna bastığınızda, ${prov.name} sınırları içinde GPS konumunuza en yakın resmi AFAD toplanma alanları yürüme mesafesi ve pusula yönüyle anında listelenir."
+            "text": "afet.live/${prov.slug} adresine girdiğinizde veya konum butonuna bastığınızda, ${prov.name} sınırları içinde konumunuza en yakın toplanma alanları mesafe ve yön bilgisiyle listelenir. Veriler AFAD açık verisinden derlenir; afet.live bir kamu kurumu yayını değildir."
           }
         },
         {
@@ -431,7 +431,7 @@ function renderProvinceHtml(templateHtml, prov) {
           "name": "${prov.name} deprem toplanma alanları internetsiz çalışır mı?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Evet. afet.live PWA çevrimdışı mimarisiyle ${prov.name}'deki tüm toplanma alanları, acil hastaneler ve diri fay hatları telefon hafızasına kaydedilir; internet ve şebeke tamamen kopsa bile %100 çevrimdışı çalışır."
+            "text": "Kısmen. Siteyi internet varken açıp verileri cihazınıza kaydederseniz ${prov.name}'deki toplanma alanları ve hastaneler çoğu durumda internetsiz de görüntülenebilir. Tarayıcı kayıtlı veriyi silebilir; çevrimdışı açılış kesin değildir. Harita görüntüsü ve yürüyüş rotası internet gerektirir."
           }
         },
         {
@@ -463,7 +463,7 @@ function renderProvinceHtml(templateHtml, prov) {
         ${prov.name} AFAD Toplanma Alanları ve Deprem Haritası
       </h1>
       <p style="font-size:12px;line-height:1.5;color:#cbd5e1;margin:0 0 14px 0;">
-        ${prov.name} genelindeki AFAD toplanma alanları, hastaneler, eczaneler ve fay zonları haritası. %100 internetsiz ve ücretsizdir.
+        ${prov.name} genelinde AFAD açık verisinden toplanma alanları, hastaneler, eczaneler ve basitleştirilmiş fay zonları haritası. Ücretsizdir; bir kamu kurumu yayını değildir.
       </p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;text-align:center;">
         <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);">
@@ -475,8 +475,8 @@ function renderProvinceHtml(templateHtml, prov) {
           <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">Toplanma Alanı</div>
         </div>
         <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);">
-          <div style="font-size:16px;font-weight:900;color:#f59e0b;">1.226</div>
-          <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">Acil Hastane</div>
+          <div style="font-size:16px;font-weight:900;color:#f59e0b;">950+</div>
+          <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">Hastane</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;">
@@ -518,7 +518,8 @@ function renderToolHtml(templateHtml, tool) {
       "@type": "SoftwareApplication",
       "name": "${tool.title}",
       "operatingSystem": "All (Web, iOS, Android, Windows, macOS)",
-      "applicationCategory": "EmergencyApplication",
+      "applicationCategory": "UtilitiesApplication",
+      "description": "${tool.desc}",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -537,7 +538,7 @@ function renderToolHtml(templateHtml, tool) {
         <span style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;color:#fb7185;background:rgba(244,63,94,0.15);padding:3px 10px;border-radius:99px;border:1px solid rgba(244,63,94,0.3);">
           ${tool.badge}
         </span>
-        <span style="font-size:11px;color:#94a3b8;font-family:monospace;">%100 Çevrimdışı</span>
+        <span style="font-size:11px;color:#94a3b8;font-family:monospace;">Ücretsiz</span>
       </div>
       <h1 style="font-size:18px;font-weight:900;margin:0 0 8px 0;line-height:1.2;color:#fff;">
         ${tool.h1}
@@ -623,7 +624,7 @@ function render404Html() {
 }
 
 async function main() {
-  console.log('[seo-gen] Google & Arama Motoru Zirve Statik Sayfa Üretimi Başlıyor...');
+  console.log('[seo-gen] Statik sayfa üretimi başlıyor...');
 
   const indexPath = path.join(DIST_DIR, 'index.html');
   if (!fs.existsSync(indexPath)) {
@@ -685,7 +686,7 @@ async function main() {
   fs.writeFileSync(path.join(PUBLIC_DIR, 'robots.txt'), robotsTxt, 'utf8');
   console.log('[seo-gen] ✓ robots.txt dist/ ve public/ klasörlerine yazıldı.');
 
-  console.log('[seo-gen] 🎉 Tüm Google Arama Zirve Optimizasyonları başarıyla tamamlandı!');
+  console.log('[seo-gen] Statik sayfa üretimi tamamlandı.');
 }
 
 main().catch((err) => {

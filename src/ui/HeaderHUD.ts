@@ -99,32 +99,32 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     accentClass: 'text-rose-400',
     tools: [
       { id: 'btn-open-insarag', label: 'Enkaz İşareti', title: 'Enkaz İşaretleri (basitleştirilmiş yardımcı)', rgb: '244, 63, 94', icon: Icons.sprayCan },
-      { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Kalp Masajı Metronomu (AHA 110 BPM)', rgb: '244, 63, 94', icon: Icons.heartPulse },
-      { id: 'btn-open-triage', label: 'Triyaj', title: 'Sahra Triyaj Asistanı (START Protokolü)', rgb: '236, 72, 153', icon: Icons.stethoscope },
-      { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Zamanlayıcısı (120 Dk Güvenlik)', rgb: '239, 68, 68', icon: Icons.timer },
+      { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Kalp Masajı Metronomu (110 vuruş/dk)', rgb: '244, 63, 94', icon: Icons.heartPulse },
+      { id: 'btn-open-triage', label: 'Triyaj', title: 'Triyaj Yardımcısı (START, çok yaralılı durum)', rgb: '236, 72, 153', icon: Icons.stethoscope },
+      { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Süre Takibi', rgb: '239, 68, 68', icon: Icons.timer },
       { id: 'btn-open-sar-beacon', label: 'S.O.S Işık', title: 'Fener ve Ekranla Mors S.O.S Işık Sinyali', rgb: '239, 68, 68', icon: Icons.flashlight },
-      { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve S.O.S Tetikleyici', rgb: '168, 85, 247', icon: Icons.mic },
-      { id: 'btn-open-whistle', label: 'SAR Düdüğü', title: '3000 Hz Kurtarma Düdüğü (Web Audio)', rgb: '245, 158, 11', icon: Icons.whistle },
+      { id: 'btn-open-acoustic-listener', label: 'Gürültü Eşiği', title: 'Gürültü Eşiği Uyarıcısı (deneysel)', rgb: '168, 85, 247', icon: Icons.mic },
+      { id: 'btn-open-whistle', label: 'Afet Düdüğü', title: 'Yüksek Sesli Afet Düdüğü (~3 kHz)', rgb: '245, 158, 11', icon: Icons.whistle },
       { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Başucu Sarsıntı Nöbeti (telefon sensörü, garanti değildir)', rgb: '129, 140, 248', icon: Icons.moon },
       { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Pil Tasarrufu (Karanlık OLED Modu)', rgb: '16, 185, 129', icon: Icons.battery }
     ]
   },
   {
     id: 'radars',
-    title: 'Taktik Navigasyon & Radarlar',
+    title: 'Yön Bulma & Risk Bilgisi',
     badge: 'Navigasyon & Risk',
     accentClass: 'text-sky-400',
     tools: [
-      { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Google Open Location Code & Telsiz Fonetik Grid', rgb: '16, 185, 129', icon: Icons.plusCode },
-      { id: 'btn-open-tactical-compass', label: 'Taktik Pusula', title: 'Manyetometre Kerteriz Pusulası & HUD', rgb: '16, 185, 129', icon: Icons.compass },
-      { id: 'btn-open-wildfire', label: 'Yangın Kaçış', title: 'Orman Yangını Kaçış Koridoru & Rothermel ROS', rgb: '249, 115, 22', icon: Icons.wildfire },
-      { id: 'btn-open-avalanche', label: 'Çığ & Soğuk', title: 'Çığ Riski, Yamaç Klinometresi & Kış Hipotermi Radarı', rgb: '56, 189, 248', icon: Icons.avalanche },
-      { id: 'btn-open-flood-radar', label: 'Sel Radarı', title: 'Sel ve Kentsel Su Baskını Radarı (GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
-      { id: 'btn-open-air-quality', label: 'Hava & Duman', title: 'Hava Kalitesi ve Yangın Dumanı Radarı', rgb: '245, 158, 11', icon: Icons.wind },
-      { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami ve Kıyı Tahliye Radarı', rgb: '59, 130, 246', icon: Icons.waves },
-      { id: 'btn-open-early-warning', label: 'Erken Uyarı', title: 'Sismik P/S Dalgası Yayılım Simülasyonu', rgb: '251, 113, 133', icon: Icons.siren },
-      { id: 'btn-open-seismograph', label: 'Sismograf', title: 'Canlı İvmeölçer Sismografı (100 Hz)', rgb: '52, 211, 153', icon: Icons.activity },
-      { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettim Mercalli Bildirimi', rgb: '249, 115, 22', icon: Icons.seismic }
+      { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Plus Code (konum kodu) ve Fonetik Okunuş', rgb: '16, 185, 129', icon: Icons.plusCode },
+      { id: 'btn-open-tactical-compass', label: 'Pusula', title: 'En Yakın Toplanma Alanı Pusulası', rgb: '16, 185, 129', icon: Icons.compass },
+      { id: 'btn-open-wildfire', label: 'Yangın Yönü', title: 'Orman Yangınında Rüzgara Göre Yön Rehberi', rgb: '249, 115, 22', icon: Icons.wildfire },
+      { id: 'btn-open-avalanche', label: 'Çığ & Soğuk', title: 'Çığ Eğimi ve Rüzgar Soğuğu Hesabı (tahmin)', rgb: '56, 189, 248', icon: Icons.avalanche },
+      { id: 'btn-open-flood-radar', label: 'Sel Riski', title: 'Sel Riski Tahmini (Open-Meteo / GloFAS)', rgb: '14, 165, 233', icon: Icons.cloudRain },
+      { id: 'btn-open-air-quality', label: 'Hava Kalitesi', title: 'Hava Kalitesi (model tahmini)', rgb: '245, 158, 11', icon: Icons.wind },
+      { id: 'btn-open-tsunami', label: 'Tsunami', title: 'Tsunami Bilgi ve Kıyı Tahliye Rehberi', rgb: '59, 130, 246', icon: Icons.waves },
+      { id: 'btn-open-early-warning', label: 'Deprem Bildirimi', title: 'Deprem Bildirimi (erken uyarı değildir)', rgb: '251, 113, 133', icon: Icons.siren },
+      { id: 'btn-open-seismograph', label: 'İvmeölçer', title: 'Telefon İvmeölçer Göstergesi', rgb: '52, 211, 153', icon: Icons.activity },
+      { id: 'btn-open-felt', label: 'Hissettim', title: 'Depremi Hissettim Kaydı (bu cihazda)', rgb: '249, 115, 22', icon: Icons.seismic }
     ]
   },
   {
@@ -133,15 +133,15 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Gönüllü Ağ',
     accentClass: 'text-cyan-400',
     tools: [
-      { id: 'btn-open-volunteer-dispatch', label: 'Gönüllü Kartı', title: 'Afet Gönüllü Sevk & Sahra Pasaportu (INSARAG)', rgb: '59, 130, 246', icon: Icons.volunteerBadge },
+      { id: 'btn-open-volunteer-dispatch', label: 'Gönüllü Kartı', title: 'Gönüllü Bilgi Kartı (kişisel beyan)', rgb: '59, 130, 246', icon: Icons.volunteerBadge },
       { id: 'btn-open-afetbilgi', label: 'Acil Hatlar', title: 'Acil Hatlar ve Yardım Bilgisi', rgb: '245, 158, 11', icon: Icons.soupKitchen },
       { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat — Nostr aktarıcıları üzerinden açık sohbet (internet gerekir)', rgb: '34, 211, 238', icon: Icons.messages },
       { id: 'btn-open-ptt-walkie', label: 'Sesli Not', title: 'Sesli Not Kaydı (telsiz DEĞİLDİR)', rgb: '16, 185, 129', icon: Icons.radio },
-      { id: 'btn-open-sms', label: 'Acil SMS', title: 'GPS Konumlu Acil Durum SMS ve Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
-      { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
-      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Su, WC ve Çadır Durumu Bildirimi', rgb: '245, 158, 11', icon: Icons.tent },
+      { id: 'btn-open-sms', label: 'Acil SMS', title: 'Acil Durum SMS Taslağı ve Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
+      { id: 'btn-open-emergency-radio', label: 'Telsiz Kanalları', title: 'PMR446 Telsiz Kanalları Listesi', rgb: '234, 179, 8', icon: Icons.radio },
+      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Durum Notu (doğrulanmamış)', rgb: '245, 158, 11', icon: Icons.tent },
       { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Çadırkent Malzeme ve Yardım Listesi', rgb: '245, 158, 11', icon: Icons.truck },
-      { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode }
+      { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'Güvendeyim QR Kodu (karşı cihaz okutarak alır)', rgb: '45, 212, 191', icon: Icons.qrCode }
     ]
   },
   {
@@ -150,15 +150,15 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Koruma & Hukuk',
     accentClass: 'text-emerald-400',
     tools: [
-      { id: 'btn-open-kit-timer', label: 'Çanta SKT', title: 'Deprem Çantası Malzeme & İlaç Miad Takibi', rgb: '16, 185, 129', icon: Icons.kitTimer },
-      { id: 'btn-open-sphere-ration', label: '72s Rasyon', title: 'Sphere / WHO 72 Saat Hayatta Kalma Rasyonu & Su Planlayıcı', rgb: '6, 182, 212', icon: Icons.rationBox },
-      { id: 'btn-open-collapse-zone', label: 'Enkaz Çemberi', title: 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5x H)', rgb: '239, 68, 68', icon: Icons.collapseZone },
-      { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
+      { id: 'btn-open-kit-timer', label: 'Çanta SKT', title: 'Deprem Çantası Son Kullanma Tarihi Takibi', rgb: '16, 185, 129', icon: Icons.kitTimer },
+      { id: 'btn-open-sphere-ration', label: 'Su & Erzak', title: 'Su ve Erzak Hesaplayıcı (Sphere asgari değerleri)', rgb: '6, 182, 212', icon: Icons.rationBox },
+      { id: 'btn-open-collapse-zone', label: 'Enkaz Çemberi', title: 'Hasarlı Binadan Uzak Durma Mesafesi (tahmin)', rgb: '239, 68, 68', icon: Icons.collapseZone },
+      { id: 'btn-open-damage-assessment', label: 'Hasar Notları', title: 'Kişisel Hasar Notları (resmi değildir)', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon ve Sığınak Güvenliği', rgb: '234, 179, 8', icon: Icons.radiation },
-      { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı', rgb: '14, 165, 233', icon: Icons.droplet },
+      { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Su Kaynatma ve Klorlama Rehberi', rgb: '14, 165, 233', icon: Icons.droplet },
       { id: 'btn-open-civil-vault', label: 'Evrak Kasası', title: 'Evrak Notları ve Kişisel İhtiyaç Listesi', rgb: '99, 102, 241', icon: Icons.fileText },
-      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Kan Merkezleri ve Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.health },
-      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç Pasaportu ve Eşdeğer Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
+      { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'En Yakın Kan Bağış Noktaları', rgb: '239, 68, 68', icon: Icons.health },
+      { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç Listem', rgb: '16, 185, 129', icon: Icons.pill },
       { id: 'btn-open-offline-map', label: 'Çevrimdışı Kayıt', title: 'Harita ve Verileri Çevrimdışı Kullanım İçin Kaydet', rgb: '6, 182, 212', icon: Icons.download },
       { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası Malzeme Kontrol Listesi', rgb: '167, 139, 250', icon: Icons.backpack },
       { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Psikolojik İlk Yardım ve Kutu Nefesi', rgb: '59, 130, 246', icon: Icons.brain },

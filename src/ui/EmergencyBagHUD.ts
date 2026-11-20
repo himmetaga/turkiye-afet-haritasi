@@ -75,7 +75,7 @@ export class EmergencyBagHUD {
   private shareMissingItems(): void {
     const missing = this.items.filter((i) => !i.checked);
     if (missing.length === 0) {
-      const msg = '72 Saatlik Afet Çantam %100 hazır ve eksiksiz! afet.live üzerinden sen de afet çantası hazırlığını kontrol et.';
+      const msg = 'Afet çantamın kontrol listesini tamamladım. afet.live üzerinden sen de afet çantası hazırlığını kontrol et.';
       if (navigator.share) {
         navigator.share({ title: 'Afet Çantam Hazır', text: msg }).catch(() => {});
       } else {

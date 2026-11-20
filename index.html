@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası</title>
-    <meta name="description" content="Türkiye genelinde 27.331 resmi AFAD toplanma alanı, Kandilli ve AFAD son depremler haritası, diri fay hatları, acil hastaneler, eczaneler ve afet düdüğü. İnternetsiz çevrimdışı çalışır." />
-    <meta name="keywords" content="deprem, son depremler, deprem haritası, toplanma alanları, afad toplanma alanı, afad toplanma alanı sorgulama, sel haritası, su baskını acil durum, kandilli rasathanesi, afad, nöbetçi eczane, acil servis hastaneleri, diri fay hatları, afet düdüğü, sismograf, deprem çantası, bina sismik risk, istanbul toplanma alanları, ankara toplanma alanları, izmir toplanma alanları" />
+    <meta name="description" content="AFAD açık verisinden 27.331 toplanma alanı, Kandilli ve AFAD listelerinden son depremler, hastaneler, eczaneler ve afet hazırlık araçları tek haritada. Ücretsiz, açık kaynak." />
+    <meta name="keywords" content="deprem, son depremler, deprem haritası, toplanma alanları, afad toplanma alanı, afad toplanma alanı sorgulama, sel haritası, su baskını acil durum, kandilli rasathanesi, afad, nöbetçi eczane, hastaneler, fay zonları, afet düdüğü, deprem çantası, sel riski, istanbul toplanma alanları, ankara toplanma alanları, izmir toplanma alanları" />
     <link rel="canonical" href="https://afet.live/" />
     <meta name="theme-color" content="#090a0f" />
     <meta name="color-scheme" content="dark" />
@@ -25,7 +25,7 @@
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="https://afet.live/" />
     <meta property="og:title" content="afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası" />
-    <meta property="og:description" content="Kandilli ve AFAD son depremler haritası, 27.331 resmi AFAD toplanma alanı, acil hastaneler, eczaneler ve afet düdüğü. %100 internetsiz çevrimdışı çalışır." />
+    <meta property="og:description" content="AFAD açık verisinden 27.331 toplanma alanı, Kandilli ve AFAD listelerinden son depremler, hastaneler, eczaneler ve afet hazırlık araçları tek haritada. Ücretsiz, açık kaynak." />
     <meta property="og:image" content="https://afet.live/og-banner.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
@@ -37,7 +37,7 @@
     <meta name="twitter:site" content="@afetlive" />
     <meta name="twitter:creator" content="@afetlive" />
     <meta name="twitter:title" content="afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası" />
-    <meta name="twitter:description" content="Kandilli ve AFAD son depremler haritası, 27.331 resmi toplanma alanı, acil hastaneler, eczaneler ve afet düdüğü. İnternetsiz çevrimdışı çalışır." />
+    <meta name="twitter:description" content="AFAD açık verisinden 27.331 toplanma alanı, Kandilli ve AFAD listelerinden son depremler, hastaneler, eczaneler ve afet hazırlık araçları tek haritada. Ücretsiz, açık kaynak." />
     <meta name="twitter:image" content="https://afet.live/og-banner.png" />
 
     <!-- PWA / Mobil İkonlar -->
@@ -100,7 +100,7 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "afet.live",
-        "alternateName": ["afetlive", "Türkiye Afet Haritası", "AFAD Toplanma Alanları Sorgulama", "Canlı Deprem Haritası"],
+        "alternateName": ["afetlive", "Türkiye Afet Haritası", "AFAD Toplanma Alanları Sorgulama", "Son Depremler Haritası"],
         "url": "https://afet.live/",
         "potentialAction": {
           "@type": "SearchAction",
@@ -121,58 +121,15 @@
         "name": "afet.live",
         "alternateName": "Türkiye Afet ve Deprem Atlası",
         "url": "https://afet.live/",
-        "applicationCategory": "EmergencyApplication, UtilitiesApplication",
+        "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "All (Web, iOS, Android, Windows, macOS, Linux)",
         "inLanguage": "tr-TR",
-        "description": "Türkiye genelinde 27.331 resmi AFAD toplanma alanı, son depremler haritası, diri fay hatları, acil hastaneler ve eczaneler platformu.",
+        "description": "AFAD açık verisinden 27.331 toplanma alanı, Kandilli ve AFAD listelerinden son depremler, hastaneler, eczaneler ve afet hazırlık araçları tek haritada. Ücretsiz, açık kaynak. Gönüllü bir projedir; bir kamu kurumu yayını değildir.",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
         "author": {
           "@type": "Organization",
           "name": "afet.live Açık Kaynak Topluluğu",
           "url": "https://afet.live"
-        }
-      }
-    </script>
-
-    <!-- 2. EmergencyService Schema -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "EmergencyService",
-        "name": "afet.live Acil Durum Bilgi Ağı",
-        "url": "https://afet.live/",
-        "logo": "https://afet.live/logo.svg",
-        "image": "https://afet.live/og-banner.png",
-        "telephone": "112",
-        "areaServed": {
-          "@type": "Country",
-          "name": "Turkey"
-        },
-        "description": "Deprem, sel, heyelan ve doğal afet durumlarında vatandaşların toplanma alanlarına, hastanelere ve eczanelere güvenle ulaşmasını sağlayan sivil harita."
-      }
-    </script>
-
-    <!-- 3. SpecialAnnouncement (Google Kriz ve Doğal Afet Schema'sı) -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SpecialAnnouncement",
-        "name": "Türkiye Afet, Deprem ve Sel Toplanma Rehberi",
-        "text": "Deprem veya afet anında konumunuza en yakın resmi AFAD toplanma alanlarını, acil hastaneleri ve eczaneleri çevrimdışı harita üzerinden görüntüleyin.",
-        "category": "https://schema.org/GovernmentBenefitsAnnouncement",
-        "datePosted": "2026-10-24T00:00:00+03:00",
-        "expires": "2030-12-31T23:59:59+03:00",
-        "url": "https://afet.live/",
-        "announcementLocation": {
-          "@type": "AdministrativeArea",
-          "name": "Türkiye"
-        },
-        "spatialCoverage": {
-          "@type": "Place",
-          "geo": {
-            "@type": "GeoShape",
-            "box": "35.8 25.5 42.2 44.8"
-          }
         }
       }
     </script>
@@ -188,7 +145,7 @@
             "name": "En yakın AFAD toplanma alanı nasıl bulunur?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "afet.live sitesine girdiğinizde veya konum butonuna bastığınızda, GPS konumunuza en yakın resmi AFAD toplanma alanları sokak mesafesi (metre/kilometre), tahmini yürüyüş süresi ve pusula yönüyle birlikte anında listelenir."
+              "text": "afet.live sitesine girdiğinizde veya konum butonuna bastığınızda, konumunuza en yakın toplanma alanları mesafe, tahmini yürüyüş süresi ve yön bilgisiyle listelenir. Veriler AFAD açık verisinden derlenir; afet.live bir kamu kurumu yayını değildir."
             }
           },
           {
@@ -196,15 +153,15 @@
             "name": "Deprem veya afet anında internet kesilirse afet.live çalışır mı?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Evet. afet.live çevrimdışı (offline-first) mimariyle geliştirilmiştir. Uygulamayı bir kez açtığınızda veya ana ekrana eklediğinizde; 27.331 toplanma alanı, acil hastaneler, diri fay hatları ve afet düdüğü hücresel şebeke ve internet tamamen kopsa bile kesintisiz çalışır."
+              "text": "Kısmen. Siteyi internet varken açıp verileri cihazınıza kaydederseniz toplanma alanları ve hastaneler çoğu durumda internetsiz de görüntülenebilir. Tarayıcı kayıtlı veriyi silebilir; çevrimdışı açılış kesin değildir. Harita görüntüsü, yürüyüş rotası, son depremler ve sohbet internet gerektirir."
             }
           },
           {
             "@type": "Question",
-            "name": "Afet düdüğü telefon kilitliyken çalmaya devam eder mi?",
+            "name": "Afet düdüğü ne işe yarar?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Evet. afet.live afet düdüğü 2.9 kHz insan kulağının en hassas olduğu frekansta ses üretir ve Web Audio API arka plan kilidi sayesinde telefonunuzun ekranı kapansa dahi aralıksız SOS ritminde çalmayı sürdürür."
+              "text": "Telefon hoparlöründen yaklaşık 3 kHz yüksek sesli düdük tonu çalar ve yalnızca yakınınızdakilerin dikkatini çekmeye yarar. Ekran kapanırsa ya da tarayıcı arka plana geçerse ses durabilir. Gerçek bir düdük daha güvenilirdir; ulaşabiliyorsanız 112'yi arayın."
             }
           },
           {
@@ -220,7 +177,7 @@
             "name": "Bina altından veya yakınından diri fay hattı geçip geçmediği nasıl anlaşılır?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "afet.live üzerindeki basitleştirilmiş fay zonları katmanı ve Bina Sismik Risk Kartı, bulunduğunuz koordinata en yakın büyük fay zonunun adını ve yaklaşık mesafesini gösterir. Bu katman MTA'nın resmi Diri Fay Haritası değildir; kesin bilgi için MTA'ya başvurun."
+              "text": "afet.live üzerindeki basitleştirilmiş fay zonları katmanı ve Bina Deprem Farkındalık Kartı, bulunduğunuz koordinata en yakın büyük fay zonunun adını ve yaklaşık mesafesini gösterir. Bu katman MTA'nın resmi Diri Fay Haritası değildir; kesin bilgi için MTA'ya başvurun."
             }
           },
           {
@@ -228,7 +185,7 @@
             "name": "Sel ve su baskını anında toplanma alanlarında nelere dikkat edilmelidir?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Sel ve taşkın afetlerinde dere yatakları, çukur zeminler ve alt geçitlerden uzak durulmalı; yüksek kotta yer alan, elektrik ve temiz su altyapısına sahip resmi AFAD toplanma alanlarına intikal edilmelidir."
+              "text": "Sel ve taşkında dere yataklarından, çukur zeminlerden ve alt geçitlerden uzak durun ve yüksek bir yere çıkın. Haritadaki toplanma alanlarının yükseklik ve altyapı bilgisi yoktur; Meteoroloji uyarılarını ve yetkililerin talimatını izleyin, tehlikede 112'yi arayın."
             }
           },
           {
@@ -236,7 +193,7 @@
             "name": "Apartman veya site girişi için acil toplanma afişi nasıl oluşturulur?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "afet.live menüsünden 'Apartman Afişi' seçildiğinde; binanızın etrafındaki en yakın 3 toplanma alanı, acil hastaneler, eczaneler ve dinamik QR kodu içeren A4 boyutunda yazdırılabilir afiş tek tıkla hazırlanır ve çıktısı alınabilir."
+              "text": "afet.live menüsünden 'Apartman Afişi' seçildiğinde; binanıza en yakın toplanma alanlarını, en yakın hastaneyi ve eczaneyi ve bir QR kodu içeren A4 boyutunda yazdırılabilir afiş hazırlanır. Veriler açık kaynaklardan gelir; asmadan önce yerinde doğrulayın."
             }
           }
         ]
@@ -271,91 +228,6 @@
       }
     </script>
 
-    <!-- 6. MedicalWebPage & FirstAid Schema -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "MedicalWebPage",
-        "name": "Afet İlk Yardım, Triyaj ve Sahra Müdahale Rehberi",
-        "url": "https://afet.live/?mod=rehber",
-        "about": [
-          {
-            "@type": "MedicalProcedure",
-            "name": "START Afet Sahra Triyaj Protokolü"
-          },
-          {
-            "@type": "MedicalProcedure",
-            "name": "Turnike Güvenlik Zamanlayıcısı ve Alın Damgası"
-          },
-          {
-            "@type": "MedicalProcedure",
-            "name": "Afet Psikolojik İlk Yardım (4-4-4-4 Kutu Nefesi)"
-          }
-        ],
-        "specialty": "EmergencyMedicine"
-      }
-    </script>
-  
-    <!-- 7. HowTo Schema (Google Zengin Adım Adım Arama Sonuçları) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      "name": "Deprem veya Afet Anında En Yakın AFAD Toplanma Alanı Nasıl Bulunur?",
-      "description": "afet.live kullanarak internet olmadan en yakın resmi AFAD toplanma alanını bulma ve güvenli yürüyüş rotası oluşturma adımları.",
-      "totalTime": "PT1M",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Konum Butonuna Dokunun",
-          "text": "afet.live haritasında 'Beni Bul' ikonuna dokunarak cihazınızın GPS koordinatlarını tespit edin."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "En Yakın Güvenli Noktayı Seçin",
-          "text": "Ekranda açılan en yakın toplanma alanları listesinden mesafe, su ve elektrik altyapısına göre size en uygun noktayı seçin."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Çevrimdışı Rotayı Takip Edin",
-          "text": "İnternet kesik olsa bile çalışan çevrimdışı sokak yürüyüş rotasını takip ederek güvenli toplanma sahasına intikal edin."
-        }
-      ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      "name": "Enkaz Altında Afet Düdüğü ile Arama Kurtarma Ekiplerine Nasıl Ses Duyurulur?",
-      "description": "afet.live afet düdüğü ve optik stroboskop kullanarak minimum enerjiyle ses duyurma adımları.",
-      "totalTime": "PT30S",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Afet Düdüğü Modunu Açın",
-          "text": "afet.live menüsünden veya 'afet.live/afet-dudugu' adresinden düdük modunu başlatın."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Frekansı Seçin ve Çalıştırın",
-          "text": "İnsan kulağı için 2.9 kHz veya sismik dinleme mikrofonları için 3.5 kHz Geofon modunu seçip 'Başlat' butonuna basın."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Telefonu Sert Zemine Bırakın",
-          "text": "Titreşimin beton kütlelerden dışarı yayılması için telefonunuzu sert bir zemine veya duvara temas ettirin. Ekran kapansa dahi aralıksız çalmaya devam eder."
-        }
-      ]
-    }
-    </script>
-
   </head>
   <body class="bg-obsidian-950 text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
     <!-- Premium Seamless Instant Splash Loader (Sıfır Metin Parlaması & Kusursuz Açılış) -->
@@ -379,7 +251,7 @@
       -->
       <header class="sr-only">
         <h1>afet.live — Türkiye Deprem, Sel, Afet ve Toplanma Alanları Haritası</h1>
-        <p>Türkiye genelinde 27.331 resmi AFAD toplanma alanı, Kandilli ve AFAD son depremler haritası, diri fay hatları, acil hastaneler, eczaneler ve afet düdüğü.</p>
+        <p>AFAD açık verisinden 27.331 toplanma alanı, Kandilli ve AFAD listelerinden son depremler, hastaneler, eczaneler ve afet hazırlık araçları tek haritada. Ücretsiz, açık kaynak.</p>
       </header>
 
       <div id="map-container"></div>
@@ -390,19 +262,19 @@
           <h2>Türkiye Afet ve Acil Durum Rehberi</h2>
           <p>
             afet.live; Türkiye'de meydana gelebilecek deprem, sel, yangın, heyelan ve diğer doğal afet anlarında
-            vatandaşların en yakın güvenli noktalara en kısa sürede ulaşabilmesi amacıyla geliştirilmiş sivil ve açık kaynaklı bir haritadır.
+            en yakın toplanma alanını, hastaneyi ve eczaneyi bulmayı kolaylaştırmak için gönüllülerce geliştirilen açık kaynaklı bir haritadır. Bir kamu kurumu yayını değildir; acil durumda 112'yi arayın.
           </p>
 
-          <h3>1. Kandilli ve AFAD Canlı Son Depremler Haritası</h3>
+          <h3>1. Son Depremler Haritası (Kandilli ve AFAD listeleri)</h3>
           <p>
-            Türkiye ve yakın çevresinde meydana gelen tüm sismik sarsıntılar Kandilli Rasathanesi ve AFAD veritabanları üzerinden anlık olarak harita üzerine işlenir.
-            Depremin büyüklüğü (Mw/Ml), derinliği (km), merkez üssü ve P/S dalga yayılım süreleri eş zamanlı hesaplanır.
+            Türkiye ve yakın çevresindeki son depremler Kandilli Rasathanesi ve AFAD listelerinden alınıp haritada gösterilir: yer, büyüklük ve derinlik.
+            Liste 20 saniyede bir yenilenir ve depremi sarsıntıdan sonra gösterir; bir erken uyarı sistemi değildir.
           </p>
 
-          <h3>2. 81 İl Resmi AFAD Toplanma Alanları Envanteri (27.331 Saha)</h3>
+          <h3>2. 81 İlde AFAD Toplanma Alanları (27.331 alan)</h3>
           <p>
-            e-Devlet ve AFAD resmi açık veri kaynaklarından derlenen 27.331 afet toplanma sahası; su, elektrik, çadır alanı ve jeneratör altyapı bilgileriyle sunulmaktadır.
-            Kullanıcının GPS konumuna göre en yakın toplanma noktasına sokak tabanlı yürüyüş rotası çizilir.
+            AFAD açık verisinden derlenen 27.331 toplanma alanı, adı, konumu ve (kaynakta varsa) alan büyüklüğüyle gösterilir. Su, elektrik gibi altyapı bilgisi yoktur.
+            Konumunuza en yakın alanlar listelenir; internet varken yürüyüş rotası çizilir.
           </p>
 
           <h3>3. Hastaneler ve Sağlık Tesisleri</h3>
@@ -417,17 +289,17 @@
 
           <h3>5. Sel, Taşkın ve Su Baskınında Güvenlik Önlemleri</h3>
           <p>
-            Aşırı yağış ve sel uyarılarında bodrum ve zemin katlar derhal tahliye edilmeli; dere yataklarından uzak, yüksek kotlu resmi AFAD toplanma alanlarına sığınılmalıdır.
+            Aşırı yağış ve sel uyarılarında bodrum ve zemin katlar derhal tahliye edilmeli; dere yataklarından uzak, yüksek bir yere çıkılmalıdır. Haritadaki toplanma alanlarının yükseklik bilgisi yoktur; Meteoroloji uyarılarını izleyin.
           </p>
 
-          <h3>6. Diri Fay Hatları ve Bina Sismik Risk Kartı</h3>
+          <h3>6. Fay Zonları ve Bina Deprem Farkındalık Kartı</h3>
           <p>
             Basitleştirilmiş fay zonları katmanıyla binanızın büyük fay zonlarına yaklaşık mesafesini ve bina yapım yılına göre kaba bir farkındalık tahminini görebilirsiniz. Bu bir mühendislik analizi veya MTA verisi değildir.
           </p>
 
           <h3>7. Afet Düdüğü & Aile Buluşma Planı</h3>
           <p>
-            Enkaz altında veya acil durumda 2.9 kHz yüksek frekanslı ses üreten afet düdüğü ekran kapalıyken bile çalışır.
+            Afet düdüğü telefon hoparlöründen yaklaşık 3 kHz yüksek sesli düdük tonu çalar; yalnızca yakındakiler duyar ve ekran kapanırsa ses durabilir.
             Ayrıca bina girişi için A4 Apartman Afişi ve sosyal medya için Aile Afet Buluşma Kartı hazırlanabilir.
           </p>
 
@@ -520,34 +392,36 @@
           </nav>
 
           <!-- Araç ve Modül Bağlantıları -->
-          <h3>Acil Durum Araçları</h3>
+          <h3>Afet Hazırlık Araçları</h3>
           <ul>
-            <li><a href="/afet-dudugu">Afet Düdüğü (2.9 kHz SOS Düdüğü ve LED Flaşör)</a></li>
-            <li><a href="/kilit-ekrani">Kilit Ekranı Tıbbi Kimlik ve Kan Grubu Duvar Kağıdı (ICE)</a></li>
-            <li><a href="/?mod=rehber">Afet, Enkaz ve İlk Yardım Hayatta Kalma Rehberi (Crush Protokolü)</a></li>
-            <li><a href="/?mod=sms">Acil Durum SMS ve Hızlı Arama Hatları (112, 122 AFAD, 187, 186)</a></li>
-            <li><a href="/?mod=gece-nobeti">Gece Sismograf Nöbeti (Başucu Deprem Alarmı)</a></li>
-            <li><a href="/bina-risk">Bina Sismik Risk Kartı ve Diri Fay Analizi</a></li>
-            <li><a href="/apartman-afisi">Apartman Girişi ve Asansör Acil Durum Afişi</a></li>
-            <li><a href="/aile-afet-plani">Aile İçin Afet Buluşma Kartı</a></li>
-            <li><a href="/sel-radari">Sel ve Taşkın Erken Uyarı Radarı (GloFAS Nehir Debisi ve Anlık Yağış)</a></li>
-            <li><a href="/afet-telsizi">Afet Telsiz Frekansları ve Acil Durum Rehberi (TRAC & PMR 446)</a></li>
-            <li><a href="/?mod=tatbikat">Deprem Tatbikat ve Dalga Yayılım Simülatörü</a></li>
-            <li><a href="/deprem-cantasi">Acil Durum ve Deprem Çantası Malzeme Kontrol Listesi</a></li>
-            <li><a href="/?mod=qr">Çevrimdışı Güvendeyim QR Kod Paketi</a></li>
-            <li><a href="/turnike-zamanlayici">Turnike Güvenlik Zamanlayıcısı ve Alın Damgası (120 Dk)</a></li>
-            <li><a href="/ilac-pasaportu">Afet İlaç ve Tedavi Pasaportu (Sahra Eşdeğer Etken Madde Rehberi)</a></li>
-            <li><a href="/?mod=tehlike-avi">Ev İçi Deprem Tehlike Avı ve Güvenlik Skoru Denetimi</a></li>
-            <li><a href="/?mod=ihtiyac">Afet Sahra İhtiyaç ve Malzeme Dağıtım Masası (P2P Çadırkent Koordinasyonu)</a></li>
-            <li><a href="/?mod=pati">Pati ve Evcil Hayvan Afet Güvenliği, Çantası ve HayTAP Tahliye Rehberi</a></li>
-            <li><a href="/?mod=isinma-guvenligi">Çadırkent Kış Isınma Güvenliği ve Karbonmonoksit (CO) Zehirlenme Testi</a></li>
-            <li><a href="/?mod=pil-tasarrufu">Ultra Pil Tasarrufu (72 Saat Hayatta Kalma OLED Siyah Ekran Modu)</a></li>
-            <li><a href="/psikolojik-yardim">Psikolojik İlk Yardım ve Kutu Nefesi (4-4-4-4 Panik & Şok Yönetimi)</a></li>
-            <li><a href="/?mod=enkaz-dinleme">Akustik Enkaz Dinleme Radarı (Mikrofon Tabanlı Ses Algılama & Otomatik S.O.S)</a></li>
-            <li><a href="/?mod=harita-indir">Çevrimdışı Vektör Harita Paketleri (İnternetsiz İl ve Bölge Haritası İndir)</a></li>
-            <li><a href="/?mod=sahra-durumu">Sahra ve Çadırkent Altyapı Karne Masası (Sıcak Yemek, Su, WC, Çadır & Enerji)</a></li>
-            <li><a href="/?mod=bebek-besleme">Afet Bebek ve Çocuk Besleme Rehberi (UNICEF & DSÖ Güvenli Bardakla Besleme)</a></li>
-            <li><a href="/afet-telsizi">İnternetsiz Bas-Konuş Afet Telsizi ve Enkaz Sesli S.O.S Döngüsü (PMR 446 & P2P Telsiz)</a></li>
+            <li><a href="/afet-dudugu">Afet Düdüğü (telefondan yüksek sesli düdük tonu)</a></li>
+            <li><a href="/kilit-ekrani">Kilit Ekranı Tıbbi Kimlik ve Acil Kişi Duvar Kağıdı (ICE)</a></li>
+            <li><a href="/?mod=rehber">Afet ve İlk Yardım Genel Bilgi Rehberi</a></li>
+            <li><a href="/?mod=sms">Acil Durum SMS Taslağı ve Acil Hatlar (112, Kızılay 168)</a></li>
+            <li><a href="/?mod=gece-nobeti">Gece Nöbeti (telefon sarsıntı alarmı)</a></li>
+            <li><a href="/bina-risk">Bina Deprem Farkındalık Kartı ve Fay Zonu Mesafesi</a></li>
+            <li><a href="/apartman-afisi">Apartman Girişi Acil Durum Afişi (A4)</a></li>
+            <li><a href="/aile-afet-plani">Aile Afet Buluşma Kartı</a></li>
+            <li><a href="/sel-radari">Sel ve Taşkın Riski Tahmini (Open-Meteo yağış ve GloFAS nehir debisi)</a></li>
+            <li><a href="/tsunami-radari">Tsunami Bilgi ve Kıyı Tahliye Rehberi</a></li>
+            <li><a href="/afet-telsizi">PMR446 Telsiz Kanalları ve Frekans Listesi</a></li>
+            <li><a href="/?mod=tatbikat">Deprem Tatbikat Simülatörü</a></li>
+            <li><a href="/deprem-cantasi">Deprem Çantası Malzeme Kontrol Listesi</a></li>
+            <li><a href="/canta-skt">Deprem Çantası Son Kullanma Tarihi Takibi</a></li>
+            <li><a href="/?mod=qr">Güvendeyim QR Durum Paketi</a></li>
+            <li><a href="/turnike-zamanlayici">Turnike Süre Takibi</a></li>
+            <li><a href="/ilac-pasaportu">Afet İlaç Listem</a></li>
+            <li><a href="/?mod=tehlike-avi">Ev İçi Deprem Tehlike Avı (eşya sabitleme)</a></li>
+            <li><a href="/?mod=ihtiyac">Afet İhtiyaç ve Yardım Listesi (herkese açık sohbette paylaşılır, kimse teyit etmez)</a></li>
+            <li><a href="/?mod=pati">Evcil Hayvan Afet Hazırlık Rehberi</a></li>
+            <li><a href="/?mod=isinma-guvenligi">Çadırda Isınma Güvenliği ve Karbonmonoksit Belirti Listesi</a></li>
+            <li><a href="/?mod=pil-tasarrufu">Pil Tasarrufu Modu (karanlık ekran)</a></li>
+            <li><a href="/psikolojik-yardim">Psikolojik İlk Yardım ve Kutu Nefesi (4-4-4-4)</a></li>
+            <li><a href="/?mod=enkaz-dinleme">Gürültü Eşiği Uyarıcısı (deneysel)</a></li>
+            <li><a href="/?mod=harita-indir">Çevrimdışı Kullanım İçin Veri Kaydet</a></li>
+            <li><a href="/?mod=sahra-durumu">Toplanma Alanı Durum Notu (gönüllü bildirimi, teyitsiz)</a></li>
+            <li><a href="/?mod=bebek-besleme">Afet Döneminde Bebek Besleme Rehberi (genel bilgi)</a></li>
+            <li><a href="/?mod=ptt">Sesli Not Kaydı (telsiz değildir)</a></li>
           </ul>
         </article>
       </section>

@@ -154,9 +154,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'data/fault-lines.geojson', 'data/summary.json'],
       manifest: {
         id: '/',
-        name: 'afet.live — Türkiye 3D Afet ve Deprem Atlası',
+        name: 'afet.live — Türkiye Afet ve Toplanma Alanları Haritası',
         short_name: 'afet.live',
-        description: '3B Harita, Deprem Erken Uyarı, Gece Sismograf Nöbeti, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası',
+        description: 'Toplanma alanları, hastaneler, eczaneler ve son depremler haritası; afet hazırlık araçları. Gönüllü açık kaynak proje, resmi kurum yayını değildir.',
         lang: 'tr-TR',
         dir: 'ltr',
         categories: ['utilities', 'navigation', 'weather'],
@@ -167,9 +167,9 @@ export default defineConfig({
         start_url: '/?source=pwa',
         scope: '/',
         shortcuts: [
-          { name: 'Gece Sismograf Nöbeti', short_name: 'Gece Nöbeti', url: '/?mod=gece-nobeti', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
-          { name: 'Bina Sismik Risk Kartı', short_name: 'Bina Riski', url: '/?mod=bina-risk', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
-          { name: 'Çevrimdışı QR Durum Paketi', short_name: 'QR Durum', url: '/?mod=qr', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'Gece Nöbeti (sarsıntı alarmı)', short_name: 'Gece Nöbeti', url: '/?mod=gece-nobeti', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'Bina Deprem Farkındalık Kartı', short_name: 'Bina Kartı', url: '/?mod=bina-risk', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
+          { name: 'QR Durum Paketi', short_name: 'QR Durum', url: '/?mod=qr', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] },
           { name: 'Afet Düdüğü', short_name: 'Düdük', url: '/?mod=duduk', icons: [{ src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }] }
         ],
         icons: [

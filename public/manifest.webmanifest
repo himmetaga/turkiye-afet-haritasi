@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "afet.live — Türkiye 3D Afet ve Deprem Atlası",
+  "name": "afet.live — Türkiye Afet ve Toplanma Alanları Haritası",
   "short_name": "afet.live",
-  "description": "3B Harita, Deprem Erken Uyarı, Gece Sismograf Nöbeti, En Yakın Toplanma Alanları ve Çevrimdışı Acil Durum Atlası",
+  "description": "Toplanma alanları, hastaneler, eczaneler ve son depremler haritası; afet hazırlık araçları. Gönüllü açık kaynak proje, resmi kurum yayını değildir.",
   "lang": "tr-TR",
   "dir": "ltr",
   "categories": ["utilities", "navigation", "weather"],
@@ -15,11 +15,11 @@
   "theme_color": "#090a0f",
   "orientation": "portrait-primary",
   "shortcuts": [
-    { "name": "3000 Hz Kurtarma Düdüğü", "short_name": "SAR Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "BitChat P2P Kriz Odası", "short_name": "BitChat", "url": "/?mod=kriz", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "CPR Kalp Masajı Koçu", "short_name": "CPR Koçu", "url": "/?mod=cpr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Sel & Taşkın Radarı", "short_name": "Sel Radarı", "url": "/?mod=sel", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
-    { "name": "Gece Sismograf Nöbeti", "short_name": "Gece Nöbeti", "url": "/?mod=gece-nobeti", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
+    { "name": "Afet Düdüğü", "short_name": "Düdük", "url": "/?mod=duduk", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Afet Sohbeti (herkese açık)", "short_name": "Sohbet", "url": "/?mod=kriz", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Kalp Masajı Metronomu", "short_name": "CPR", "url": "/?mod=cpr", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Sel Riski Tahmini", "short_name": "Sel Riski", "url": "/?mod=sel", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] },
+    { "name": "Gece Nöbeti (sarsıntı alarmı)", "short_name": "Gece Nöbeti", "url": "/?mod=gece-nobeti", "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }] }
   ],
   "icons": [
     {
