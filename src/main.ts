@@ -16,7 +16,8 @@ import { LayerControlHUD } from './ui/LayerControlHUD';
 import { RouteNavigationHUD } from './ui/RouteNavigationHUD';
 import { filterPharmaciesBySchedule } from './utils/pharmacySchedule';
 import { livePharmacyService } from './services/livePharmacyService';
-import { sanitizeRecordStrings } from './utils/safeText';
+import { sanitizeRecordStrings, sanitizeExternalText } from './utils/safeText';
+import { setLocationSource, hasUsableLocation, getLocationSource, type LocationSource } from './utils/locationState';
 import {
   saveAssemblyPointsToDB,
   getAssemblyPointsFromDB,
@@ -82,7 +83,9 @@ import { bitChatService } from './services/bitChatService';
 import { parseDeepLink, ParsedDeepLink } from './utils/deepLink';
 import { multiHazardEngine } from './services/multiHazardEngine';
 
-const CACHED_COORDS_KEY = 'turkiye_afet_user_coords';
+// v2: yalnızca cihazın kendi GPS ölçümü saklanır. Eski anahtara IP tahmini ve paylaşılan
+// bağlantı konumları da yazıldığı için o kayıtlar güvenilir değildir ve okunmaz.
+const CACHED_COORDS_KEY = 'turkiye_afet_gps_fix_v2';
 
 class DisasterAtlasApp {
   private mapEngine: MapEngine;
@@ -171,18 +174,22 @@ class DisasterAtlasApp {
       const saved = localStorage.getItem(CACHED_COORDS_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 2 && !isNaN(parsed[0]) && !isNaN(parsed[1])) {
-          if (parsed[0] >= 25 && parsed[0] <= 45 && parsed[1] >= 35 && parsed[1] <= 43) {
-            this.userCoords = [parsed[0], parsed[1]];
+        const c = parsed?.coords;
+        if (Array.isArray(c) && c.length === 2 && Number.isFinite(c[0]) && Number.isFinite(c[1])) {
+          if (c[0] >= 25 && c[0] <= 45 && c[1] >= 35 && c[1] <= 43) {
+            this.userCoords = [c[0], c[1]];
             this.hasCachedLocation = true;
+            setLocationSource('cached', Number.isFinite(parsed.t) ? parsed.t : null);
           }
         }
       }
     } catch {}
 
     if (this.deepLink.coords) {
+      // Paylaşılan bağlantıdaki nokta haritayı oraya götürür ama kullanıcının konumu sayılmaz.
       this.userCoords = this.deepLink.coords;
       this.hasCachedLocation = true;
+      setLocationSource('shared');
     }
   }
 
@@ -201,15 +208,15 @@ class DisasterAtlasApp {
     } else if (this.deepLink.mod) {
       const titles: Record<string, string> = {
         'duduk': 'Afet Düdüğü (2.9 kHz SOS) — afet.live',
-        'gece-nobeti': 'Gece Sismograf Nöbeti (Başucu Deprem Alarmı) — afet.live',
+        'gece-nobeti': 'Gece Nöbeti (telefon sarsıntı alarmı) — afet.live',
         'bina-risk': 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
         'afis': 'Apartman Acil Durum Afişi Üretici (A4 Çıktı) — afet.live',
         'kart': 'Aile Afet Buluşma Planı Kartı — afet.live',
         'tatbikat': 'Deprem Tatbikat Simülatörü — afet.live',
         'canta': 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
         'qr': 'Çevrimdışı Güvendeyim QR Durum Paketi — afet.live',
-        'sismograf': 'Canlı Sismograf ve İvmeölçer — afet.live',
-        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live'
+        'sismograf': 'Telefon İvmeölçer Göstergesi — afet.live',
+        'kriz': 'Afet Sohbet Kanalı — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
@@ -243,7 +250,7 @@ class DisasterAtlasApp {
       onToggleLayers: () => this.layerHUD.toggle(),
       onSelectProvince: (prov) => this.handleProvinceSelect(prov),
       onToggleEarlyWarning: () => {
-        this.notificationToast.show('Sismik erken uyarı ağı devrede.', false);
+        this.notificationToast.show('Deprem listesi 20 saniyede bir yenilenir. Bu bir erken uyarı sistemi değildir.', false);
       },
       onToggleNightWatch: () => this.nightWatchHUD.show(),
       onToggleSeismograph: () => this.seismographModal.show(),
@@ -277,7 +284,10 @@ class DisasterAtlasApp {
       onToggleCampStatus: () => this.campStatusModal.show(),
       onToggleInfantFeeding: () => this.infantFeedingModal.show(),
       onTogglePTTWalkie: () => this.pttWalkieModal.show(),
-      onToggleTacticalCompass: () => this.tacticalCompassModal.show(),
+      onToggleTacticalCompass: () => {
+        this.updateCompassTarget();
+        this.tacticalCompassModal.show();
+      },
       onToggleSARBeacon: () => this.sarBeaconModal.show(),
       onToggleCPRCoach: () => this.cprCoachModal.show(),
       onToggleDamageAssessment: () => this.damageAssessmentModal.show(),
@@ -344,10 +354,7 @@ class DisasterAtlasApp {
     });
     this.emergencyRadioModal = new EmergencyRadioModal(appEl);
     this.triageModal = new TriageModal(appEl, (text) => {
-      this.crisisHUD.show();
-      bitChatService.broadcastMessage(text, 'sos', {
-        coordinates: this.userCoords
-      });
+      return this.broadcastToChat(text, 'sos');
     });
     this.airQualityModal = new AirQualityRadarModal(appEl, this.userCoords);
     this.tsunamiModal = new TsunamiRadarModal(appEl, this.userCoords, this.assemblyPoints, (point) => {
@@ -360,34 +367,22 @@ class DisasterAtlasApp {
       this.facilities,
       (point) => this.focusPoint(point),
       (text) => {
-        this.crisisHUD.show();
-        bitChatService.broadcastMessage(text, 'chat', {
-          coordinates: this.userCoords
-        });
+        return this.broadcastToChat(text, 'chat');
       }
     );
 
     this.tourniquetModal = new TourniquetTimerModal(appEl, (text) => {
-      this.crisisHUD.show();
-      bitChatService.broadcastMessage(text, 'sos', {
-        coordinates: this.userCoords
-      });
+      return this.broadcastToChat(text, 'sos');
     });
 
     this.medPassportModal = new EmergencyPrescriptionModal(appEl, (text) => {
-      this.crisisHUD.show();
-      bitChatService.broadcastMessage(text, 'chat', {
-        coordinates: this.userCoords
-      });
+      return this.broadcastToChat(text, 'chat');
     });
 
     this.hazardHuntModal = new HomeHazardHuntModal(appEl);
 
     this.fieldAidModal = new FieldAidCoordinationModal(appEl, (text) => {
-      this.crisisHUD.show();
-      bitChatService.broadcastMessage(text, 'chat', {
-        coordinates: this.userCoords
-      });
+      return this.broadcastToChat(text, 'chat');
     });
 
     this.petSafetyModal = new PetDisasterSafetyModal(appEl);
@@ -405,13 +400,10 @@ class DisasterAtlasApp {
       this.whistleModal.show();
     });
 
-    this.offlineMapModal = new OfflineMapPackModal(appEl);
+    this.offlineMapModal = new OfflineMapPackModal(appEl, () => (hasUsableLocation() ? this.userCoords : null));
 
     this.campStatusModal = new FieldCampStatusModal(appEl, (text) => {
-      this.crisisHUD.show();
-      bitChatService.broadcastMessage(text, 'chat', {
-        coordinates: this.userCoords
-      });
+      return this.broadcastToChat(text, 'chat');
     });
 
     this.infantFeedingModal = new InfantFeedingSafetyModal(appEl);
@@ -774,6 +766,8 @@ class DisasterAtlasApp {
 
   private evaluateAutomaticEarlyWarning(earthquakes: Earthquake[]): void {
     if (!earthquakes || earthquakes.length === 0) return;
+    // Gerçek konum bilinmiyorsa mesafe hesabı anlamsızdır (varsayılan harita merkezine göre alarm çalınmaz).
+    if (getLocationSource() === 'none' || getLocationSource() === 'shared') return;
     const now = Date.now();
 
     for (const eq of earthquakes) {
@@ -791,15 +785,14 @@ class DisasterAtlasApp {
       const hypoDist = Math.sqrt(distKm * distKm + (eq.depth || 10) ** 2);
       const sTravelTime = hypoDist / 3.8; // S-wave velocity ~3.8 km/s
 
-      // If S-wave has not arrived yet, or arrived less than 20 seconds ago
+      // Deprem listeleri olayı genellikle sarsıntıdan SONRA yayınlar. Alarm yalnızca dalganın
+      // henüz ulaşmamış olabileceği ve depremin kullanıcıya hissedilecek kadar yakın olduğu durumda çalar.
       const sWaveEta = sTravelTime - ageSeconds;
-      if (sWaveEta > -20) {
-        const isDangerous = eq.mag >= 4.5 || (eq.mag >= 3.8 && distKm <= 120);
-        if (isDangerous) {
-          this.alertedEarthquakeIds.add(eq.id);
-          earlyWarningEngine.startWarning(eq, eq.timestamp);
-          break;
-        }
+      const feltRadiusKm = eq.mag >= 6.5 ? 500 : eq.mag >= 5.5 ? 300 : eq.mag >= 4.5 ? 150 : eq.mag >= 3.8 ? 60 : 0;
+      if (sWaveEta > 0 && distKm <= feltRadiusKm) {
+        this.alertedEarthquakeIds.add(eq.id);
+        earlyWarningEngine.startWarning(eq, eq.timestamp);
+        break;
       }
     }
   }
@@ -944,10 +937,18 @@ class DisasterAtlasApp {
     this.mapEngine.setEmergencyFacilities(facs, this.onlyDutyPharmacies);
   }
 
-  private applyVerifiedLocation(coords: [number, number], source: string, flyTo = true): void {
-    try {
-      localStorage.setItem(CACHED_COORDS_KEY, JSON.stringify(coords));
-    } catch {}
+  private applyVerifiedLocation(
+    coords: [number, number],
+    source: string,
+    flyTo = true,
+    locSource: LocationSource = 'gps'
+  ): void {
+    setLocationSource(locSource);
+    if (locSource === 'gps') {
+      try {
+        localStorage.setItem(CACHED_COORDS_KEY, JSON.stringify({ coords, t: Date.now() }));
+      } catch {}
+    }
 
     const distM = haversineDistanceMeters(this.userCoords, coords);
     const currentZoom = this.mapEngine.getMapInstance()?.getZoom() || 6;
@@ -962,7 +963,7 @@ class DisasterAtlasApp {
     this.qrPackModal?.setUserCoords(coords);
     this.iceGenerator?.setData(coords, this.assemblyPoints);
     this.emergencySMS?.setCoords(coords);
-    this.tacticalCompassModal?.setCoords(coords);
+    this.updateCompassTarget();
     this.updateBuildingRiskContext();
 
     this.mapEngine.setUserLocation(coords, 0);
@@ -972,6 +973,33 @@ class DisasterAtlasApp {
     this.updateUserContextCalculations(source ? `${source} · En Yakın Noktalar` : 'En Yakın Güvenlik Noktaları');
     this.syncOptimizedMapData();
     this.refreshLiveDutyPharmacies();
+  }
+
+  /** Pusulaya gerçek en yakın toplanma alanını hedef verir; yoksa hedefsiz kalır. */
+  private updateCompassTarget(): void {
+    if (!this.tacticalCompassModal) return;
+    // Konum hiç bilinmiyorsa "en yakın alan" varsayılan harita merkezine göre olurdu; hedef verilmez.
+    const nearest =
+      getLocationSource() !== 'none' && this.assemblyPoints.length > 0
+        ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1)
+        : [];
+    if (nearest.length > 0) {
+      this.tacticalCompassModal.setCoords(this.userCoords, nearest[0].point.coordinates, nearest[0].point.name);
+    } else {
+      this.tacticalCompassModal.setCoords(this.userCoords, null);
+    }
+  }
+
+  /**
+   * Araç ekranlarından sohbet kanalına mesaj gönderir. Koordinat yalnızca gerçek
+   * bir GPS ölçümü varsa eklenir. Sonuç çağırana döner; ekran "gönderildi" demeden
+   * önce bunu bekler.
+   */
+  private broadcastToChat(text: string, kind: 'sos' | 'chat'): Promise<unknown> {
+    this.crisisHUD.show();
+    return Promise.resolve(
+      bitChatService.broadcastMessage(text, kind, hasUsableLocation() ? { coordinates: this.userCoords } : {})
+    );
   }
 
   private updateBuildingRiskContext(): void {
@@ -987,7 +1015,7 @@ class DisasterAtlasApp {
 
   private handleDeepLink(): void {
     if (this.deepLink.coords) {
-      this.applyVerifiedLocation(this.deepLink.coords, 'Paylaşılan Konum', true);
+      this.applyVerifiedLocation(this.deepLink.coords, 'Paylaşılan Konum', true, 'shared');
       if (this.deepLink.zoom) {
         this.mapEngine.flyTo(this.deepLink.coords, this.deepLink.zoom, 52, -15);
       }
@@ -1009,47 +1037,47 @@ class DisasterAtlasApp {
     if (this.deepLink.mod) {
       const titles: Record<string, string> = {
         'duduk': 'Afet Düdüğü (2.9 kHz SOS) — afet.live',
-        'gece-nobeti': 'Gece Sismograf Nöbeti (Başucu Deprem Alarmı) — afet.live',
+        'gece-nobeti': 'Gece Nöbeti (telefon sarsıntı alarmı) — afet.live',
         'bina-risk': 'Bina Sismik Risk Kartı ve Diri Fay Analizi — afet.live',
         'afis': 'Apartman Acil Durum Afişi Üretici (A4 Çıktı) — afet.live',
         'kart': 'Aile Afet Buluşma Planı Kartı — afet.live',
         'tatbikat': 'Deprem Tatbikat Simülatörü — afet.live',
         'canta': 'Deprem Çantası Malzeme Kontrol Listesi — afet.live',
         'qr': 'Çevrimdışı Güvendeyim QR Durum Paketi — afet.live',
-        'sismograf': 'Canlı Sismograf ve İvmeölçer — afet.live',
-        'kriz': 'Afet Kriz Koordinasyon Masası — afet.live',
+        'sismograf': 'Telefon İvmeölçer Göstergesi — afet.live',
+        'kriz': 'Afet Sohbet Kanalı — afet.live',
         'ice': 'Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE) — afet.live',
         'kilit-ekrani': 'Kilit Ekranı Tıbbi Kimlik & Duvar Kağıdı (ICE) — afet.live',
         'rehber': 'Afet Hayatta Kalma & İlk Yardım Rehberi — afet.live',
         'ilk-yardim': 'Afet Hayatta Kalma & İlk Yardım Rehberi — afet.live',
         'sms': 'Acil Durum SMS ve Hızlı İhbar Hatları — afet.live',
         'acil-sms': 'Acil Durum SMS ve Hızlı İhbar Hatları — afet.live',
-        'turnike': 'Turnike Güvenlik Zamanlayıcısı (120 Dk) — afet.live',
-        'ilac': 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Rehberi — afet.live',
-        'recete': 'Afet İlaç & Tedavi Pasaportu, Eşdeğer Rehberi — afet.live',
-        'tehlike-avi': 'Ev İçi Deprem Tehlike Avı & Güvenlik Puanı — afet.live',
-        'ihtiyac': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
-        'yardim': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
-        'sahra-yardim': 'Afet Sahra İhtiyaç ve Yardım Masası (P2P Dağıtım) — afet.live',
+        'turnike': 'Turnike Süre Takibi — afet.live',
+        'ilac': 'Afet İlaç Listem — afet.live',
+        'recete': 'Afet İlaç Listem — afet.live',
+        'tehlike-avi': 'Ev İçi Deprem Tehlike Avı (eşya sabitleme) — afet.live',
+        'ihtiyac': 'Afet İhtiyaç ve Yardım Listesi — afet.live',
+        'yardim': 'Afet İhtiyaç ve Yardım Listesi — afet.live',
+        'sahra-yardim': 'Afet İhtiyaç ve Yardım Listesi — afet.live',
         'pati': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
         'evcil-hayvan': 'Pati & Evcil Hayvan Afet Güvenlik Rehberi — afet.live',
         'isinma-guvenligi': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live',
         'soba': 'Çadır Isınma ve Karbonmonoksit Güvenliği — afet.live',
-        'pil-tasarrufu': 'Ultra Pil Tasarrufu (72 Saat OLED Modu) — afet.live',
-        'batarya': 'Ultra Pil Tasarrufu (72 Saat OLED Modu) — afet.live',
+        'pil-tasarrufu': 'Pil Tasarrufu Modu (karanlık ekran) — afet.live',
+        'batarya': 'Pil Tasarrufu Modu (karanlık ekran) — afet.live',
         'psikolojik-yardim': 'Afet Psikolojik İlk Yardım & Kutu Nefesi — afet.live',
         'nefes': 'Afet Psikolojik İlk Yardım & Kutu Nefesi — afet.live',
-        'enkaz-dinleme': 'Akustik Enkaz Dinleme ve Otomatik S.O.S — afet.live',
-        'akustik-radar': 'Akustik Enkaz Dinleme ve Otomatik S.O.S — afet.live',
-        'harita-indir': 'Çevrimdışı Harita İndir & Önbellek — afet.live',
-        'cevrimdisi-harita': 'Çevrimdışı Harita İndir & Önbellek — afet.live',
+        'enkaz-dinleme': 'Gürültü Eşiği Uyarıcısı (deneysel) — afet.live',
+        'akustik-radar': 'Gürültü Eşiği Uyarıcısı (deneysel) — afet.live',
+        'harita-indir': 'Çevrimdışı Kullanım İçin Veri Kaydet — afet.live',
+        'cevrimdisi-harita': 'Çevrimdışı Kullanım İçin Veri Kaydet — afet.live',
         'sahra-durumu': 'Toplanma Alanı Sahra Karnesi — afet.live',
         'altyapi': 'Toplanma Alanı Sahra Karnesi — afet.live',
         'bebek-besleme': 'Afet Dönemi Bebek Besleme & Relaktasyon — afet.live',
-        'telsiz-konus': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live',
-        'ptt': 'İnternetsiz Bas-Konuş Telsiz & Sesli S.O.S — afet.live',
-        'yangin-kacis': 'Orman Yangını Kaçış Koridoru & Rüzgar Vektörü — afet.live',
-        'enkaz-cemberi': 'Hasarlı Bina Yıkılma Güvenlik Çemberi (1.5x H) — afet.live'
+        'telsiz-konus': 'Sesli Not Kaydı (telsiz değildir) — afet.live',
+        'ptt': 'Sesli Not Kaydı (telsiz değildir) — afet.live',
+        'yangin-kacis': 'Orman Yangınında Rüzgara Göre Yön Rehberi — afet.live',
+        'enkaz-cemberi': 'Hasarlı Binadan Uzak Durma Mesafesi (tahmin) — afet.live'
       };
       if (titles[this.deepLink.mod]) {
         document.title = titles[this.deepLink.mod];
@@ -1165,11 +1193,8 @@ class DisasterAtlasApp {
           this.bagHUD.show();
           break;
         case 'erken-uyari':
-          if (this.earthquakes.length > 0) {
-            earlyWarningEngine.startWarning(this.earthquakes[0]);
-          } else {
-            this.notificationToast.show('Sismik erken uyarı ağı devrede.', false);
-          }
+          // Bağlantıyla alarm ÇALDIRILMAZ: eski bir depremi canlı uyarı gibi oynatmak paniğe yol açar.
+          this.notificationToast.show('Deprem listesi 20 saniyede bir yenilenir. Bu bir erken uyarı sistemi değildir.', false);
           break;
         case 'tatbikat':
           this.drillSimulator.show();
@@ -1182,6 +1207,7 @@ class DisasterAtlasApp {
           break;
         case 'kompas':
         case 'pusula':
+          this.updateCompassTarget();
           this.tacticalCompassModal.show();
           break;
         case 'sar-flasor':
@@ -1299,9 +1325,10 @@ class DisasterAtlasApp {
               const data = await res.json();
               if (data.latitude && data.longitude) {
                 const ipCoords: [number, number] = [Number(data.longitude), Number(data.latitude)];
-                this.applyVerifiedLocation(ipCoords, `${data.city || 'Bölgeniz'}`, flyToUser);
+                const ipCity = sanitizeExternalText(String(data.city || '')).slice(0, 40);
+                this.applyVerifiedLocation(ipCoords, `${ipCity || 'Bölgeniz'} (yaklaşık)`, flyToUser, 'ip');
                 if (notify) {
-                  this.notificationToast.show(`Konum: ${data.city || 'Türkiye'}`, false);
+                  this.notificationToast.show(`Yaklaşık konum: ${ipCity || 'Türkiye'} (GPS izni yok)`, true);
                 }
                 return;
               }
@@ -1676,20 +1703,21 @@ class DisasterAtlasApp {
 
   private openSOSModal(): void {
     let nearestPoint: AssemblyPoint | null = null;
-    if (this.assemblyPoints.length > 0) {
+    // Gerçek konum yoksa "en yakın alan" varsayılan harita merkezine göre olurdu; mesaja yazılmaz.
+    if (hasUsableLocation() && this.assemblyPoints.length > 0) {
       const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
       if (nearest.length > 0) nearestPoint = nearest[0].point;
     }
 
     this.sosModal.show({
-      userCoords: this.userCoords,
+      userCoords: hasUsableLocation() ? this.userCoords : null,
       nearestPoint
     });
   }
 
   private openFamilyModal(): void {
     let nearestPoint: AssemblyPoint | null = null;
-    if (this.assemblyPoints.length > 0) {
+    if (hasUsableLocation() && this.assemblyPoints.length > 0) {
       const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
       if (nearest.length > 0) nearestPoint = nearest[0].point;
     }

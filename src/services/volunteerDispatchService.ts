@@ -1,12 +1,9 @@
 /**
-/**
- * Disaster Volunteer Dispatch & Field Accreditation Service
- * (Afet Gönüllü Sevk, Görev Dağılımı ve Sahra Kimlik Kartı Motoru)
+ * Gönüllü bilgi kartı (kişisel beyan).
  *
- * Standartlar:
- * 1. AFAD Gönüllülük Sistemi (Temel, Destek ve Uzman Seviye)
- * 2. INSARAG Uluslararası Arama Kurtarma Saha Koordinasyon Standartları
- * 3. Kriz Masası Çevrimdışı Güvenlik Kontrolü ve Yetenek Eşleştirme
+ * Kullanıcının kendi yazdığı bilgileri cihazda saklar ve bunlardan bir metin /
+ * QR üretir. Hiçbir şey doğrulanmaz, hiçbir kuruma gönderilmez, sevk ya da
+ * akreditasyon yapılmaz. Kart resmi bir kimlik değildir.
  */
 
 export type VolunteerSkillRole =
@@ -129,7 +126,32 @@ export class VolunteerDispatchService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed.fullName) return parsed;
+        if (parsed && typeof parsed === 'object' && typeof parsed.fullName === 'string' && parsed.fullName) {
+          const str = (v: unknown, max = 120) => (typeof v === 'string' ? v.slice(0, max) : '');
+          const role = (Object.keys(VOLUNTEER_ROLES) as VolunteerSkillRole[]).includes(parsed.primaryRole)
+            ? (parsed.primaryRole as VolunteerSkillRole)
+            : 'GENERAL_SUPPORT';
+          const experienceLevel = ['BEGINNER', 'INTERMEDIATE', 'CERTIFIED_EXPERT'].includes(parsed.experienceLevel)
+            ? parsed.experienceLevel
+            : 'BEGINNER';
+          const availability = ['READY_NOW', 'WITHIN_24H', 'LOCAL_ONLY'].includes(parsed.availability)
+            ? parsed.availability
+            : 'READY_NOW';
+          return {
+            fullName: str(parsed.fullName),
+            bloodGroup: str(parsed.bloodGroup, 20) || 'Bilinmiyor',
+            phone: str(parsed.phone, 30),
+            city: str(parsed.city),
+            nationalIdLast4: str(parsed.nationalIdLast4, 4),
+            primaryRole: role,
+            experienceLevel,
+            certifications: str(parsed.certifications, 200),
+            emergencyContact: str(parsed.emergencyContact),
+            availability,
+            hasVehicle: parsed.hasVehicle === true,
+            vehicleType: str(parsed.vehicleType)
+          };
+        }
       }
     } catch {}
 
@@ -155,48 +177,50 @@ export class VolunteerDispatchService {
     } catch {}
   }
 
+  private experienceText(level: VolunteerProfile['experienceLevel']): string {
+    if (level === 'CERTIFIED_EXPERT') return 'Sertifikalı olduğunu beyan ediyor';
+    if (level === 'INTERMEDIATE') return 'Daha önce sahada görev aldığını beyan ediyor';
+    return 'Başlangıç';
+  }
+
+  private availabilityText(a: VolunteerProfile['availability']): string {
+    if (a === 'WITHIN_24H') return '24 saat içinde hazır';
+    if (a === 'LOCAL_ONLY') return 'Yalnızca kendi şehrinde';
+    return 'Hemen hazır';
+  }
+
   /**
-   * Çevrimdışı Güvenlik Noktası ve Kriz Masası için QR Metin Yükü (Payload) Üretir
+   * Kartın metin / QR içeriği. Tümü kullanıcının kendi beyanıdır; doğrulama kodu üretilmez.
    */
   public generateQrPayload(profile: VolunteerProfile): string {
-    const roleDef = VOLUNTEER_ROLES[profile.primaryRole];
+    const roleDef = VOLUNTEER_ROLES[profile.primaryRole] || VOLUNTEER_ROLES.GENERAL_SUPPORT;
     const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
-    
-    // Hash-like deterministic signature for accreditation verification
-    const rawCheck = `${profile.fullName}-${profile.nationalIdLast4}-${profile.primaryRole}`;
-    let hash = 0;
-    for (let i = 0; i < rawCheck.length; i++) {
-      hash = ((hash << 5) - hash) + rawCheck.charCodeAt(i);
-      hash |= 0;
-    }
-    const authCode = `TR-VOL-${Math.abs(hash).toString(16).toUpperCase().padStart(6, '0')}`;
 
     return [
-      `AFET.LIVE GÖNÜLLÜ SAHRA KİMLİĞİ`,
-      `DOĞRULAMA KODU: ${authCode}`,
-      `GÖREVLİ: ${profile.fullName.toUpperCase() || 'İSİMSİZ GÖNÜLLÜ'}`,
-      `TC SON 4: ${profile.nationalIdLast4 || '----'}`,
+      `GÖNÜLLÜ BİLGİ KARTI (kişisel beyan — resmi kimlik değildir)`,
+      `AD SOYAD: ${profile.fullName || 'Girilmedi'}`,
+      profile.nationalIdLast4 ? `TC SON 4: ${profile.nationalIdLast4}` : '',
       `KAN GRUBU: ${profile.bloodGroup}`,
-      `UZMANLIK: ${roleDef.title}`,
-      `DENEYİM: ${profile.experienceLevel}`,
-      `İLETİŞİM: ${profile.phone || 'Girilmedi'}`,
+      `BEYAN EDİLEN ALAN: ${roleDef.title}`,
+      `DENEYİM: ${this.experienceText(profile.experienceLevel)}`,
+      `TELEFON: ${profile.phone || 'Girilmedi'}`,
       `ŞEHİR: ${profile.city || 'Belirtilmedi'}`,
-      `HAZIRLIK: ${profile.availability}`,
-      profile.hasVehicle ? `ARAÇ: ${profile.vehicleType || 'Mevcut'}` : 'ARAÇ: Yok',
-      profile.emergencyContact ? `ACİL YAKINI: ${profile.emergencyContact}` : '',
-      `TANZİM: ${timestamp}`
+      `HAZIRLIK: ${this.availabilityText(profile.availability)}`,
+      profile.emergencyContact ? `ACİL DURUM YAKINI: ${profile.emergencyContact}` : '',
+      `OLUŞTURULMA: ${timestamp}`,
+      `Bu bilgiler doğrulanmamıştır. afet.live`
     ].filter(Boolean).join('\n');
   }
 
   public generateCoordinationSms(profile: VolunteerProfile): string {
-    const roleDef = VOLUNTEER_ROLES[profile.primaryRole];
-    return `[AFET GÖNÜLLÜ BİLDİRİMİ]\n` +
+    const roleDef = VOLUNTEER_ROLES[profile.primaryRole] || VOLUNTEER_ROLES.GENERAL_SUPPORT;
+    return `[GÖNÜLLÜ BİLGİSİ — kişisel beyan]\n` +
       `Ad Soyad: ${profile.fullName}\n` +
       `Kan: ${profile.bloodGroup} | Şehir: ${profile.city}\n` +
-      `Uzmanlık: ${roleDef.title} (${profile.experienceLevel})\n` +
+      `Alan: ${roleDef.title} (${this.experienceText(profile.experienceLevel)})\n` +
       `Telefon: ${profile.phone}\n` +
-      `Durum: Sahra görevi için hazırım.\n` +
-      `Sertifikalar: ${profile.certifications || 'Genel Destek'}\n` +
+      `Durum: Gönüllü olarak yardım etmek istiyorum (${this.availabilityText(profile.availability)}).\n` +
+      `Belge / ekipman: ${profile.certifications || 'Belirtilmedi'}\n` +
       `afet.live ile oluşturuldu.`;
   }
 }

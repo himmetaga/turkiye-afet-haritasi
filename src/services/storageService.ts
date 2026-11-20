@@ -87,10 +87,12 @@ export async function getEarthquakesFromDB(): Promise<{ data: Earthquake[]; time
 
     if (result && result.length > 0) {
       const raw = localStorage.getItem('afet_cached_earthquakes');
-      let timestamp = Date.now();
+      // Kayıt zamanı bilinmiyorsa "şimdi" uydurulmaz; arayan taraf bilinmiyor olarak gösterir.
+      let timestamp: number | undefined;
       if (raw) {
         try {
-          timestamp = JSON.parse(raw).timestamp || timestamp;
+          const stamp = Number(JSON.parse(raw).timestamp);
+          if (Number.isFinite(stamp) && stamp > 0) timestamp = stamp;
         } catch {}
       }
       return { data: result, timestamp };

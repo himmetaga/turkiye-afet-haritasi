@@ -4,16 +4,21 @@ import { LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 import { escapeHtml } from '../utils/safeText';
 
+const NOT_SENT_NOTICE =
+  'İnternet bağlantısı yok: mesajınız GÖNDERİLMEDİ. Bu cihazda kuyruğa alındı, bağlantı gelince iletilmeye çalışılacak.';
+const SOS_NOT_SENT_NOTICE =
+  "İnternet bağlantısı yok: imdat çağrınız İLETİLMEDİ. Hemen 112'yi arayın; arama olmuyorsa SMS deneyin.";
+
 export class CrisisChatHUD {
   private container: HTMLElement;
   private userCoords: [number, number];
-  private currentCity = 'İstanbul';
-  private currentDistrict = 'Kadıköy';
+  // Şehir/ilçe bilinmiyorsa boş kalır; asla varsayılan bir yer adı gönderilmez.
+  private currentCity = '';
+  private currentDistrict = '';
   private onOpenQRPack?: (status: 'SAFE' | 'HELP') => void;
   private unsubscribeMessages?: () => void;
   private unsubscribeStatus?: () => void;
-  private networkStatus = { connectedRelays: 0, meshPeers: 1 };
-  private isPairingModalOpen = false;
+  private networkStatus = { connectedRelays: 0 };
 
   constructor(
     parent: HTMLElement,
@@ -48,7 +53,7 @@ export class CrisisChatHUD {
     });
   }
 
-  public setUserLocation(coords: [number, number], city = 'İstanbul', district = 'Kadıköy'): void {
+  public setUserLocation(coords: [number, number], city = '', district = ''): void {
     this.userCoords = coords;
     this.currentCity = city;
     this.currentDistrict = district;
@@ -81,14 +86,96 @@ export class CrisisChatHUD {
     const badge = this.container.querySelector('#bitchat-network-badge');
     if (!badge) return;
 
-    const relays = this.networkStatus.connectedRelays;
+    const relays = Number(this.networkStatus.connectedRelays) || 0;
     if (relays > 0) {
       badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1';
-      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Nostr: ${relays} Röle • P2P Mesh`;
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Bağlı: ${relays} röle`;
     } else {
-      badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1';
-      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Yerel Mesh (Çevrimdışı P2P)`;
+      badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1';
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Çevrimdışı — mesajlar gönderilmiyor`;
     }
+
+    const offlineBar = this.container.querySelector('#bitchat-offline-bar');
+    if (offlineBar) offlineBar.classList.toggle('hidden', relays > 0);
+  }
+
+  private renderMessage(m: BitChatMessage): string {
+    const rep = bitChatService.getMessageReputation(m.id);
+    const isSOS = m.type === 'sos';
+    const isSafe = m.type === 'safe';
+    const cardBorder = isSOS
+      ? 'border-rose-500/50 bg-rose-500/15 shadow-glow-rose animate-pulse'
+      : isSafe
+      ? 'border-emerald-500/30 bg-emerald-500/5'
+      : 'border-white/5 bg-white/5';
+
+    const transportBadge = m.pending
+      ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">⏳ Kuyrukta (iletilmedi)</span>'
+      : m.transport === 'nostr'
+      ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">Röle</span>'
+      : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-gray-500/20 text-gray-300 border border-gray-500/30 font-mono">Yalnızca bu cihazda</span>';
+
+    const pubkeyPrefix = m.pubkey ? escapeHtml(String(m.pubkey).slice(0, 8)) : '';
+
+    const warningBanner = m.warningNotice
+      ? `
+      <div class="p-1.5 mb-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10.5px] text-amber-200">
+        ${escapeHtml(m.warningNotice)}
+      </div>
+    `
+      : '';
+
+    const timeAgo = this.formatTimeAgo(m.timestamp);
+
+    return `
+    <div class="p-3 rounded-xl border ${cardBorder} text-xs transition-all">
+      ${warningBanner}
+      <div class="flex items-center justify-between gap-1 mb-1.5">
+        <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+          <span class="font-bold truncate ${isSOS ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
+            ${escapeHtml(m.senderName)}
+          </span>
+          ${pubkeyPrefix ? `<span class="text-[9px] text-gray-500 font-mono" title="Gönderen anahtarının ilk haneleri">#${pubkeyPrefix}</span>` : ''}
+          ${transportBadge}
+          ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${escapeHtml(m.district)})</span>` : ''}
+        </div>
+        <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono flex-shrink-0">
+          ${m.batteryLevel !== undefined ? `<span>🔋 %${escapeHtml(m.batteryLevel)}</span>` : ''}
+          <span>${escapeHtml(timeAgo)}</span>
+        </div>
+      </div>
+      <p class="text-gray-200 leading-relaxed font-normal">${escapeHtml(m.text)}</p>
+
+      <!-- Kişisel not: yalnızca bu cihazda saklanır, kimseye iletilmez -->
+      <div class="flex items-center justify-end gap-2 mt-2 pt-1.5 border-t border-white/5 text-[10.5px]">
+        <span class="text-gray-500 mr-auto">Kendi notum (paylaşılmaz):</span>
+        <button
+          type="button"
+          class="btn-verify-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
+            rep.userVoted === 'verify'
+              ? 'bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/40'
+              : 'bg-white/5 text-gray-400 hover:text-emerald-300'
+          } transition-all cursor-pointer"
+          data-id="${escapeHtml(m.id)}"
+          title="Bu mesajı kendim için güvenilir olarak işaretle"
+        >
+          <span>Güvenilir</span>
+        </button>
+        <button
+          type="button"
+          class="btn-flag-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
+            rep.userVoted === 'flag'
+              ? 'bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40'
+              : 'bg-white/5 text-gray-400 hover:text-rose-300'
+          } transition-all cursor-pointer"
+          data-id="${escapeHtml(m.id)}"
+          title="Bu mesajı kendim için şüpheli olarak işaretle"
+        >
+          <span>Şüpheli</span>
+        </button>
+      </div>
+    </div>
+  `;
   }
 
   private render(): void {
@@ -96,10 +183,11 @@ export class CrisisChatHUD {
     const activeChannel = bitChatService.getActiveChannel();
     const messages = bitChatService.getMessages(activeChannel);
 
+    const citySlug = this.currentCity.toLowerCase().replace(/[^a-z0-9]/g, '');
     const channels = [
       { id: '#afet-genel', label: 'Genel Koordinasyon' },
       { id: '#afet-enkaz', label: '🚨 Enkaz & Acil İmdat' },
-      { id: `#afet-${this.currentCity.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yerel'}`, label: `📍 ${this.currentCity}` },
+      ...(citySlug ? [{ id: `#afet-${citySlug}`, label: `📍 ${this.currentCity}` }] : []),
       { id: '#afet-lojistik', label: 'Erzak & Su' }
     ];
 
@@ -112,16 +200,16 @@ export class CrisisChatHUD {
               ${Icons.messages('w-5 h-5')}
             </span>
             <div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-sm sm:text-base font-bold text-white tracking-wide">
-                  BitChat Afet Ağı
+                  Afet Sohbeti (herkese açık)
                 </h3>
                 <div id="bitchat-network-badge"></div>
               </div>
               <p class="text-[11px] text-gray-400 flex items-center gap-1.5 mt-0.5">
-                <span>Kimlik:</span>
+                <span>Rumuz:</span>
                 <button id="btn-edit-alias" type="button" class="text-cyan-300 hover:underline font-mono font-semibold" title="Rumuz Değiştir">
-                  ${identity.alias} (${identity.pubkey}) ✏️
+                  ${escapeHtml(identity.alias)} (#${escapeHtml(identity.pubkey.slice(0, 8))}) ✏️
                 </button>
               </p>
             </div>
@@ -135,10 +223,15 @@ export class CrisisChatHUD {
         <!-- Hukuki Sorumluluk Reddi & Teyit Uyarısı -->
         <div class="px-3.5 py-1.5 bg-amber-500/10 border-b border-amber-500/20 text-[10.5px] text-amber-200/90 flex items-center justify-between gap-1 flex-shrink-0">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="font-bold text-amber-300 flex-shrink-0">⚖️ Sivil Teyit Ağı:</span>
-            <span class="truncate">Resmi 112/AFAD yerine geçmez. Şebeke varsa önce 112 aranmalıdır.</span>
+            <span class="font-bold text-amber-300 flex-shrink-0">⚠️ Teyitsiz mesajlar:</span>
+            <span class="truncate">112/AFAD yerine geçmez, kimse mesajları doğrulamaz. İnternet gerekir. Önce 112'yi arayın.</span>
           </div>
           <button id="btn-show-legal-disclaimer" type="button" class="text-amber-300 hover:text-white underline flex-shrink-0 text-[10px] font-semibold cursor-pointer">Şartlar</button>
+        </div>
+
+        <!-- Çevrimdışı uyarısı -->
+        <div id="bitchat-offline-bar" class="hidden px-3.5 py-2 bg-rose-500/20 border-b border-rose-500/40 text-[11px] text-rose-100 font-semibold flex-shrink-0">
+          Bağlantı yok: yazdığınız mesajlar ve imdat çağrıları şu anda KİMSEYE ULAŞMIYOR. Acil durumda 112'yi arayın.
         </div>
 
         <!-- Channel Tabs -->
@@ -149,14 +242,14 @@ export class CrisisChatHUD {
               return `
                 <button
                   type="button"
-                  data-channel="${ch.id}"
+                  data-channel="${escapeHtml(ch.id)}"
                   class="btn-channel px-2.5 py-1 rounded-lg font-semibold text-[11px] transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-cyan-500/20 border border-cyan-500/40 text-cyan-300'
                       : 'bg-white/5 border border-transparent text-gray-400 hover:text-gray-200'
                   }"
                 >
-                  ${ch.label}
+                  ${escapeHtml(ch.label)}
                 </button>
               `;
             })
@@ -184,24 +277,17 @@ export class CrisisChatHUD {
 
           <div class="flex items-center gap-2 text-[11px]">
             <button
-              id="btn-webrtc-pair"
-              type="button"
-              class="flex-1 py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 font-medium flex items-center justify-center gap-1 transition-all"
-            >
-              <span>🔗</span><span>Cihaz Eşle (P2P WebRTC)</span>
-            </button>
-            <button
               id="btn-open-crisis-qr"
               type="button"
               class="flex-1 py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-300 font-medium flex items-center justify-center gap-1 transition-all"
             >
-              <span>📱</span><span>Hava Boşluğu (QR Kod)</span>
+              <span>📱</span><span>QR Kod ile Durum Paylaş</span>
             </button>
             <button
               id="btn-emergency-wipe"
               type="button"
               class="py-1 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 font-medium transition-all"
-              title="Acil Temizle: Cihazdaki tüm mesajları ve anahtarları kalıcı olarak siler"
+              title="Bu cihazdaki mesaj geçmişini ve kimlik anahtarını siler. Rölelere ulaşmış mesajlar silinemez."
             >
               <span>🧹 Sıfırla</span>
             </button>
@@ -214,113 +300,10 @@ export class CrisisChatHUD {
             messages.length === 0
               ? `
             <div class="text-center py-10 text-xs text-gray-500">
-              Bu kanalda henüz mesaj bulunmuyor. İlk durumu siz paylaşın.
+              Bu kanalda henüz mesaj bulunmuyor.
             </div>
           `
-              : messages
-                  .map((m) => {
-                    const rep = bitChatService.getMessageReputation(m.id);
-                    const isSOS = m.type === 'sos';
-                    const isSafe = m.type === 'safe';
-                    const cardBorder = rep.isDisputed
-                      ? 'border-rose-500/40 bg-rose-950/20'
-                      : isSOS
-                      ? 'border-rose-500/50 bg-rose-500/15 shadow-glow-rose animate-pulse'
-                      : isSafe
-                      ? 'border-emerald-500/30 bg-emerald-500/5'
-                      : 'border-white/5 bg-white/5';
-
-                    const transportBadge =
-                      m.transport === 'nostr'
-                        ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">Nostr</span>'
-                        : m.transport === 'webrtc'
-                        ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">P2P</span>'
-                        : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Mesh</span>';
-
-                    const powBadge = m.powDifficulty
-                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 font-mono" title="Anti-Spam Proof-of-Work: ${escapeHtml(m.powDifficulty)}-bit">🛡️ PoW</span>`
-                      : '';
-
-                    const proxBadge = m.proximityBadge
-                      ? `<span class="text-[9px] px-1.5 py-0.2 rounded border ${m.proximityClass || 'bg-gray-500/15 text-gray-300 border-gray-500/25'} font-medium">${escapeHtml(m.proximityBadge)}</span>`
-                      : '';
-
-                    const verifiedBadge = rep.isVerified
-                      ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">✓ Teyitli Saha</span>'
-                      : '';
-
-                    const disputedBanner = rep.isDisputed
-                      ? `
-                      <div class="p-1.5 mb-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-[10.5px] text-rose-200 font-semibold flex items-center gap-1.5">
-                        <span>⚠️</span>
-                        <span>Bu ihbar/mesaj topluluk tarafından asılsız veya teyitsiz olarak işaretlendi.</span>
-                      </div>
-                    `
-                      : '';
-
-                    const warningBanner = m.warningNotice
-                      ? `
-                      <div class="p-1.5 mb-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10.5px] text-amber-200">
-                        ${escapeHtml(m.warningNotice)}
-                      </div>
-                    `
-                      : '';
-
-                    const timeAgo = this.formatTimeAgo(m.timestamp);
-
-                    return `
-                    <div class="p-3 rounded-xl border ${cardBorder} text-xs transition-all ${rep.isDisputed ? 'opacity-70 hover:opacity-100' : ''}">
-                      ${disputedBanner}
-                      ${warningBanner}
-                      <div class="flex items-center justify-between gap-1 mb-1.5">
-                        <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
-                          <span class="font-bold truncate ${isSOS ? 'text-rose-400' : isSafe ? 'text-emerald-400' : 'text-gray-200'}">
-                            ${escapeHtml(m.senderName)}
-                          </span>
-                          ${transportBadge}
-                          ${powBadge}
-                          ${proxBadge}
-                          ${verifiedBadge}
-                          ${m.district ? `<span class="text-[10px] text-gray-400 font-mono">(${escapeHtml(m.district)})</span>` : ''}
-                        </div>
-                        <div class="flex items-center gap-2 text-[10px] text-gray-400 font-mono flex-shrink-0">
-                          ${m.batteryLevel !== undefined ? `<span>🔋 %${escapeHtml(m.batteryLevel)}</span>` : ''}
-                          <span>${timeAgo}</span>
-                        </div>
-                      </div>
-                      <p class="text-gray-200 leading-relaxed font-normal">${escapeHtml(m.text)}</p>
-
-                      <!-- Topluluk Konsensüsü & Teyit Butonları -->
-                      <div class="flex items-center justify-end gap-2 mt-2 pt-1.5 border-t border-white/5 text-[10.5px]">
-                        <button
-                          type="button"
-                          class="btn-verify-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
-                            rep.userVoted === 'verify'
-                              ? 'bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/40'
-                              : 'bg-white/5 text-gray-400 hover:text-emerald-300'
-                          } transition-all cursor-pointer"
-                          data-id="${escapeHtml(m.id)}"
-                          title="Bu bilginin doğruluğunu teyit et"
-                        >
-                          <span>✓</span><span>Teyit Et (${rep.verifications})</span>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-flag-msg flex items-center gap-1 px-2 py-0.5 rounded-md ${
-                            rep.userVoted === 'flag'
-                              ? 'bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40'
-                              : 'bg-white/5 text-gray-400 hover:text-rose-300'
-                          } transition-all cursor-pointer"
-                          data-id="${escapeHtml(m.id)}"
-                          title="Asılsız veya manipülatif ihbar olarak bildir"
-                        >
-                          <span>⚠️</span><span>Asılsız Bildir (${rep.flags})</span>
-                        </button>
-                      </div>
-                    </div>
-                  `;
-                  })
-                  .join('')
+              : messages.map((m) => this.renderMessage(m)).join('')
           }
         </div>
 
@@ -330,7 +313,7 @@ export class CrisisChatHUD {
             id="crisis-chat-input"
             type="text"
             maxlength="280"
-            placeholder="${activeChannel} kanalında durum paylaşın..."
+            placeholder="${escapeHtml(activeChannel)} kanalında durum paylaşın..."
             class="flex-1 px-3 py-2 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none placeholder-gray-500 focus:border-cyan-500/50 transition-colors"
           />
           <button
@@ -346,6 +329,16 @@ export class CrisisChatHUD {
 
     this.updateStatusBadge();
     this.attachEventListeners();
+  }
+
+  /** Konum bilgisi: şehir/ilçe yalnızca gerçekten biliniyorsa eklenir. */
+  private buildMeta(batteryLevel: number | undefined) {
+    return {
+      city: this.currentCity || undefined,
+      district: this.currentDistrict || undefined,
+      coordinates: this.userCoords,
+      batteryLevel
+    };
   }
 
   private attachEventListeners(): void {
@@ -370,13 +363,9 @@ export class CrisisChatHUD {
       if (input && input.value.trim()) {
         try {
           const bat = await this.getBatteryPercent();
-          await bitChatService.broadcastMessage(input.value, 'chat', {
-            city: this.currentCity,
-            district: this.currentDistrict,
-            coordinates: this.userCoords,
-            batteryLevel: bat
-          });
+          const result = await bitChatService.broadcastMessage(input.value, 'chat', this.buildMeta(bat));
           input.value = '';
+          if (!result.sent) alert(NOT_SENT_NOTICE);
         } catch (err: any) {
           alert(err.message || 'Mesaj gönderilemedi.');
         }
@@ -392,16 +381,8 @@ export class CrisisChatHUD {
     this.container.querySelector('#btn-broadcast-safe')?.addEventListener('click', async () => {
       try {
         const bat = await this.getBatteryPercent();
-        await bitChatService.broadcastMessage(
-          'Durumum iyi, ailemle birlikte güvendeyiz.',
-          'safe',
-          {
-            city: this.currentCity,
-            district: this.currentDistrict,
-            coordinates: this.userCoords,
-            batteryLevel: bat
-          }
-        );
+        const result = await bitChatService.broadcastMessage('Durumum iyi, güvendeyim.', 'safe', this.buildMeta(bat));
+        if (!result.sent) alert(NOT_SENT_NOTICE);
       } catch (err: any) {
         alert(err.message || 'Durum bildirilemedi.');
       }
@@ -411,22 +392,18 @@ export class CrisisChatHUD {
     this.container.querySelector('#btn-broadcast-help')?.addEventListener('click', async () => {
       try {
         const bat = await this.getBatteryPercent();
-        await bitChatService.broadcastMessage(
-          `🚨 ACİL İMDAT / ENKAZ ÇAĞRISI: Konum [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}], acil kurtarma ve sağlık ekibi yönlendirin!`,
+        const result = await bitChatService.broadcastMessage(
+          `🚨 ACİL İMDAT / ENKAZ ÇAĞRISI: Konum [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}]. Yardıma ihtiyacım var.`,
           'sos',
-          {
-            city: this.currentCity,
-            district: this.currentDistrict,
-            coordinates: this.userCoords,
-            batteryLevel: bat
-          }
+          this.buildMeta(bat)
         );
+        if (!result.sent) alert(SOS_NOT_SENT_NOTICE);
       } catch (err: any) {
         alert(err.message || 'İmdat çağrısı gönderilemedi.');
       }
     });
 
-    // Topluluk Konsensüsü & Teyit Butonları
+    // Kişisel not düğmeleri (yalnızca bu cihazda saklanır)
     this.container.querySelectorAll('.btn-verify-msg').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -473,19 +450,13 @@ export class CrisisChatHUD {
 
     // Emergency Wipe
     this.container.querySelector('#btn-emergency-wipe')?.addEventListener('click', () => {
-      if (confirm('DİKKAT: Cihazdaki tüm sohbet geçmişi ve kimlik anahtarları kalıcı olarak silinecek. Emin misiniz?')) {
+      if (
+        confirm(
+          'DİKKAT: Bu cihazdaki sohbet geçmişi, gönderim kuyruğu ve kimlik anahtarı silinecek; yeni bir kimlik oluşturulacak. Daha önce rölelere ulaşmış mesajlar silinemez. Emin misiniz?'
+        )
+      ) {
         bitChatService.emergencyWipe();
         this.render();
-      }
-    });
-
-    // WebRTC Direct Pairing Modal / Prompt
-    this.container.querySelector('#btn-webrtc-pair')?.addEventListener('click', async () => {
-      try {
-        const offer = await bitChatService.createWebRTCOffer();
-        prompt('P2P WebRTC Bağlantı Kodunuz (Karşı cihaza gönderin veya yapıştırın):', offer);
-      } catch {
-        alert('WebRTC doğrudan eşleme başlatılamadı. Nostr veya QR modu kullanılabilir.');
       }
     });
 
@@ -504,6 +475,7 @@ export class CrisisChatHUD {
 
   private formatTimeAgo(timestamp: number): string {
     const diff = Math.floor((Date.now() - timestamp) / 1000);
+    if (!Number.isFinite(diff)) return '';
     if (diff < 60) return 'Az önce';
     if (diff < 3600) return `${Math.floor(diff / 60)} dk önce`;
     return `${Math.floor(diff / 3600)} sa önce`;

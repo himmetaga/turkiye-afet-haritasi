@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 export interface PetPassport {
   name: string;
@@ -147,7 +148,7 @@ export class PetDisasterSafetyModal {
             this.activeTab === 'guide' ? 'bg-amber-500 text-black shadow-md' : 'text-gray-400 hover:text-white'
           }"
         >
-          📋 HayTAP & AFAD Rehberi
+          📋 Evcil Hayvan Rehberi
         </button>
       </div>
     `;
@@ -167,17 +168,17 @@ export class PetDisasterSafetyModal {
               </span>
               <div>
                 <div class="flex items-center gap-2">
-                  <h3 class="text-base font-bold text-white">${this.passport.name || 'Pati Adı Giriniz'}</h3>
+                  <h3 class="text-base font-bold text-white">${escapeHtml(this.passport.name) || 'Pati Adı Giriniz'}</h3>
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-black">
-                    ${this.passport.type}
+                    ${escapeHtml(this.passport.type)}
                   </span>
                 </div>
                 <div class="text-xs text-gray-300 mt-0.5">
-                  ${this.passport.breed ? `${this.passport.breed} • ` : ''}
-                  Mikroçip: <strong class="font-mono text-amber-300">${this.passport.microchip || 'Kayıtsız'}</strong>
+                  ${this.passport.breed ? `${escapeHtml(this.passport.breed)} • ` : ''}
+                  Mikroçip: <strong class="font-mono text-amber-300">${escapeHtml(this.passport.microchip) || 'Girilmedi'}</strong>
                 </div>
                 <div class="text-xs text-gray-400">
-                  Sahibi: <span class="text-gray-200">${this.passport.ownerName || '-'}</span> | Tel: <span class="font-mono text-gray-200">${this.passport.ownerPhone || '-'}</span>
+                  Sahibi: <span class="text-gray-200">${escapeHtml(this.passport.ownerName) || '-'}</span> | Tel: <span class="font-mono text-gray-200">${escapeHtml(this.passport.ownerPhone) || '-'}</span>
                 </div>
               </div>
             </div>
@@ -200,7 +201,7 @@ export class PetDisasterSafetyModal {
                 id="pet-name"
                 type="text"
                 placeholder="Örn: Pamuk"
-                value="${this.passport.name}"
+                value="${escapeHtml(this.passport.name)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
             </div>
@@ -224,7 +225,7 @@ export class PetDisasterSafetyModal {
                 id="pet-breed"
                 type="text"
                 placeholder="Örn: Tekir, Beyaz Patili"
-                value="${this.passport.breed}"
+                value="${escapeHtml(this.passport.breed)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
             </div>
@@ -235,7 +236,7 @@ export class PetDisasterSafetyModal {
                 id="pet-microchip"
                 type="text"
                 placeholder="Örn: 981098101234567"
-                value="${this.passport.microchip}"
+                value="${escapeHtml(this.passport.microchip)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 font-mono outline-none focus:border-amber-400"
               />
             </div>
@@ -246,7 +247,7 @@ export class PetDisasterSafetyModal {
                 id="pet-owner-name"
                 type="text"
                 placeholder="Örn: Ayşe Yılmaz"
-                value="${this.passport.ownerName}"
+                value="${escapeHtml(this.passport.ownerName)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
             </div>
@@ -257,7 +258,7 @@ export class PetDisasterSafetyModal {
                 id="pet-owner-phone"
                 type="tel"
                 placeholder="05xx xxx xx xx"
-                value="${this.passport.ownerPhone}"
+                value="${escapeHtml(this.passport.ownerPhone)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 font-mono outline-none focus:border-amber-400"
               />
             </div>
@@ -269,7 +270,7 @@ export class PetDisasterSafetyModal {
                 rows="2"
                 placeholder="Örn: Böbrek hastası, özel renal mama yiyor. Kalp ilacı günde 1 kez."
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400 resize-none"
-              >${this.passport.medicalNotes}</textarea>
+              >${escapeHtml(this.passport.medicalNotes)}</textarea>
             </div>
           </div>
         </div>
@@ -325,9 +326,9 @@ export class PetDisasterSafetyModal {
               <span>1. Deprem Sarsıntısı Anında Hayvan Davranışı</span>
             </h4>
             <p class="leading-relaxed">
-              Hayvanlar yüksek frekanslı P dalgalarını insanlardan 5-10 saniye önce hissederek çıldırabilir veya saklanabilir.
+              Hayvanlar sarsıntıda paniğe kapılıp kaçabilir veya saklanabilir.
               <strong>Korkan hayvanı zorla tutmaya çalışmayın</strong>; refleks olarak sizi ısırabilir veya tırmalayabilir.
-              Evin en güvenli çök-kapan alanına geçerken eğer yanınızdaysa göğsünüze bastırarak koruyun.
+              Sarsıntı sırasında önce kendinizi koruyun (çök-kapan-tutun); hayvanınızı sarsıntı bittikten sonra arayın.
             </p>
           </div>
 
@@ -349,18 +350,18 @@ export class PetDisasterSafetyModal {
               <span>3. Enkaz Altında / Hasarlı Binada Kalan Hayvanlar</span>
             </h4>
             <p class="leading-relaxed">
-              Eğer hayvanınız içeride kaldıysa, AFAD ve arama kurtarma ekiplerine bina girişindeki duvara silinmez sprey/tebeşirle
-              <strong>"DAİRE 4: 1 KEDİ / 1 KÖPEK İÇERİDE"</strong> notu düşün.
-              HayTAP (Hayvan Hakları Federasyonu) sahra kurtarma ekipleri afet bölgelerinde özel kafes ve veteriner hekimlerle enkaz içi hayvan kurtarması yürütmektedir.
+              Hayvanınız içeride kaldıysa hasarlı binaya kendiniz girmeyin. Sahadaki arama kurtarma ekibine haber verin ve bina girişine
+              <strong>"DAİRE 4: 1 KEDİ / 1 KÖPEK İÇERİDE"</strong> gibi bir not bırakın.
+              Hayvan kurtarma gönüllüleri afet bölgelerinde çalışabilir; sahada olup olmadıklarını ekiplerden öğrenin.
             </p>
           </div>
 
           <div class="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
-            <h4 class="font-bold text-gray-200 text-sm">4. Acil Hayvan Kurtarma İhbar Hatları</h4>
+            <h4 class="font-bold text-gray-200 text-sm">4. Kime Haber Verilir?</h4>
             <ul class="space-y-1 text-gray-400">
-              <li>• <strong>HayTAP Sahra İhbar:</strong> 0850 441 44 44 / haytap.org</li>
-              <li>• <strong>Tarım ve Orman Bakanlığı HAYDİ:</strong> 112 üzerinden İçişleri HAYDİ Polisi</li>
-              <li>• <strong>Türk Veteriner Hekimleri Birliği (TVHB):</strong> Bölge mobil acil klinik çadırları</li>
+              <li>• <strong>Acil durumda:</strong> 112</li>
+              <li>• <strong>Hayvanlara yönelik ihbarlar:</strong> İçişleri Bakanlığı HAYDİ mobil uygulaması</li>
+              <li>• <strong>Yaralı hayvan:</strong> En yakın veteriner hekime ya da belediyenin veteriner birimine başvurun</li>
             </ul>
           </div>
         </div>
@@ -378,9 +379,9 @@ export class PetDisasterSafetyModal {
             <div>
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-bold text-white">Pati & Evcil Hayvan Afet Güvenliği</h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">HAYTAP & AFAD</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">GÖNÜLLÜ DERLEME</span>
               </div>
-              <p class="text-[11px] text-gray-400">Afet anında kedi, köpek ve can dostlarımız için kimlik, tahliye çantası ve arama-kurtarma protokolleri.</p>
+              <p class="text-[11px] text-gray-400">Afet anında kedi, köpek ve can dostlarımız için kimlik, tahliye çantası ve genel öneriler. Resmi bir kurum rehberi değildir.</p>
             </div>
           </div>
           <button id="btn-close-pet-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">

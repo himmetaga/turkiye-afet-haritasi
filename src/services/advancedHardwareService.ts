@@ -50,6 +50,8 @@ export interface BlackboxTelemetry {
 
 class AdvancedHardwareService {
   private currentHeading = 0;
+  /** Gerçek (manyetik kuzeye göre mutlak) bir pusula okuması alındı mı? */
+  private hasAbsoluteHeading = false;
   private currentPressureHpa: number | null = null;
   private baselinePressureHpa = 1013.25; // standard sea-level hPa
   private ambientLux: number | null = null;
@@ -78,16 +80,22 @@ class AdvancedHardwareService {
   private initHardwareSensors(): void {
     // 1. Device Orientation (Magnetometer / Compass)
     if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-      window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
-        let heading = 0;
-        if ((e as any).webkitCompassHeading) {
-          // iOS Safari true compass heading
-          heading = (e as any).webkitCompassHeading;
-        } else if (e.alpha !== null) {
+      // Yalnızca kuzeye göre MUTLAK okuma kabul edilir. Android'de sıradan 'deviceorientation'
+      // olayının alpha değeri rastgele bir başlangıca göredir; pusula yönü değildir.
+      const onOrientation = (e: DeviceOrientationEvent) => {
+        const webkitHeading = (e as any).webkitCompassHeading;
+        let heading: number | null = null;
+        if (typeof webkitHeading === 'number' && Number.isFinite(webkitHeading)) {
+          heading = webkitHeading; // iOS Safari
+        } else if (e.absolute === true && e.alpha !== null) {
           heading = 360 - e.alpha;
         }
+        if (heading === null) return;
         this.currentHeading = Math.round((heading + 360) % 360);
-      });
+        this.hasAbsoluteHeading = true;
+      };
+      window.addEventListener('deviceorientationabsolute' as any, onOrientation as EventListener);
+      window.addEventListener('deviceorientation', onOrientation);
       this.isOrientationActive = true;
     }
 
@@ -119,6 +127,18 @@ class AdvancedHardwareService {
 
     // 4. Start Dead-man Conscious Probe check (every 45 min)
     this.startConsciousProbe();
+  }
+
+  /** Pusula sensöründen gerçek bir yön okuması geldi mi? */
+  public hasCompassHeading(): boolean {
+    return this.hasAbsoluteHeading;
+  }
+
+  /** Geçerli pusula yönü (derece) ve Türkçe ana yön adı; okuma yoksa null. */
+  public getCompassHeading(): { deg: number; cardinal: string } | null {
+    if (!this.hasAbsoluteHeading) return null;
+    const names = ['Kuzey', 'Kuzeydoğu', 'Doğu', 'Güneydoğu', 'Güney', 'Güneybatı', 'Batı', 'Kuzeybatı'];
+    return { deg: this.currentHeading, cardinal: names[Math.round(this.currentHeading / 45) % 8] };
   }
 
   public async requestCompassPermission(): Promise<boolean> {

@@ -88,8 +88,9 @@ export class CollapseZoneService {
     // Türkiye standart kat yüksekliği: 3.0 metre
     const buildingHeightM = Math.round(validFloors * 3.0 * 10) / 10;
 
-    // USAR / FEMA 1.5x Standart Standoff Yarıçapı
-    const safeStandoffRadiusM = Math.round(buildingHeightM * 1.5 * profile.debrisSpillMultiplier / 1.5 * 10) / 10;
+    // 1.5 x H kuralı: yapı türü çarpanı bu değeri asla 1.5'in altına düşüremez.
+    const safeStandoffRadiusM =
+      Math.round(buildingHeightM * Math.max(1.5, profile.debrisSpillMultiplier) * 10) / 10;
 
     // Ağır Parça & Cam Saçılma Menzili (2.0x)
     const shrapnelRadiusM = Math.round(buildingHeightM * 2.0 * 10) / 10;
@@ -115,21 +116,21 @@ export class CollapseZoneService {
     const tacticalRules: string[] = [];
 
     tacticalRules.push(
-      `⛔ ASGARİ GÜVENLİ MESAFE: Bu binadan en az ${safeStandoffRadiusM} metre uzakta durulmalıdır (1.5 x H Kuralı).`
+      `⛔ EN AZ UZAKLIK: Bu binadan en az ${safeStandoffRadiusM} metre uzakta durun (1.5 x bina yüksekliği kuralı). Bu kaba bir tahmindir; mümkünse daha da uzaklaşın.`
     );
 
     if (isStreetDeathTrap) {
       tacticalRules.push(
-        `🚨 ÖLÜM KANYONU UYARISI: Sokak genişliği (${validStreetWidth}m), enkaz gölgesinden (${safeStandoffRadiusM}m) DAR! Karşı kaldırım güvenli DEĞİLDİR! Enkaz sokağın tamamını doldurur.`
+        `🚨 DAR SOKAK UYARISI: Sokak genişliği (${validStreetWidth}m), 1.5 x H mesafesinden (${safeStandoffRadiusM}m) DAR! Karşı kaldırım da enkaz alanında kalabilir.`
       );
     } else {
       tacticalRules.push(
-        `✅ SOKAK TAHLİYESİ: Sokak genişliği (${validStreetWidth}m), enkaz alanından büyüktür; karşı kaldırımın arkasındaki açık alan tercih edilebilir.`
+        `ℹ️ SOKAK: Sokak genişliği (${validStreetWidth}m), 1.5 x H mesafesinden (${safeStandoffRadiusM}m) büyük görünüyor. Bu bir tahmindir; yine de binadan olabildiğince uzak, açık bir alana geçin.`
       );
     }
 
     tacticalRules.push(
-      `🏢 CAM & PARAPET PATLAMASI: İkincil artçılarda cam, klima dış ünitesi ve çatı kiremitleri ${shrapnelRadiusM} metreye kadar savrulur.`
+      `🏢 CAM & PARÇA DÜŞMESİ: Artçılarda cam, klima dış ünitesi ve kiremit gibi parçalar uzağa savrulabilir; ${shrapnelRadiusM} metre (2 x H) kaba bir ihtiyat payıdır.`
     );
 
     tacticalRules.push(

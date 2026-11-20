@@ -49,9 +49,9 @@ export class MultiHazardEngine {
   private static instance: MultiHazardEngine;
   private activeThreats: Map<string, HazardThreatZone> = new Map();
 
-  private constructor() {
-    this.initDefaultReferenceThreats();
-  }
+  // Açılışta hiçbir tehdit tanımlı değildir: gerçek bir kaynaktan gelmeyen
+  // "aktif tehdit" eklenmez, toplanma alanları varsayımla haritadan gizlenmez.
+  private constructor() {}
 
   public static getInstance(): MultiHazardEngine {
     if (!MultiHazardEngine.instance) {
@@ -167,7 +167,7 @@ export class MultiHazardEngine {
         // A. Tsunami Kuralı: Kıyıdan ilk 500m ve rakım < 15m olan yerler kapatılır
         if (threat.type === 'tsunami' && distM <= threat.radiusMeters) {
           isUnsafe = true;
-          reason = 'Tsunami Kıyı Su Basma Zonu (Rakım < 20m) — Dikey Yüksek Alana Geçin';
+          reason = 'Tanımlı tsunami tehdit alanı içinde — yüksek bir noktaya çıkın';
           break;
         }
 
@@ -204,23 +204,6 @@ export class MultiHazardEngine {
       usableAssemblyPoints: usable,
       flaggedUnsafePoints: flagged
     };
-  }
-
-  /**
-   * Varsayılan Diri Fay / Boğaz / SEVESO Referans Zonları
-   */
-  private initDefaultReferenceThreats(): void {
-    // Örnek Marmara Sismik & Tsunami İkincil Risk Çukurluğu
-    this.activeThreats.set('threat-marmara-tsunami', {
-      id: 'threat-marmara-tsunami',
-      type: 'tsunami',
-      title: 'Marmara Kıyı Şeridi Tsunami Su Basma Zonu (0-15m)',
-      center: [28.98, 40.95],
-      radiusMeters: 600,
-      severity: 'warning',
-      evacuationRule: 'Kıyıdan en az 2 km içeri veya rakımı ≥20 m yüksek noktalara dikey tahliye',
-      depthMeters: 450
-    });
   }
 
   public registerThreat(threat: HazardThreatZone): void {

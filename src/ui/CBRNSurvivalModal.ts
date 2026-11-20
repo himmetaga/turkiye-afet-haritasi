@@ -40,7 +40,7 @@ const GAS_HAZARDS: GasHazardProfile[] = [
     odorVisual: 'Sarı-yeşil duman, keskin çamaşır suyu kokusu',
     behavior: 'Zemin seviyesinde, çukurlarda, bodrum katlarda ve metro kanallarında birikir.',
     escapeRule: 'ASLA bodruma inmeyin! Binanın en üst katına veya yüksek tepeye tırmanın.',
-    fieldRemedy: 'Karbonatlı veya hafif sirkeli/nemli bezle ağız ve burnu kapatın.'
+    fieldRemedy: 'Islak bez tahrişi kısa süre azaltabilir ama korumaz; asıl korunma bölgeden hemen uzaklaşmaktır.'
   },
   {
     name: 'Amonyak (Ammonia)',
@@ -60,7 +60,7 @@ const GAS_HAZARDS: GasHazardProfile[] = [
     odorVisual: 'Yoğun siyah/gri duman, plastik ve kimyasal yanık kokusu',
     behavior: 'Yangınlarda en çok can kaybı alevden değil, yükselen duman solunmasından olur.',
     escapeRule: 'Zeminden 10-15 cm yukarıda temiz hava cebi kalır; sürünerek tahliye olun.',
-    fieldRemedy: 'Nemli pamuklu bez solunum direncini korur; ağzı yere yaklaştırın.'
+    fieldRemedy: 'Islak bez isi azaltır ama karbonmonoksiti süzmez; tek çare ortamı hemen terk etmektir.'
   },
   {
     name: 'Radyoaktif Serpinti (Fallout)',
@@ -99,39 +99,52 @@ export class CBRNSurvivalModal {
   }
 
   /**
-   * Calculates downwind and 90-degree crosswind escape corridors.
-   * If wind is blowing FROM direction W_deg, the plume blows TOWARDS (W_deg + 180) % 360.
-   * The 90-degree perpendicular escape corridors are (PlumeDir + 90) and (PlumeDir - 90).
+   * Rüzgar yönü ve kaynağın kullanıcıya göre yönünden kaba bir uzaklaşma yönü çıkarır.
+   *
+   * - Rüzgar W yönünden esiyorsa bulut kaynaktan (W + 180) yönüne taşınır.
+   * - Kaynak, rüzgarın geldiği yöne 90°'den yakınsa kullanıcı rüzgar altındadır:
+   *   rüzgara dik iki yön (W ± 90) önerilir, ancak kaynağa doğru bakan
+   *   (kaynak yönüne 90°'den yakın) yön listeden çıkarılır.
+   * - Değilse kullanıcı rüzgar altında değildir: kaynağın tam tersi yön önerilir.
    */
   private calculatePlumeVectors(): {
-    windFromDeg: number;
     plumeBlowsToDeg: number;
-    escapeLeftDeg: number;
-    escapeRightDeg: number;
-    escapeLeftLabel: string;
-    escapeRightLabel: string;
-    dangerConeLabel: string;
+    plumeLabel: string;
+    isDownwind: boolean;
+    corridors: { deg: number; label: string }[];
   } {
     const windOpt = DIRECTIONS.find((d) => d.key === this.selectedWindDir) || DIRECTIONS[1];
+    const hazardOpt = DIRECTIONS.find((d) => d.key === this.selectedHazardDir) || DIRECTIONS[0];
     const windFromDeg = windOpt.deg;
+    const hazardDeg = hazardOpt.deg;
     const plumeBlowsToDeg = (windFromDeg + 180) % 360;
 
-    const escapeLeftDeg = (plumeBlowsToDeg + 90) % 360;
-    const escapeRightDeg = (plumeBlowsToDeg + 270) % 360;
+    const angleDiff = (a: number, b: number): number => {
+      const d = Math.abs(a - b) % 360;
+      return d > 180 ? 360 - d : d;
+    };
 
     const getCardinalLabel = (deg: number): string => {
       const idx = Math.round(deg / 45) % 8;
       return DIRECTIONS[idx].label;
     };
 
+    const isDownwind = angleDiff(hazardDeg, windFromDeg) < 90;
+
+    let corridorDegs: number[];
+    if (isDownwind) {
+      corridorDegs = [(windFromDeg + 90) % 360, (windFromDeg + 270) % 360].filter(
+        (deg) => angleDiff(deg, hazardDeg) >= 90
+      );
+    } else {
+      corridorDegs = [(hazardDeg + 180) % 360];
+    }
+
     return {
-      windFromDeg,
       plumeBlowsToDeg,
-      escapeLeftDeg,
-      escapeRightDeg,
-      escapeLeftLabel: getCardinalLabel(escapeLeftDeg),
-      escapeRightLabel: getCardinalLabel(escapeRightDeg),
-      dangerConeLabel: getCardinalLabel(plumeBlowsToDeg)
+      plumeLabel: getCardinalLabel(plumeBlowsToDeg),
+      isDownwind,
+      corridors: corridorDegs.map((deg) => ({ deg, label: getCardinalLabel(deg) }))
     };
   }
 
@@ -149,7 +162,7 @@ export class CBRNSurvivalModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">KBRN, Toksik Gaz & Serpinti Sığınağı</h2>
+                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">KBRN, Toksik Gaz & Serpinti Bilgi Notları</h2>
                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
                   CIVIL DEFENSE
                 </span>
@@ -169,7 +182,7 @@ export class CBRNSurvivalModal {
             <span class="font-bold block text-xs">⚠️ 3 Altın Kural: ZAMAN · MESAFE · ZIRH</span>
             <p class="text-[10.5px] text-gray-300 leading-relaxed">
               Kimyasal veya radyoaktif serpintide en ölümcül hata rüzgar altına (dumanın aktığı yöne) doğru koşmaktır.
-              Kurtuluş kuralı: <strong>Rüzgar eksenine 90° dik (çapraz) kaçış</strong> yaparak toksik koridordan en kısa sürede çıkmaktır!
+              Genel kural: bulutun içindeyseniz <strong>rüzgara dik (çapraz) yönde</strong>, kaynağa yaklaşmadan uzaklaşmaktır. Yetkililerin anonsu ve 112 talimatı her zaman önceliklidir.
             </p>
           </div>
 
@@ -177,7 +190,7 @@ export class CBRNSurvivalModal {
           <div class="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
             <div class="flex items-center justify-between">
               <span class="font-black text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <span>🧭 Rüzgar Altı Gaz Yayılım & Çapraz Kaçış Hesaplayıcı</span>
+                <span>🧭 Rüzgara Göre Uzaklaşma Yönü (kaba hesap)</span>
               </span>
               <span class="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-mono">
                 90° Crosswind
@@ -210,31 +223,37 @@ export class CBRNSurvivalModal {
             <div class="p-3.5 rounded-xl bg-black/50 border border-white/5 space-y-2">
               <div class="flex items-center justify-between text-[11px]">
                 <span class="text-rose-400 font-bold flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                  ÖLÜMCÜL RÜZGAR ALTI ALAN:
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                  Bulutun kaynaktan taşındığı yön:
                 </span>
-                <span class="text-rose-300 font-mono font-bold">${plume.dangerConeLabel} (${plume.plumeBlowsToDeg}°)</span>
+                <span class="text-rose-300 font-mono font-bold">${plume.plumeLabel} (${plume.plumeBlowsToDeg}°)</span>
               </div>
               <p class="text-[10px] text-rose-300/80 leading-tight">
-                Gaz ve kimyasal bulut bu doğrultuda 40° genişleyen koni şeklinde akar. Bu yöne asla koşmayın!
+                ${
+                  plume.isDownwind
+                    ? 'Seçtiğiniz yönlere göre kaynak rüzgarın geldiği taraftadır: bulut size doğru taşınıyor olabilir. Kaynağa doğru ve bulutla aynı yöne gitmeyin.'
+                    : 'Seçtiğiniz yönlere göre rüzgar altında değilsiniz: bulut sizden uzağa taşınıyor olabilir. Yine de kaynaktan uzaklaşın ve kaynağın rüzgar altı tarafına geçmeyin.'
+                }
               </p>
 
               <div class="pt-2 border-t border-white/10">
                 <div class="text-emerald-400 font-bold text-[11px] mb-1">
-                  ✅ HAYATTA KALMA KAÇIŞ YÖNLERİ (90° DİK ÇAPRAZ HATLARI):
+                  ${plume.isDownwind ? 'Önerilen uzaklaşma yönü (rüzgara dik, kaynaktan uzağa):' : 'Önerilen uzaklaşma yönü (kaynağın tersi):'}
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-center text-[10.5px]">
+                <div class="grid ${plume.corridors.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-2 text-center text-[10.5px]">
+                  ${plume.corridors
+                    .map(
+                      (c) => `
                   <div class="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-200">
-                    <span class="block text-[9px] text-emerald-400/80 uppercase">1. Kaçış Koridoru</span>
-                    <strong class="text-xs text-white">${plume.escapeLeftLabel}</strong>
-                    <span class="block text-[9.5px] font-mono text-emerald-300 mt-0.5">${plume.escapeLeftDeg}°</span>
-                  </div>
-                  <div class="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-200">
-                    <span class="block text-[9px] text-emerald-400/80 uppercase">2. Kaçış Koridoru</span>
-                    <strong class="text-xs text-white">${plume.escapeRightLabel}</strong>
-                    <span class="block text-[9.5px] font-mono text-emerald-300 mt-0.5">${plume.escapeRightDeg}°</span>
-                  </div>
+                    <strong class="text-xs text-white">${c.label}</strong>
+                    <span class="block text-[9.5px] font-mono text-emerald-300 mt-0.5">${c.deg}°</span>
+                  </div>`
+                    )
+                    .join('')}
                 </div>
+                <p class="text-[10px] text-gray-400 leading-tight mt-2">
+                  Bu yalnızca seçtiğiniz iki yönden yapılan kaba bir hesaptır; rüzgar değişebilir, bina ve arazi bulutu saptırabilir. Yolun tehlikesiz olduğunu göstermez. Yetkililerin anonsu ve 112 talimatı varsa ona uyun.
+                </p>
               </div>
             </div>
           </div>
@@ -297,19 +316,19 @@ export class CBRNSurvivalModal {
 
           <!-- AFAD Siren Codes -->
           <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
-            <span class="font-bold text-white block">📢 AFAD Resmi KBRN İkaz & Siren Kodları:</span>
+            <span class="font-bold text-white block">📢 Sivil Savunma İkaz & Siren İşaretleri:</span>
             <div class="space-y-1.5 text-[10.5px] text-gray-300">
               <div><strong class="text-yellow-400">Sarı İkaz (Saldırı/Tehlike İhtimali):</strong> 3 dakika süreli sürekli düz siren sesi.</div>
               <div><strong class="text-rose-400">Kırmızı İkaz (Doğrudan Tehlike):</strong> 3 dakika süreli yükselip alçalan dalgalı siren sesi.</div>
-              <div><strong class="text-purple-400">Radyoaktif / Kimyasal Tehdit:</strong> Kesik kesik siren sesi veya cankurtaran kornası (Sığınağa girin!).</div>
-              <div><strong class="text-emerald-400">Beyaz İkaz (Tehlike Geçti):</strong> Kesintisiz düz siren veya radyo duyurusu.</div>
+              <div><strong class="text-purple-400">Siyah İkaz (Radyoaktif / Kimyasal Tehlike):</strong> 3 dakika süreli kesik kesik siren sesi (kapalı yere girin).</div>
+              <div><strong class="text-emerald-400">Beyaz İkaz (Tehlike Geçti):</strong> Siren çalınmaz; radyo, televizyon ve megafon anonsuyla duyurulur.</div>
             </div>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="p-3.5 bg-black/40 border-t border-white/10 text-[10.5px] text-gray-400 text-center shrink-0">
-          💡 Resmi sivil savunma sirenleri ve AFAD anonsları gelmeden sığınağı asla terk etmeyiniz.
+          💡 Yetkililerin "tehlike geçti" anonsu gelmeden kapalı alanı terk etmeyin. Acil durumda 112.
         </div>
       </div>
     `;

@@ -41,7 +41,7 @@ export class WaterDisinfectionModal {
         } else {
           clearInterval(this.countdownTimer);
           this.isTimerRunning = false;
-          alert('💧 30 Dakikalık klor temas süresi tamamlandı! Su güvenle içilebilir.');
+          alert('💧 30 dakikalık klor temas süresi doldu. Klor bazı parazitleri (ör. Cryptosporidium) öldürmez; mümkünse suyu ayrıca kaynatın.');
         }
       }, 1000);
     }
@@ -75,10 +75,10 @@ export class WaterDisinfectionModal {
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-black tracking-tight text-white">Sahra Su Arıtma & Klorlama</h2>
                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                  WHO WASH
+                  Genel rehber
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">Kolera ve dizanteri önleyici damla hesabı su dezenfeksiyonu</p>
+              <p class="text-[11px] text-gray-400">Çamaşır suyuyla acil durum su dezenfeksiyonu için damla hesabı</p>
             </div>
           </div>
           <button id="btn-close-water" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-all">
@@ -139,8 +139,8 @@ export class WaterDisinfectionModal {
 
             <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
               <span class="block text-[10px] uppercase font-bold text-emerald-300">Klor Tableti</span>
-              <span class="text-2xl font-black text-emerald-400 font-mono my-1 block">${calc.tabletCount} Tablet</span>
-              <span class="text-[9.5px] text-gray-400 font-mono">(Sahra İkmal Tableti)</span>
+              <span class="text-sm font-black text-emerald-400 my-1 block leading-snug">Ambalajındaki orana uyun</span>
+              <span class="text-[9.5px] text-gray-400 leading-snug block">Tabletler farklı güçtedir (1 tablet 1 litreye de 20 litreye de yetebilir). Kaç litreye bir tablet gerektiğini kutusundan okuyun.</span>
             </div>
           </div>
 

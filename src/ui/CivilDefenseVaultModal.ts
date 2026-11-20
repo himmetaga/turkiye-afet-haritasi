@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 import { civilDefenseProtocols, OfflinePropertyCredential, BarterItem } from '../services/civilDefenseProtocols';
 
 export class CivilDefenseVaultModal {
@@ -38,12 +39,12 @@ export class CivilDefenseVaultModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">Mülkiyet Kasası & Sahra Takas</h2>
+                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">Evrak Notlarım & İhtiyaç Listem</h2>
                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  OFFLINE VAULT
+                  YALNIZCA BU CİHAZDA
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">Çevrimdışı tapu/kontrat kasası ve P2P ihtiyaç takas defteri</p>
+              <p class="text-[11px] text-gray-400">Notlar şifrelenmez ve kimseyle paylaşılmaz; tarayıcı verisi silinirse kaybolur</p>
             </div>
           </div>
           <button id="btn-close-vault" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-all">
@@ -60,7 +61,7 @@ export class CivilDefenseVaultModal {
               this.activeTab === 'vault' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
             }"
           >
-            🔒 Mülkiyet Kasası (${creds.length})
+            📄 Evrak Notlarım (${creds.length})
           </button>
           <button
             id="tab-vault-barter"
@@ -69,7 +70,7 @@ export class CivilDefenseVaultModal {
               this.activeTab === 'barter' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
             }"
           >
-            🔄 Sahra Takas (${barterList.length})
+            📝 İhtiyaç Listem (${barterList.length})
           </button>
           <button
             id="tab-vault-dask"
@@ -78,7 +79,7 @@ export class CivilDefenseVaultModal {
               this.activeTab === 'dask' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
             }"
           >
-            ⏱️ DASK 15 Gün
+            ⏱️ DASK İhbarı
           </button>
         </div>
 
@@ -91,7 +92,7 @@ export class CivilDefenseVaultModal {
             <div class="space-y-3">
               <!-- Add Credential Form -->
               <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
-                <span class="font-bold text-gray-200 block">➕ Yeni Evrak Kaydet (Çevrimdışı Kasa)</span>
+                <span class="font-bold text-gray-200 block">➕ Yeni evrak notu (şifrelenmez; kimlik numarası gibi hassas bilgileri yazmayın)</span>
                 <div class="grid grid-cols-2 gap-2">
                   <select id="select-vault-type" class="px-2.5 py-2 rounded-xl bg-obsidian-900 border border-white/10 text-white outline-none">
                     <option value="tapu">Tapu Senedi</option>
@@ -118,7 +119,7 @@ export class CivilDefenseVaultModal {
                   type="button"
                   class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all"
                 >
-                  Kasaya Güvenle Kaydet
+                  Bu cihaza kaydet
                 </button>
               </div>
 
@@ -132,11 +133,11 @@ export class CivilDefenseVaultModal {
                           (c) => `
                   <div class="p-3 rounded-2xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
                     <div>
-                      <div class="font-bold text-white uppercase text-xs">${c.docType.replace('_', ' ')}: ${c.serialNumber}</div>
-                      <div class="text-[11px] text-gray-300">Sahip: ${c.ownerName}</div>
+                      <div class="font-bold text-white uppercase text-xs">${escapeHtml(String(c.docType ?? '').replace('_', ' '))}: ${escapeHtml(c.serialNumber)}</div>
+                      <div class="text-[11px] text-gray-300">Sahip: ${escapeHtml(c.ownerName)}</div>
                       <div class="text-[9.5px] text-gray-500 font-mono">${new Date(c.addedAt).toLocaleDateString('tr-TR')}</div>
                     </div>
-                    <button data-del-id="${c.id}" class="btn-del-vault p-1.5 text-rose-400 hover:text-rose-300 text-xs">Sil</button>
+                    <button data-del-id="${escapeHtml(c.id)}" class="btn-del-vault p-1.5 text-rose-400 hover:text-rose-300 text-xs">Sil</button>
                   </div>
                 `
                         )
@@ -150,7 +151,7 @@ export class CivilDefenseVaultModal {
             <!-- Tab 2: P2P Barter Ledger -->
             <div class="space-y-3">
               <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
-                <span class="font-bold text-gray-200 block">🔄 Fazla İkmal / Acil İhtiyaç Girişi</span>
+                <span class="font-bold text-gray-200 block">📝 Kişisel liste: fazlam / ihtiyacım (kimseye iletilmez)</span>
                 <div class="grid grid-cols-2 gap-2">
                   <select id="select-barter-type" class="px-2.5 py-2 rounded-xl bg-obsidian-900 border border-white/10 text-white outline-none">
                     <option value="offer">🟢 Elimde Fazla Var (Paylaşabilirim)</option>
@@ -174,14 +175,14 @@ export class CivilDefenseVaultModal {
                   type="button"
                   class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all"
                 >
-                  Takas Defterine Ekle
+                  Listeme Ekle
                 </button>
               </div>
 
               <div class="space-y-2">
                 ${
                   barterList.length === 0
-                    ? `<div class="p-4 text-center text-gray-500 text-xs">Henüz takas kaydı bulunmuyor.</div>`
+                    ? `<div class="p-4 text-center text-gray-500 text-xs">Listeniz boş. Buraya yazdıklarınızı başkaları göremez.</div>`
                     : barterList
                         .map(
                           (b) => `
@@ -192,8 +193,8 @@ export class CivilDefenseVaultModal {
                       }">
                         ${b.type === 'offer' ? 'FAZLA STOK' : 'ACİL İHTİYAÇ'}
                       </span>
-                      <div class="font-bold text-white text-xs mt-1">${b.title}</div>
-                      <div class="text-[10.5px] text-gray-400">Konum: ${b.contactLocation}</div>
+                      <div class="font-bold text-white text-xs mt-1">${escapeHtml(b.title)}</div>
+                      <div class="text-[10.5px] text-gray-400">Konum: ${escapeHtml(b.contactLocation)}</div>
                     </div>
                   </div>
                 `
@@ -207,17 +208,17 @@ export class CivilDefenseVaultModal {
             <!-- Tab 3: DASK 15 Gün Süre Sayacı -->
             <div class="space-y-3">
               <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 space-y-2">
-                <span class="font-bold block text-sm">⏱️ DASK 15 Günlük Resmi İhbar Süresi</span>
+                <span class="font-bold block text-sm">⏱️ DASK hasar ihbarı: 15 iş günü</span>
                 <p class="text-[11px] text-gray-300 leading-relaxed">
-                  Deprem poliçesi genel şartları uyarınca, hak sahiplerinin hasar ihbarını resmi sürede yapması tazminat sürecinin gecikmesini önler.
+                  Zorunlu Deprem Sigortası genel şartlarına göre hasar, öğrenildikten sonra en geç 15 iş günü içinde bildirilmelidir. Güncel süre ve koşulları DASK'tan teyit edin.
                 </p>
                 <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-center text-white font-bold">
-                  DASK ALO 125 · e-Devlet DASK Hasar İhbar Modülü
+                  DASK ALO 125 · dask.gov.tr
                 </div>
               </div>
 
               <div class="space-y-2 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10">
-                <span class="font-bold text-white block">📜 Afet Hukuku Hak Kontrol Listesi:</span>
+                <span class="font-bold text-white block">📜 Genel bilgi (hukuki danışmanlık değildir):</span>
                 <p class="text-[11px] text-gray-300">• <strong>Ölüm Karinesi & Gaiplik:</strong> Enkaz altında cesedine ulaşılamayan yakınlar için Sulh Hukuk Mahkemesi veya Nüfus Müdürlüğü gaiplik tescili.</p>
                 <p class="text-[11px] text-gray-300">• <strong>Kira & Taşınma Yardımı:</strong> Ev sahiplerine ve kiracılara yönelik AFAD hak sahipliği başvurusu.</p>
                 <p class="text-[11px] text-gray-300">• <strong>Enkaz Eşya Kurtarma:</strong> Ağır hasarlı binalara izinsiz girilmesi yasaktır; eşya kurtarma valilik/AFAD kontrollü vinç saatlerinde yapılır.</p>
@@ -285,7 +286,7 @@ export class CivilDefenseVaultModal {
     q<HTMLButtonElement>('#btn-add-barter-item')?.addEventListener('click', () => {
       const type = (q<HTMLSelectElement>('#select-barter-type')?.value || 'offer') as 'offer' | 'need';
       const title = q<HTMLInputElement>('#input-barter-title')?.value.trim();
-      const loc = q<HTMLInputElement>('#input-barter-loc')?.value.trim() || 'Toplanma Alanı';
+      const loc = q<HTMLInputElement>('#input-barter-loc')?.value.trim() || 'Belirtilmedi';
 
       if (!title) {
         alert('Lütfen malzeme adını yazın.');

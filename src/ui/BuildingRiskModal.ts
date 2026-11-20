@@ -1,6 +1,7 @@
 import { FaultLine, AssemblyPoint, NearestFaultResult } from '../types';
 import { findNearestFaultLine } from '../utils/geoMath';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 export interface BuildingRiskData {
   year: 'pre1999' | '2000_2018' | 'post2018';
@@ -77,11 +78,14 @@ export class BuildingRiskModal {
     const actionItems: string[] = [];
 
     // 1. Fault Distance & PGA estimation
+    // Fay verisi yoksa mesafe UYDURULMAZ: puan hesaplanmaz, arayüz "veri yok" gösterir.
     const faultInfo = findNearestFaultLine(this.userCoords, this.faultLines);
-    const distKm = faultInfo ? faultInfo.distanceKm : 25;
+    const distKm = faultInfo ? faultInfo.distanceKm : NaN;
 
-    let pgaEstimate = '0.20 - 0.35g';
-    if (distKm < 8) {
+    let pgaEstimate = 'Veri yok';
+    if (!faultInfo) {
+      // puan eklenmez
+    } else if (distKm < 8) {
       score += 35;
       pgaEstimate = '0.50 - 0.70g (Şiddetli Sarsıntı Potansiyeli)';
       factors.push(`Faya çok yakın (${distKm} km)`);
@@ -172,13 +176,14 @@ export class BuildingRiskModal {
 
   private async shareReport(): Promise<void> {
     const risk = this.calculateRisk();
-    const nearestName = this.nearestAssemblyPoint ? this.nearestAssemblyPoint.name : 'En Yakın Alan';
+    const nearestName = this.nearestAssemblyPoint ? this.nearestAssemblyPoint.name : 'Bulunamadı';
     const text =
       `🏢 afet.live Bina ve Zemin Sismik Ön Değerlendirme Özeti\n` +
-      `• Değerlendirme: ${risk.level} (${risk.score}/100 Puan)\n` +
+      `• Değerlendirme: ${risk.faultInfo ? `${risk.level} (${risk.score}/100 puan)` : 'Fay verisi yüklenemedi — puan hesaplanamadı'}\n` +
       `• En Yakın Fay: ${risk.faultInfo ? `${risk.faultInfo.fault.name} (${risk.faultInfo.distanceKm} km)` : 'Bilinmiyor'}\n` +
-      `• Tahmini Yer İvmesi (PGA): ${risk.pgaEstimate}\n` +
-      `• Acil Toplanma Alanı: ${nearestName}\n` +
+      `• Kaba ivme sınıfı (bilimsel tahmin değildir): ${risk.pgaEstimate}\n` +
+      `• En yakın toplanma alanı: ${nearestName}\n` +
+      `Not: Bu kaba bir farkındalık tahminidir, mühendislik analizi değildir.\n` +
       `\nKendi binanızı ve toplanma alanınızı haritada görün: https://afet.live/?mod=bina-risk`;
 
     if (navigator.share) {
@@ -267,8 +272,8 @@ export class BuildingRiskModal {
               </span>
               <div class="min-w-0">
                 <div class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Konumunuza En Yakın Fay Zonu (basitleştirilmiş)</div>
-                <div class="text-xs font-bold text-white truncate" title="${fault ? fault.fault.name : 'Diri Fay Katmanı'}">
-                  ${fault ? fault.fault.name : 'Fay hattı katmanı inceleniyor'}
+                <div class="text-xs font-bold text-white truncate" title="${fault ? escapeHtml(fault.fault.name) : ''}">
+                  ${fault ? escapeHtml(fault.fault.name) : 'Fay verisi yüklenemedi'}
                 </div>
               </div>
             </div>
@@ -318,27 +323,27 @@ export class BuildingRiskModal {
           </div>
 
           <!-- 3. Calculated Risk Card -->
-          <div class="rounded-2xl ${risk.bgCls} border ${risk.borderCls} p-4 text-white">
+          <div class="rounded-2xl ${fault ? risk.bgCls : 'bg-white/5'} border ${fault ? risk.borderCls : 'border-white/10'} p-4 text-white">
             <div class="flex items-center justify-between gap-3 mb-2">
               <div>
                 <span class="text-[10px] font-mono tracking-wider uppercase opacity-75">Sismik Hazırlık ve Öncelik Durumu</span>
-                <div class="text-lg font-black tracking-wide ${risk.colorCls}">${risk.level}</div>
+                <div class="text-lg font-black tracking-wide ${fault ? risk.colorCls : 'text-gray-300'}">${fault ? risk.level : 'Fay verisi yüklenemedi — puan hesaplanamadı'}</div>
               </div>
               <div class="text-right">
-                <div class="font-mono text-2xl font-black ${risk.colorCls} tabular-nums">${risk.score}<span class="text-xs text-gray-400 font-normal">/100</span></div>
+                <div class="font-mono text-2xl font-black ${fault ? risk.colorCls : 'text-gray-300'} tabular-nums">${fault ? risk.score : '--'}<span class="text-xs text-gray-400 font-normal">/100</span></div>
                 <div class="text-[10px] text-gray-400">Risk Puanı</div>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 my-2.5 text-[11px] font-mono">
               <div class="rounded-xl bg-black/25 p-2 border border-white/5">
-                <div class="text-gray-400 text-[10px]">Beklenen Yer İvmesi</div>
+                <div class="text-gray-400 text-[10px]">Kaba ivme sınıfı (bilimsel tahmin değildir)</div>
                 <div class="text-white font-bold mt-0.5">${risk.pgaEstimate}</div>
               </div>
               <div class="rounded-xl bg-black/25 p-2 border border-white/5">
                 <div class="text-gray-400 text-[10px]">En Yakın Toplanma Alanı</div>
-                <div class="text-emerald-300 font-bold truncate mt-0.5" title="${this.nearestAssemblyPoint?.name || ''}">
-                  ${this.nearestAssemblyPoint ? this.nearestAssemblyPoint.name : 'Haritada aranıyor'}
+                <div class="text-emerald-300 font-bold truncate mt-0.5" title="${escapeHtml(this.nearestAssemblyPoint?.name || '')}">
+                  ${this.nearestAssemblyPoint ? escapeHtml(this.nearestAssemblyPoint.name) : 'Bulunamadı'}
                 </div>
               </div>
             </div>

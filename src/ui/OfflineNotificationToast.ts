@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 export class OfflineNotificationToast {
   private container: HTMLElement;
@@ -10,11 +11,11 @@ export class OfflineNotificationToast {
     parent.appendChild(this.container);
 
     window.addEventListener('offline', () => {
-      this.show('Çevrimdışı Mod: Kayıtlı Toplanma Alanları ve GPS Pusulası Aktif', true);
+      this.show('İnternet bağlantısı yok. Daha önce kaydedilmiş veriler varsa gösterilir.', true);
     });
 
     window.addEventListener('online', () => {
-      this.show('İnternet Bağlantısı Sağlandı: Canlı Sismik Veriler Güncelleniyor', false);
+      this.show('İnternet bağlantısı geri geldi.', false);
     });
   }
 
@@ -24,7 +25,7 @@ export class OfflineNotificationToast {
         isOffline ? 'bg-amber-500/20 text-amber-200 shadow-glow-red' : 'bg-emerald-500/20 text-emerald-300'
       } hud-glass shadow-2xl backdrop-blur-xl text-xs font-medium">
         ${isOffline ? Icons.wifiOff('w-4 h-4 text-amber-300') : Icons.wifi('w-4 h-4 text-emerald-400')}
-        <span>${message}</span>
+        <span>${escapeHtml(message)}</span>
       </div>
     `;
 

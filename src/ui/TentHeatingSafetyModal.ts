@@ -60,15 +60,15 @@ export class TentHeatingSafetyModal {
     } else if (hasModerate || checkedCount >= 1) {
       return {
         level: 'warning',
-        title: '⚠️ DİKKAT: Erken Zehirlenme veya Havasızlık Belirtisi',
-        description: 'Çadır içi tepe havalandırmasını en az 10 cm açın, soba borularını ve közü kontrol edin. Temiz havada nefes alın.',
+        title: '🚨 Hemen dışarı çıkın: karbonmonoksit belirtisi olabilir',
+        description: 'Herkesi hemen açık havaya çıkarın ve sobayı söndürün. Belirtiler geçmezse ya da birden fazla kişide varsa 112\'yi arayın. Çadır iyice havalanmadan içeri dönmeyin.',
         badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40'
       };
     } else {
       return {
         level: 'safe',
         title: '✅ Belirti Bildirilmedi',
-        description: 'Çadırda ısınırken aşağıdaki 5 güvenlik kuralına ve sürekli tepe havalandırmasına mutlaka uyun.',
+        description: 'Belirti olmaması ortamda karbonmonoksit olmadığını göstermez; bu liste bir ölçüm değildir. Çadırda ısınırken 5 güvenlik kuralına ve sürekli havalandırmaya uyun.',
         badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
       };
     }
@@ -95,7 +95,7 @@ export class TentHeatingSafetyModal {
             this.activeTab === 'checker' ? 'bg-rose-500 text-white shadow-md' : 'text-gray-400 hover:text-white'
           }"
         >
-          🧪 Sessiz Katil (CO) Testi
+          🧪 CO Belirti Listesi
         </button>
         <button
           id="btn-tab-tent-firstaid"
@@ -120,7 +120,7 @@ export class TentHeatingSafetyModal {
               ${Icons.alertTriangle('w-5 h-5')}
             </span>
             <div>
-              <strong class="text-rose-200 text-sm block">Deprem Çadırlarında 2. Büyük Tehlike: Yangın ve Karbonmonoksit!</strong>
+              <strong class="text-rose-200 text-sm block">Çadırda Isınırken İki Büyük Tehlike: Yangın ve Karbonmonoksit</strong>
               <p class="text-gray-300 mt-1 leading-relaxed">
                 Karbonmonoksit (CO) gazı renksiz, kokusuz ve tatsızdır. İnsan uyurken fark edemez ve derin uykuya dalarak sessizce hayatını kaybeder.
                 Çadır yangınları ise naylon branda nedeniyle saniyeler içinde tüm çadırı sarar.
@@ -145,7 +145,7 @@ export class TentHeatingSafetyModal {
             <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <div class="flex items-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center shrink-0">2</span>
-                <strong class="text-white text-sm">Tepe Havalandırması Sürekli 5 CM Açık Kalmalı</strong>
+                <strong class="text-white text-sm">Tepe Havalandırması Her Zaman Açık Kalmalı</strong>
               </div>
               <p class="text-gray-300 pl-8 leading-relaxed">
                 Dışarısı -15°C olsa dahi çadırın tepe havalandırma üçgeni veya karşılıklı pencere açıklığı <strong>asla tamamen kapatılmamalıdır</strong>. Isınan CO gazı yukarı yükselir ve ancak açık tepe menfezinden tahliye olur.
@@ -219,7 +219,7 @@ export class TentHeatingSafetyModal {
 
           <div class="space-y-2">
             <div class="flex items-center justify-between text-xs text-gray-400 px-1">
-              <span>ŞU AN HİSSEDİLEN BELİRTİLERİ İŞARETLEYİN:</span>
+              <span>ŞU AN HİSSEDİLEN BELİRTİLERİ İŞARETLEYİN (ölçüm değildir):</span>
               <button id="btn-reset-symptoms" type="button" class="text-rose-400 hover:underline text-[11px]">Sıfırla</button>
             </div>
             ${symptomListHtml}

@@ -12,10 +12,61 @@ export interface SyncProgress {
   stage: string;
 }
 
+export interface SyncResult {
+  /** Yalnızca üç temel veri seti (toplanma alanları, tesisler, fay hatları) gerçekten kaydedildiyse true. */
+  success: boolean;
+  /** Gerçekten kaydedilen dosya sayısı (veri + harita karosu). */
+  cachedItems: number;
+  /** Kaydedilmesi denenen toplam dosya sayısı. */
+  totalItems: number;
+  /** Temel veri setlerinin üçü de kaydedildi mi? */
+  coreOk: boolean;
+  /** Kaydedilen harita karosu sayısı. */
+  tilesCached: number;
+  /** Denenen harita karosu sayısı (konum yoksa ya da karo adresi bulunamadıysa 0). */
+  tilesTotal: number;
+}
+
+const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
+const CORE_DATASETS = ['assembly-points.geojson', 'emergency-facilities.geojson', 'fault-lines.geojson'];
+
+/**
+ * Harita karolarının gerçek adres şablonunu stil dosyasından okur
+ * (stil → kaynak → TileJSON → tiles[0]). Şablon bulunamazsa null döner;
+ * adres tahmin edilmez.
+ */
+async function resolveVectorTileTemplate(): Promise<string | null> {
+  try {
+    const styleRes = await fetch(MAP_STYLE_URL, { signal: AbortSignal.timeout(8000) });
+    if (!styleRes.ok) return null;
+    const style = await styleRes.json();
+    const sources = style && typeof style.sources === 'object' ? Object.values(style.sources as Record<string, any>) : [];
+    for (const src of sources) {
+      if (!src || src.type !== 'vector') continue;
+      if (Array.isArray(src.tiles) && typeof src.tiles[0] === 'string') return src.tiles[0];
+      if (typeof src.url === 'string') {
+        try {
+          const tjRes = await fetch(src.url, { signal: AbortSignal.timeout(8000) });
+          if (!tjRes.ok) continue;
+          const tj = await tjRes.json();
+          if (tj && Array.isArray(tj.tiles) && typeof tj.tiles[0] === 'string') return tj.tiles[0];
+        } catch {}
+      }
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Temel verileri ve (konum verilmişse) çevredeki harita karolarını bu cihaza kaydeder.
+ * Sonuç olduğu gibi bildirilir: hiçbir şey kaydedilemediyse "başarılı" denmez.
+ * centerCoords null ise harita karosu indirilmez.
+ */
 export async function syncCurrentRegionOffline(
-  centerCoords: [number, number],
+  centerCoords: [number, number] | null,
   onProgress?: (p: SyncProgress) => void
-): Promise<{ success: boolean; cachedItems: number }> {
+): Promise<SyncResult> {
+  const failed: SyncResult = { success: false, cachedItems: 0, totalItems: 0, coreOk: false, tilesCached: 0, tilesTotal: 0 };
   try {
     onProgress?.({ progress: 10, stage: 'Acil durum veri setleri indiriliyor...' });
 
@@ -31,11 +82,12 @@ export async function syncCurrentRegionOffline(
       '/favicon.svg',
       '/icons/icon-192.svg',
       '/icons/icon-512.svg',
-      'https://tiles.openfreemap.org/styles/dark',
+      MAP_STYLE_URL,
       'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
     ];
 
     let cachedCount = 0;
+    const coreStored = new Set<string>();
     for (let i = 0; i < dataUrls.length; i++) {
       const url = dataUrls[i];
       try {
@@ -43,6 +95,8 @@ export async function syncCurrentRegionOffline(
         if (res.ok) {
           await cache.put(url, res.clone());
           cachedCount++;
+          const coreName = CORE_DATASETS.find((name) => url.includes(name));
+          if (coreName) coreStored.add(coreName);
 
           // Dual-tier persist to IndexedDB
           if (url.includes('assembly-points.geojson')) {
@@ -105,22 +159,29 @@ export async function syncCurrentRegionOffline(
         }
       } catch {}
       const pct = 10 + Math.round(((i + 1) / dataUrls.length) * 55);
-      onProgress?.({ progress: pct, stage: 'Çevrimdışı acil veriler depolanıyor...' });
+      onProgress?.({ progress: pct, stage: 'Veriler kaydediliyor...' });
     }
 
-    // 2. Regional Map Vector Tiles (OpenFreeMap .pbf tiles covering centerCoords)
-    onProgress?.({ progress: 70, stage: 'Bölgesel harita karoları önbelleğe alınıyor...' });
-    const [lng, lat] = centerCoords;
+    // 2. Regional map vector tiles around centerCoords (only with a location and a resolved tile address)
+    onProgress?.({ progress: 70, stage: 'Çevredeki harita karoları kaydediliyor...' });
     const tileUrls: string[] = [];
+    const tileTemplate = centerCoords ? await resolveVectorTileTemplate() : null;
 
-    // Preload zooms 11, 12, 13, 14 around user
-    for (const z of [11, 12, 13, 14]) {
-      const cx = long2tile(lng, z);
-      const cy = lat2tile(lat, z);
-      const radius = z <= 12 ? 1 : 1; // 3x3 grid around user
-      for (let dx = -radius; dx <= radius; dx++) {
-        for (let dy = -radius; dy <= radius; dy++) {
-          tileUrls.push(`https://tiles.openfreemap.org/planet/${z}/${cx + dx}/${cy + dy}.pbf`);
+    if (centerCoords && tileTemplate) {
+      const [lng, lat] = centerCoords;
+      // Zooms 11-14, 3x3 grid around the location
+      for (const z of [11, 12, 13, 14]) {
+        const cx = long2tile(lng, z);
+        const cy = lat2tile(lat, z);
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            tileUrls.push(
+              tileTemplate
+                .replace('{z}', String(z))
+                .replace('{x}', String(cx + dx))
+                .replace('{y}', String(cy + dy))
+            );
+          }
         }
       }
     }
@@ -139,14 +200,34 @@ export async function syncCurrentRegionOffline(
     );
     cachedCount += tileCached;
 
-    onProgress?.({ progress: 100, stage: 'Çevrimdışı Koruma Aktif!' });
+    const totalItems = dataUrls.length + tileUrls.length;
+    const coreOk = CORE_DATASETS.every((name) => coreStored.has(name));
 
-    localStorage.setItem('afet_offline_protection', 'true');
-    localStorage.setItem('afet_offline_synced_at', String(Date.now()));
+    onProgress?.({
+      progress: 100,
+      stage: coreOk
+        ? `Kaydedildi: ${cachedCount}/${totalItems} dosya`
+        : `Çevrimdışı kayıt tamamlanamadı (${cachedCount}/${totalItems} dosya)`
+    });
 
-    return { success: true, cachedItems: cachedCount };
+    // "Kayıtlı" işareti yalnızca temel veriler gerçekten kaydedildiyse konur.
+    if (coreOk) {
+      try {
+        localStorage.setItem('afet_offline_protection', 'true');
+        localStorage.setItem('afet_offline_synced_at', String(Date.now()));
+      } catch {}
+    }
+
+    return {
+      success: coreOk,
+      cachedItems: cachedCount,
+      totalItems,
+      coreOk,
+      tilesCached: tileCached,
+      tilesTotal: tileUrls.length
+    };
   } catch {
-    return { success: false, cachedItems: 0 };
+    return failed;
   }
 }
 

@@ -3,7 +3,8 @@ import { Icons } from './icons';
 export class UltraBatterySaverModal {
   private container: HTMLElement;
   private isSaverActive = false;
-  private batteryLevel = 100;
+  /** Pil seviyesi yalnızca tarayıcı gerçekten bildirirse dolar; aksi halde null (uydurma değer gösterilmez). */
+  private batteryLevel: number | null = null;
   private isCharging = false;
   private onTriggerWhistle?: () => void;
   private onToggleTorch?: () => void;
@@ -39,8 +40,8 @@ export class UltraBatterySaverModal {
   }
 
   private updateBatteryInfo(battery: any): void {
-    this.batteryLevel = Math.round(battery.level * 100);
-    this.isCharging = battery.charging;
+    this.batteryLevel = typeof battery.level === 'number' ? Math.round(battery.level * 100) : null;
+    this.isCharging = battery.charging === true;
     this.render();
   }
 
@@ -61,10 +62,6 @@ export class UltraBatterySaverModal {
   }
 
   private render(): void {
-    // Estimate hours remaining: normal ~0.8% per hour in standby, saver ~0.25% per hour
-    const normalHours = Math.max(1, Math.round(this.batteryLevel / 1.5));
-    const saverHours = Math.max(2, Math.round(this.batteryLevel / 0.35));
-
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl bg-black text-white">
         <!-- Header -->
@@ -75,14 +72,14 @@ export class UltraBatterySaverModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-bold text-white">Ultra Pil Tasarrufu (72 Saat Modu)</h2>
+                <h2 class="text-sm sm:text-base font-bold text-white">Pil Tasarrufu Modu (Siyah Ekran)</h2>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
                   this.isSaverActive ? 'bg-emerald-500 text-black' : 'bg-white/10 text-gray-400'
                 }">
                   ${this.isSaverActive ? 'AKTİF' : 'KAPALI'}
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">OLED siyah piksel söndürme ve GPU döngülerini durdurarak telefon şarjını günlerce korur.</p>
+              <p class="text-[11px] text-gray-400">Arayüzü siyaha çevirir, haritayı karartır ve animasyonları kapatır.</p>
             </div>
           </div>
           <button id="btn-close-battery-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -97,14 +94,17 @@ export class UltraBatterySaverModal {
             <div>
               <div class="text-[11px] text-gray-400 font-medium">MEVCUT PİL SEVİYESİ</div>
               <div class="font-mono text-3xl font-black text-emerald-400 mt-0.5 flex items-baseline gap-1">
-                <span>%${this.batteryLevel}</span>
-                ${this.isCharging ? '<span class="text-xs font-normal text-amber-300">⚡ Şarj Oluyor</span>' : ''}
+                <span>${this.batteryLevel === null ? 'Okunamıyor' : `%${this.batteryLevel}`}</span>
+                ${this.batteryLevel !== null && this.isCharging ? '<span class="text-xs font-normal text-amber-300">⚡ Şarj Oluyor</span>' : ''}
               </div>
             </div>
 
-            <div class="text-right space-y-1">
-              <div class="text-[11px] text-gray-400">Normal Kullanım: <strong class="text-gray-300 font-mono">~${normalHours} saat</strong></div>
-              <div class="text-[11px] text-emerald-300 font-bold">Ultra Tasarruf ile: <strong class="font-mono text-emerald-400 text-sm">~${saverHours} saat</strong></div>
+            <div class="text-right text-[11px] text-gray-400 max-w-[55%] leading-snug">
+              ${
+                this.batteryLevel === null
+                  ? 'Bu tarayıcı pil seviyesini paylaşmıyor. Seviyeyi telefonunuzun durum çubuğundan izleyin.'
+                  : 'Kalan süre tahmini gösterilmez: tasarruf miktarı cihaza göre değişir ve ölçülmemiştir.'
+              }
             </div>
           </div>
 
@@ -118,19 +118,28 @@ export class UltraBatterySaverModal {
                 : 'bg-white/10 hover:bg-white/15 text-white border border-white/20'
             }"
           >
-            <span>${this.isSaverActive ? '✅ Ultra Pil Tasarrufu Açık (Devre Dışı Bırak)' : '⚡ Ultra Pil Tasarrufunu Hemen Başlat'}</span>
+            <span>${this.isSaverActive ? '✅ Pil Tasarrufu Modu Açık (Kapat)' : '⚡ Pil Tasarrufu Modunu Aç'}</span>
           </button>
 
           <!-- How it Works -->
           <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 text-gray-300">
             <div class="font-bold text-white flex items-center gap-1.5">
-              <span>🔋 72 Saat Hayatta Kalma Protokolü Nasıl Çalışır?</span>
+              <span>🔋 Bu mod ne yapar?</span>
             </div>
             <ul class="space-y-1.5 text-[11px] text-gray-400 list-disc list-inside">
-              <li><strong>OLED Saf Siyah (#000000):</strong> Ekrandaki siyah piksellerin organik diyotları tamamen kapatılarak ekran pili tüketimi %75 azaltılır.</li>
-              <li><strong>WebGL & GPU Döngüsü Uyutma:</strong> Harita 3D animasyonları ve sismik dalga render döngüleri dondurulur.</li>
-              <li><strong>Arka Plan GPS Kısıtlama:</strong> Pil tüketen sürekli konum izleme kapatılır; yalnızca acil butonuna basıldığında tek seferlik konum okunur.</li>
-              <li><strong>Yalnızca Kritik S.O.S Ekranı:</strong> Ekran kilitlenmez (WakeLock) ancak minimum parlaklıkta S.O.S düdüğü ve koordinat paneli aktif kalır.</li>
+              <li>Arayüz arka planını siyaha çevirir (OLED ekranlarda siyah pikseller daha az güç harcar).</li>
+              <li>Haritayı karartır ve dokunmaya kapatır.</li>
+              <li>Animasyonları ve geçişleri kapatır.</li>
+            </ul>
+            <div class="font-bold text-white pt-1">Ne yapmaz?</div>
+            <ul class="space-y-1.5 text-[11px] text-gray-400 list-disc list-inside">
+              <li>Konum (GPS) izlemeyi, mobil veriyi ya da ekran parlaklığını değiştirmez; tasarruf miktarı ölçülmemiştir.</li>
+            </ul>
+            <div class="font-bold text-white pt-1">Pili asıl koruyan adımlar</div>
+            <ul class="space-y-1.5 text-[11px] text-gray-400 list-disc list-inside">
+              <li>Ekran parlaklığını en aza indirin, telefonun kendi güç tasarrufu modunu açın.</li>
+              <li>Gerekmedikçe ekranı kapalı tutun; uçak modunu açıp yalnızca arama ya da mesaj göndereceğiniz zaman kapatın.</li>
+              <li>Wi-Fi, Bluetooth ve konumu kullanmadığınızda kapatın.</li>
             </ul>
           </div>
 
@@ -151,7 +160,7 @@ export class UltraBatterySaverModal {
               class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/10"
             >
               ${Icons.bolt('w-4 h-4')}
-              <span>Flaşör / Fener</span>
+              <span>S.O.S Ekranı</span>
             </button>
           </div>
         </div>

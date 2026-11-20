@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { NearestFaultResult } from '../types';
+import { escapeHtml } from '../utils/safeText';
 
 export interface HeaderHUDCallbacks {
   onSearchChange: (query: string) => void;
@@ -97,21 +98,21 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
     badge: 'Kritik Müdahale',
     accentClass: 'text-rose-400',
     tools: [
-      { id: 'btn-open-insarag', label: 'INSARAG', title: 'INSARAG USAR Enkaz İşaretleme Çözücü & Oluşturucu', rgb: '244, 63, 94', icon: Icons.sprayCan },
+      { id: 'btn-open-insarag', label: 'Enkaz İşareti', title: 'Enkaz İşaretleri (basitleştirilmiş yardımcı)', rgb: '244, 63, 94', icon: Icons.sprayCan },
       { id: 'btn-open-cpr', label: 'CPR Koçu', title: 'Kalp Masajı Metronomu (AHA 110 BPM)', rgb: '244, 63, 94', icon: Icons.heartPulse },
       { id: 'btn-open-triage', label: 'Triyaj', title: 'Sahra Triyaj Asistanı (START Protokolü)', rgb: '236, 72, 153', icon: Icons.stethoscope },
       { id: 'btn-open-tourniquet', label: 'Turnike', title: 'Turnike Zamanlayıcısı (120 Dk Güvenlik)', rgb: '239, 68, 68', icon: Icons.timer },
-      { id: 'btn-open-sar-beacon', label: 'SAR Flaşör', title: 'Optik Flaşör & Ekran Mors S.O.S', rgb: '239, 68, 68', icon: Icons.flashlight },
+      { id: 'btn-open-sar-beacon', label: 'S.O.S Işık', title: 'Fener ve Ekranla Mors S.O.S Işık Sinyali', rgb: '239, 68, 68', icon: Icons.flashlight },
       { id: 'btn-open-acoustic-listener', label: 'Enkaz Sensörü', title: 'Akustik Enkaz Dinleme ve S.O.S Tetikleyici', rgb: '168, 85, 247', icon: Icons.mic },
       { id: 'btn-open-whistle', label: 'SAR Düdüğü', title: '3000 Hz Kurtarma Düdüğü (Web Audio)', rgb: '245, 158, 11', icon: Icons.whistle },
-      { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Sismograf Başucu Nöbeti & WakeLock', rgb: '129, 140, 248', icon: Icons.moon },
-      { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Ultra Pil Tasarrufu (72 Saat OLED Modu)', rgb: '16, 185, 129', icon: Icons.battery }
+      { id: 'btn-open-night-watch', label: 'Gece Nöbeti', title: 'Başucu Sarsıntı Nöbeti (telefon sensörü, garanti değildir)', rgb: '129, 140, 248', icon: Icons.moon },
+      { id: 'btn-open-battery-saver', label: 'Pil Tasarrufu', title: 'Pil Tasarrufu (Karanlık OLED Modu)', rgb: '16, 185, 129', icon: Icons.battery }
     ]
   },
   {
     id: 'radars',
     title: 'Taktik Navigasyon & Radarlar',
-    badge: 'Canlı Sensörler',
+    badge: 'Navigasyon & Risk',
     accentClass: 'text-sky-400',
     tools: [
       { id: 'btn-open-pluscode', label: 'Plus Code', title: 'Google Open Location Code & Telsiz Fonetik Grid', rgb: '16, 185, 129', icon: Icons.plusCode },
@@ -128,18 +129,18 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
   },
   {
     id: 'comms',
-    title: 'İnternetsiz İletişim & Lojistik',
-    badge: 'Şebekesiz P2P',
+    title: 'İletişim & Lojistik',
+    badge: 'Gönüllü Ağ',
     accentClass: 'text-cyan-400',
     tools: [
       { id: 'btn-open-volunteer-dispatch', label: 'Gönüllü Kartı', title: 'Afet Gönüllü Sevk & Sahra Pasaportu (INSARAG)', rgb: '59, 130, 246', icon: Icons.volunteerBadge },
-      { id: 'btn-open-afetbilgi', label: 'AfetBilgi', title: 'AfetBilgi Doğrulanmış Aşevi, Çadır & İhtiyaç Kataloğu', rgb: '245, 158, 11', icon: Icons.soupKitchen },
-      { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat Şebekesiz P2P ve Nostr Kriz Ağı', rgb: '34, 211, 238', icon: Icons.messages },
-      { id: 'btn-open-ptt-walkie', label: 'Telsiz PTT', title: 'İnternetsiz Bas-Konuş Telsiz', rgb: '16, 185, 129', icon: Icons.radio },
+      { id: 'btn-open-afetbilgi', label: 'Acil Hatlar', title: 'Acil Hatlar ve Yardım Bilgisi', rgb: '245, 158, 11', icon: Icons.soupKitchen },
+      { id: 'btn-open-crisis', label: 'BitChat', title: 'BitChat — Nostr aktarıcıları üzerinden açık sohbet (internet gerekir)', rgb: '34, 211, 238', icon: Icons.messages },
+      { id: 'btn-open-ptt-walkie', label: 'Sesli Not', title: 'Sesli Not Kaydı (telsiz DEĞİLDİR)', rgb: '16, 185, 129', icon: Icons.radio },
       { id: 'btn-open-sms', label: 'Acil SMS', title: 'GPS Konumlu Acil Durum SMS ve Hatlar', rgb: '245, 158, 11', icon: Icons.phone },
       { id: 'btn-open-emergency-radio', label: 'Afet Telsizi', title: 'TRAC & PMR 446 Acil Frekans Rehberi', rgb: '234, 179, 8', icon: Icons.radio },
-      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Su, WC ve Çadır Doluluk Karnesi', rgb: '245, 158, 11', icon: Icons.tent },
-      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Çadırkent Malzeme ve Yardım Masası (P2P)', rgb: '245, 158, 11', icon: Icons.truck },
+      { id: 'btn-open-camp-status', label: 'Sahra Durumu', title: 'Toplanma Alanı Su, WC ve Çadır Durumu Bildirimi', rgb: '245, 158, 11', icon: Icons.tent },
+      { id: 'btn-open-field-aid', label: 'Sahra İhtiyaç', title: 'Çadırkent Malzeme ve Yardım Listesi', rgb: '245, 158, 11', icon: Icons.truck },
       { id: 'btn-open-qr-pack', label: 'QR Durum', title: 'İnternetsiz Cihazlar Arası Güvendeyim QR Paketi', rgb: '45, 212, 191', icon: Icons.qrCode }
     ]
   },
@@ -155,10 +156,10 @@ const TOOL_CATEGORIES: QuickToolCategory[] = [
       { id: 'btn-open-damage-assessment', label: 'Bina Hasarı', title: 'Bina Hasar Tespit ve Kanıt Tutanağı', rgb: '251, 191, 36', icon: Icons.building },
       { id: 'btn-open-cbrn', label: 'KBRN & Nükleer', title: 'KBRN, Radyasyon ve Sığınak Güvenliği', rgb: '234, 179, 8', icon: Icons.radiation },
       { id: 'btn-open-water-disinfection', label: 'Su Arıtma', title: 'Sahra Su Arıtma ve Klorlama Dozajlayıcısı', rgb: '14, 165, 233', icon: Icons.droplet },
-      { id: 'btn-open-civil-vault', label: 'Evrak Kasası', title: 'Mülkiyet Kasası ve P2P Takas Defteri', rgb: '99, 102, 241', icon: Icons.fileText },
+      { id: 'btn-open-civil-vault', label: 'Evrak Kasası', title: 'Evrak Notları ve Kişisel İhtiyaç Listesi', rgb: '99, 102, 241', icon: Icons.fileText },
       { id: 'btn-open-blood', label: 'Kan Bağışı', title: 'Kan Merkezleri ve Donör Eşleşme Ağı', rgb: '239, 68, 68', icon: Icons.health },
       { id: 'btn-open-med-passport', label: 'İlaç Kartı', title: 'Afet İlaç Pasaportu ve Eşdeğer Rehberi', rgb: '16, 185, 129', icon: Icons.pill },
-      { id: 'btn-open-offline-map', label: 'Harita İndir', title: 'Çevrimdışı Vektör Harita Paketi', rgb: '6, 182, 212', icon: Icons.download },
+      { id: 'btn-open-offline-map', label: 'Çevrimdışı Kayıt', title: 'Harita ve Verileri Çevrimdışı Kullanım İçin Kaydet', rgb: '6, 182, 212', icon: Icons.download },
       { id: 'btn-toggle-bag', label: 'Afet Kiti', title: 'Afet Çantası Malzeme Kontrol Listesi', rgb: '167, 139, 250', icon: Icons.backpack },
       { id: 'btn-open-psych-firstaid', label: 'Kutu Nefesi', title: 'Psikolojik İlk Yardım ve Kutu Nefesi', rgb: '59, 130, 246', icon: Icons.brain },
       { id: 'btn-open-pet-safety', label: 'Pati Güvenlik', title: 'Evcil Hayvan Afet Güvenliği ve Tahliye', rgb: '251, 146, 60', icon: Icons.paw }
@@ -282,10 +283,10 @@ export class HeaderHUD {
       .slice(0, 8)
       .map(
         (r) => `
-        <div data-point-id="${r.id}" class="spotlight-result-item p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/5 flex items-center justify-between cursor-pointer transition-all ios27-tap-bounce">
+        <div data-point-id="${escapeHtml(r.id)}" class="spotlight-result-item p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/5 flex items-center justify-between cursor-pointer transition-all ios27-tap-bounce">
           <div class="min-w-0">
-            <div class="font-bold text-white text-xs truncate">${r.name}</div>
-            <div class="text-[10.5px] text-gray-400 truncate">${r.district}, ${r.city}</div>
+            <div class="font-bold text-white text-xs truncate">${escapeHtml(r.name)}</div>
+            <div class="text-[10.5px] text-gray-400 truncate">${escapeHtml(r.district)}, ${escapeHtml(r.city)}</div>
           </div>
           ${
             r.distanceKm !== undefined
@@ -361,7 +362,7 @@ export class HeaderHUD {
           <!-- Province Selector Trigger -->
           <button id="btn-island-province" type="button" class="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 active:scale-95 text-gray-200 hover:text-white text-[10.5px] font-semibold transition-all cursor-pointer shrink-0" title="Şehir / İl Seç">
             <span class="text-[11px]">📍</span>
-            <span id="island-province-label" class="truncate max-w-[60px] sm:max-w-[120px]">${this.selectedProvince ? this.capitalize(this.selectedProvince) : '81 İl'}</span>
+            <span id="island-province-label" class="truncate max-w-[60px] sm:max-w-[120px]">${this.selectedProvince ? escapeHtml(this.capitalize(this.selectedProvince)) : '81 İl'}</span>
             <span class="text-[8px] text-gray-400">▾</span>
           </button>
 
@@ -425,14 +426,14 @@ export class HeaderHUD {
           <div id="province-buttons-grid" class="max-h-56 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 gap-1.5 pr-1 text-xs custom-scrollbar">
             ${this.provinces.map((prov) => `
               <button
-                data-prov="${prov.toLowerCase()}"
+                data-prov="${escapeHtml(prov.toLowerCase())}"
                 class="btn-select-prov p-2 rounded-xl text-left truncate transition-all text-[11px] cursor-pointer ${
                   this.selectedProvince.toLowerCase() === prov.toLowerCase()
                     ? 'bg-cyan-500/25 text-cyan-200 font-bold border border-cyan-400/40 shadow-sm'
                     : 'bg-white/[0.03] hover:bg-white/[0.08] text-gray-300 hover:text-white border border-white/5'
                 }"
               >
-                ${prov}
+                ${escapeHtml(prov)}
               </button>
             `).join('')}
           </div>
@@ -492,7 +493,6 @@ export class HeaderHUD {
           <button id="btn-dock-bitchat" type="button" class="flex-1 min-w-0 h-[36px] sm:h-[42px] px-2 sm:px-3 flex items-center justify-center gap-1 sm:gap-1.5 rounded-[18px] bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs tracking-wide shadow-md border border-cyan-500/30 transition-all cursor-pointer" title="BitChat Kriz Odası">
             ${Icons.messages('w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0')}
             <span class="text-[10px] sm:text-xs truncate">BitChat</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
           </button>
 
           <!-- Right Wing 2: Control Center Menu Square (Matches Locate Square symmetrically) -->

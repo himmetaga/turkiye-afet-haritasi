@@ -8,6 +8,22 @@ import {
   AvalancheAssessment
 } from '../services/avalancheHypothermiaService';
 
+// Servisteki İngilizce seviye kodlarının ekranda gösterilen Türkçe karşılıkları.
+// 'SAFE' kodu "güvenli" diye gösterilmez: yalnızca hesaplanan riskin düşük olduğunu belirtir.
+const HYPO_LEVEL_LABELS: Record<HypothermiaAssessment['hypothermiaRiskLevel'], string> = {
+  SAFE: 'DONMA RİSKİ DÜŞÜK',
+  CAUTION: 'DİKKAT',
+  DANGER: 'TEHLİKE',
+  EXTREME_FATAL: 'ÇOK YÜKSEK TEHLİKE'
+};
+
+const AVALANCHE_LEVEL_LABELS: Record<AvalancheAssessment['avalancheRiskLevel'], string> = {
+  SAFE: 'EĞİM 30° ALTI',
+  MODERATE: 'SARP YAMAÇ',
+  CRITICAL_TRAP: 'KRİTİK EĞİM',
+  EXTREME: 'ÇOK YÜKSEK TEHLİKE'
+};
+
 export class AvalancheHypothermiaModal {
   private container: HTMLElement;
   private activeTab: 'hypothermia' | 'avalanche' | 'snow_cave' = 'hypothermia';
@@ -109,7 +125,7 @@ export class AvalancheHypothermiaModal {
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-bold text-white tracking-wide">Çığ & Kış Hipotermi Radarı</h2>
+                <h2 class="text-base font-bold text-white tracking-wide">Çığ Eğimi & Rüzgar Soğuğu Hesabı</h2>
                 <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider" style="color: ${
                   this.activeTab === 'hypothermia' ? hypo.hypothermiaRiskColor : aval.avalancheRiskColor
                 }; background: ${
@@ -117,10 +133,10 @@ export class AvalancheHypothermiaModal {
                 }; border: 1px solid ${
                   this.activeTab === 'hypothermia' ? hypo.hypothermiaRiskColor + '40' : aval.avalancheRiskColor + '40'
                 };">
-                  ${this.activeTab === 'hypothermia' ? hypo.hypothermiaRiskLevel.replace('_', ' ') : aval.avalancheRiskLevel.replace('_', ' ')}
+                  ${this.activeTab === 'hypothermia' ? HYPO_LEVEL_LABELS[hypo.hypothermiaRiskLevel] : AVALANCHE_LEVEL_LABELS[aval.avalancheRiskLevel]}
                 </span>
               </div>
-              <p class="text-xs text-gray-400">NOAA Wind Chill & EAWS 30°-45° Kritik Çığ Tuzağı Analizi</p>
+              <p class="text-xs text-gray-400">Girdiğiniz değerlere göre kaba tahmin; çığ bülteni veya ölçüm değildir</p>
             </div>
           </div>
           <button id="btn-close-avalanche" class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors">
@@ -181,7 +197,7 @@ export class AvalancheHypothermiaModal {
           <div class="text-[10px] uppercase tracking-wider font-bold" style="color: ${h.hypothermiaRiskColor}">Hissedilen Rüzgar Soğuğu</div>
           <div class="text-3xl font-black mt-1" style="color: ${h.hypothermiaRiskColor}">${h.windChillC}°C</div>
           <div class="text-[10px] font-medium mt-0.5" style="color: ${h.hypothermiaRiskColor}cc">
-            ${h.frostbiteTimeMinutes ? `⚠️ ${h.frostbiteTimeMinutes} Dk İçinde Donma Riski!` : 'Donma süresi güvenli'}
+            ${h.frostbiteTimeMinutes ? `⚠️ ${h.frostbiteTimeMinutes} Dk İçinde Donma Riski!` : 'Donma riski düşük (hipotermi riski sürer)'}
           </div>
         </div>
 
@@ -244,7 +260,7 @@ export class AvalancheHypothermiaModal {
 
       <button id="btn-copy-hypo-report" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-cyan-600/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
         ${Icons.share('w-4 h-4')}
-        Hipotermi Raporunu Kopyala / Paylaş
+        Notu Kopyala
       </button>
     `;
   }
@@ -278,7 +294,7 @@ export class AvalancheHypothermiaModal {
       <!-- Slope Angle Slider -->
       <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
         <div class="flex items-center justify-between text-xs">
-          <span class="text-gray-400">Yamaç Eğim Açısı</span>
+          <span class="text-gray-400">Yamaç Eğim Açısı (telefonla ölçüm yaklaşık değerdir)</span>
           <span class="font-extrabold text-base" style="color: ${a.avalancheRiskColor}">${this.slopeAngleDeg}°</span>
         </div>
         <input id="input-slope-angle" type="range" min="0" max="65" step="1" value="${this.slopeAngleDeg}" class="w-full accent-cyan-400 bg-white/10 rounded-lg h-2 cursor-pointer" />
@@ -330,7 +346,7 @@ export class AvalancheHypothermiaModal {
       <div class="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
         <div class="flex items-center justify-between text-xs">
           <span class="font-bold text-cyan-300">Acil Durum Kar Mağarası Kesiti</span>
-          <span class="text-[11px] text-emerald-400 font-bold">Dışarı -25°C iken İçerisi 0°C</span>
+          <span class="text-[11px] text-gray-300">İçerisi dışarıdan belirgin biçimde ılık olabilir</span>
         </div>
 
         <!-- SVG Snow Cave Diagram -->
@@ -348,7 +364,7 @@ export class AvalancheHypothermiaModal {
 
             <!-- Sleeping Platform (High ground) -->
             <rect x="200" y="90" width="70" height="8" fill="#10B981" rx="2" />
-            <text x="235" y="85" fill="#34D399" font-size="8" font-weight="bold" text-anchor="middle">Uyku Sekisi (0°C)</text>
+            <text x="235" y="85" fill="#34D399" font-size="8" font-weight="bold" text-anchor="middle">Uyku Sekisi</text>
 
             <!-- Ventilation Hole -->
             <line x1="210" y1="58" x2="210" y2="28" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 2" />
@@ -448,17 +464,17 @@ export class AvalancheHypothermiaModal {
     if (btnCopyHypo) {
       btnCopyHypo.addEventListener('click', () => {
         const h = avalancheHypothermiaService.calculateWindChill(this.ambientTempC, this.windSpeedKmh);
-        const text = `[HİPOTERMİ & RÜZGAR SOĞUĞU SAHRA RAPORU]\n` +
+        const text = `[RÜZGAR SOĞUĞU NOTU — kullanıcının girdiği değerlerle hesaplanmıştır]\n` +
           `• Sıcaklık: ${h.ambientTempC}°C | Rüzgar: ${h.windSpeedKmh} km/saat\n` +
           `• HİSSEDİLEN RÜZGAR SOĞUĞU: ${h.windChillC}°C\n` +
-          `• Donma Riski (Frostbite): ${h.frostbiteTimeMinutes ? `${h.frostbiteTimeMinutes} dakika içinde açıkta kalan deri donar!` : 'Normal'}\n` +
-          `• Tehlike Düzeyi: ${h.hypothermiaRiskLevel}\n` +
+          `• Donma Riski (Frostbite): ${h.frostbiteTimeMinutes ? `yaklaşık ${h.frostbiteTimeMinutes} dakika içinde açıkta kalan deri donabilir` : 'düşük (hipotermi riski sürer)'}\n` +
+          `• Düzey: ${HYPO_LEVEL_LABELS[h.hypothermiaRiskLevel]} (kaba tahmin)\n` +
           `⚠️ TALİMAT: 3 katmanlı giyinin, ıslak giysileri değiştirin, rüzgar siperi oluşturun ve asla donmuş deriyi karla ovmayın.\n` +
           `afet.live ile oluşturuldu.`;
 
         if (navigator.clipboard) {
           navigator.clipboard.writeText(text);
-          btnCopyHypo.innerHTML = `${Icons.checkCircle('w-4 h-4')} Hipotermi Raporu Kopyalandı!`;
+          btnCopyHypo.innerHTML = `${Icons.checkCircle('w-4 h-4')} Panoya kopyalandı`;
           setTimeout(() => this.render(), 2000);
         }
       });

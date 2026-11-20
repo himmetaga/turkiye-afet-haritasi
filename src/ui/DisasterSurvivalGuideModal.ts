@@ -28,7 +28,7 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
     ],
     donts: [
       'ASLA asansöre binmeyin veya balkona çıkmayın.',
-      'ASLA merdivenlere koşmayın (merdivenler binaların en çabuk yıkılan ve ezilen alanlarıdır).',
+      'ASLA merdivenlere koşmayın (sarsıntı sırasında merdivenler en riskli yerlerdendir).',
       'Pencerelere, vitrinlere, ağır kitaplıklara ve avizelere yaklaşmayın.',
       'Pencereden veya balkondan aşağı atlamayın.'
     ],
@@ -39,7 +39,7 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
       },
       {
         title: 'Merdiven Tuzağı',
-        desc: 'Deprem ölümlerinin büyük kısmı bina yıkılmadan önce merdiven boşluğuna kaçmaya çalışanların merdivenlerin çökmesiyle ezilmesinden kaynaklanır.',
+        desc: 'Sarsıntı sırasında merdivenler ve merdiven boşlukları en riskli yerlerdendir. Sarsıntı bitmeden merdivene yönelmeyin.',
         isWarning: true
       }
     ]
@@ -63,8 +63,8 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
     ],
     criticalRules: [
       {
-        title: '3 Vuruş Uluslararası Arama Kodu',
-        desc: 'Dinleme ekipleri periyodik olarak sessizlik ister ve mikrofonla dinler. "TAK - TAK - TAK" ritmi akustik filtrelerde insan işareti olarak hemen ayrışır.'
+        title: 'Düzenli 3 Vuruş',
+        desc: 'Kurtarma ekipleri zaman zaman sessizlik isteyip dinleme yapar. Düzenli aralıklarla tekrarlanan üçlü vuruş (TAK - TAK - TAK), rastgele gürültüden daha kolay ayırt edilir.'
       },
       {
         title: 'Asla Ateş Yakmayın!',
@@ -135,28 +135,28 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
     title: 'Acil İlk Yardım & Crush Protokolü',
     badge: 'Tıbbi Müdahale',
     icon: '🩹',
-    summary: 'İlk yardımın temel kuralı önce zarar vermemektir. Bilinçsiz su içirmek veya omurgayı sarsmak kalıcı hasar bırakabilir.',
+    summary: 'İlk yardımın temel kuralı önce zarar vermemektir. Bilinci kapalı kişiye ağızdan bir şey vermek veya omurgayı sarsmak kalıcı hasar bırakabilir. Her durumda önce 112.',
     dos: [
-      'Crush (Ezilme) sendromu şüphesinde sağlık ekipleri damar yolu açmadan önce kazazedeye kontrolsüzce su içirmeyin.',
+      "Crush (ezilme) sendromunda erken sıvı hayat kurtarır: hemen 112'ye / sağlık ekibine haber verin. Bilinci açık ve yutabilen kazazedeye yudum yudum su verilebilir; meyve suyu, muz gibi potasyumlu şeyler vermeyin. Bilinci kapalıysa ağızdan hiçbir şey vermeyin. Kesin karar sağlık ekibinindir.",
       'Şiddetli atardamar kanamasında ekstremiteye (kol/bacak) yaranın 5-7 cm yukarısına turnike uygulayın ve saati mutlaka yaralının alnına yazın.',
       'Kazazedenin bilinci kapalıysa ve solunumu varsa Koma / İyileşme (yan yatış) pozisyonuna getirin (dilin nefes borusunu tıkamasını önler).',
       'Yaralıyı sıcak tutun; şoktaki kişi hızla vücut ısısı kaybeder, battaniye veya alüminyum termal örtüyle sarın.'
     ],
     donts: [
-      '⚠️ KESİNLİKLE ENKAZDAN ÇIKAN KİŞİYE HEMEN BOL SU İÇİRMEYİN!',
+      'Bilinci kapalı veya yutamayan kazazedeye ağızdan hiçbir şey vermeyin.',
       'Boyun ve omurga travması şüphesi olan kazazedeyi boyunluksuz veya sedyesiz sarsarak taşımayın.',
       'Yaraya tentürdiyot, kolonya, tuz veya tütün gibi yabancı maddeler basmayın.',
-      'Turnikeyi 1.5 saatten uzun süre çözmeden veya gevşetmeden tutmayın.'
+      'Turnikeyi bir kez uyguladıktan sonra kendiniz gevşetmeyin veya çözmeyin; uygulama saatini yazın ve yaralıyı en kısa sürede sağlık ekibine ulaştırın.'
     ],
     criticalRules: [
       {
         title: 'Hayati Uyarı: Ezilme (Crush) Sendromu',
-        desc: 'Enkaz altında ezilen kaslarda yüksek oranda miyoglobin ve potasyum birikir. Baskı kalktığında ve kişi su içtiğinde bu toksinler hızla böbreklere ve kalbe hücum ederek ani böbrek iflası ve ritim bozukluğuna yol açar.',
+        desc: "Enkaz altında ezilen kaslarda miyoglobin ve potasyum birikir. Baskı kalktığında bunlar dolaşıma karışarak böbrek yetmezliğine ve ritim bozukluğuna yol açabilir. " + "Crush (ezilme) sendromunda erken sıvı hayat kurtarır: hemen 112'ye / sağlık ekibine haber verin. Bilinci açık ve yutabilen kazazedeye yudum yudum su verilebilir; meyve suyu, muz gibi potasyumlu şeyler vermeyin. Bilinci kapalıysa ağızdan hiçbir şey vermeyin. Kesin karar sağlık ekibinindir.",
         isWarning: true
       },
       {
         title: 'Turnikeye Zaman Kaydı',
-        desc: 'Turnike uygulandığında turnikenin üzerine veya yaralının alnına uygulandığı saati (Örn: T: 15:40) silinmez kalemle yazın. 120 dakikayı aşan turnikeler doku kangrenine yol açar.'
+        desc: 'Turnike uygulandığında turnikenin üzerine veya yaralının alnına uygulandığı saati (Örn: T: 15:40) silinmez kalemle yazın. Turnikeyi kendiniz gevşetmeyin veya çözmeyin; yaralıyı en kısa sürede sağlık ekibine ulaştırın.'
       }
     ]
   },
@@ -176,8 +176,7 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
     donts: [
       'Bulanık, renkli veya kokulu şebeke sularını kaynatmadan ya da klorlamadan ASLA içmeyin veya diş fırçalamayın.',
       'Sel veya enkaz suyuna temas etmiş gıda ve ambalajları tüketmeyin.',
-      'Açıkta dışkılama yapmayın (sinekler ve kemirgenler aracılığıyla tüm çadır kente dizanteri ve kolera yayılır).',
-      'Ezilme (Crush) sendromu yaşayan kazazedeye damar yolu desteği olmaksızın kontrolsüz kova dolusu su içirmeyin.'
+      'Açıkta dışkılama yapmayın (sinekler ve kemirgenler aracılığıyla tüm çadır kente dizanteri ve kolera yayılır).'
     ],
     criticalRules: [
       {
@@ -186,7 +185,7 @@ const SURVIVAL_DATA: Record<GuideCategory, GuideSection> = {
       },
       {
         title: 'Salgın Zinciri: Açık Tuvalet ve Kemirgenler',
-        desc: 'Afet sonrası ölümlerin önemli kısmı ilk günlerde değil, sonraki haftalarda patlak veren su kaynaklı kolera ve tifo salgınlarından kaynaklanır. Dışkı çukurlarına her kullanımdan sonra sönmüş kireç dökmek salgını anında durdurur.',
+        desc: 'Afet sonrası ölümlerin önemli kısmı ilk günlerde değil, sonraki haftalarda patlak veren su kaynaklı kolera ve tifo salgınlarından kaynaklanır. Dışkı çukurlarına her kullanımdan sonra sönmüş kireç dökmek salgın riskini azaltır.',
         isWarning: true
       }
     ]
@@ -358,7 +357,7 @@ export class DisasterSurvivalGuideModal {
         <!-- Footer -->
         <div class="p-3 sm:p-4 border-t border-white/10 bg-white/5 flex items-center justify-between shrink-0">
           <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
-            <span class="text-emerald-400">●</span> AFAD, AKUT ve Kızılay ilk yardım standartlarına uygundur.
+            Genel bilgilendirme amaçlıdır; hiçbir kurumun onayını taşımaz. Acil durumda 112.
           </div>
           <button
             id="btn-ok-guide"

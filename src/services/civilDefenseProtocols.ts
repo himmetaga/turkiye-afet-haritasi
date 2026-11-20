@@ -192,7 +192,9 @@ class CivilDefenseProtocolsService {
   public calculateWaterDisinfection(liters: number, isCloudy = false): WaterDisinfectionCalculation {
     const dropsPerLiter = isCloudy ? 5 : 3;
     const totalDrops = Math.max(1, Math.round(liters * dropsPerLiter));
-    const tabletCount = Math.max(1, Math.ceil(liters / 5)); // 1 tablet per 5L standard
+    // DİKKAT: Tablet gücü markaya göre değişir; bu sayı kaba bir tahmindir.
+    // Arayüz mutlaka "ambalajdaki doza uyun" uyarısıyla birlikte göstermelidir.
+    const tabletCount = Math.max(1, Math.ceil(liters / 5));
 
     return {
       waterVolumeLiters: liters,
@@ -218,10 +220,10 @@ class CivilDefenseProtocolsService {
     return {
       title: 'Enkaz Ezilme (Crush) Sendromu & Kompartman Protokolü',
       warning:
-        'HAYATİ UYARI: Enkazdan yeni çıkarılan kişiye ASLA ANİDEN VE BOLCA SU İÇİRMEYİN! Ezilen kas dokusundaki miyoglobin ve potasyum dolaşıma katılarak ani kalp durmasına (hiperkalemi) ve akut böbrek yetmezliğine yol açabilir.',
+        "Crush (ezilme) sendromunda erken sıvı hayat kurtarır: hemen 112'ye / sağlık ekibine haber verin. Bilinci açık ve yutabilen kazazedeye yudum yudum su verilebilir; meyve suyu, muz gibi potasyumlu şeyler vermeyin. Bilinci kapalıysa ağızdan hiçbir şey vermeyin. Kesin karar sağlık ekibinindir.",
       steps: [
         '1. Enkaz altında uzun süre sıkışan uzuv gevşetilmeden önce damar yolu açılması hayati önem taşır.',
-        '2. Sağlık ekibi yoksa ve uzuv saatlerce ezilmişse, ani serbest kalma sonrası toksinlerin kalbe hücumunu yavaşlatmak için kontrollü turnike hazır bulundurun.',
+        '2. Sıkışan uzvu kurtarmadan önce mümkünse 112 / sağlık ekibine haber verin ve talimatlarını izleyin.',
         '3. Kazazedeye idrar çıkışı ve tıbbi gözetim olmadan potasyum içeren muz, meyve suyu vb. vermeyin.',
         '4. İdrar rengi kola/çay rengine dönerse miyoglobinüri belirtisidir; derhal acil diyaliz/hastane sevki gerekir.',
         '5. Uzuvda şiddetli şişlik, taş gibi sertlik ve nabız kaybı varsa kompartman sendromudur, acil cerrahi fasyotomi gerektirir.'

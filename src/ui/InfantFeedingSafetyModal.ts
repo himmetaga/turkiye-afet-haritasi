@@ -76,7 +76,7 @@ export class InfantFeedingSafetyModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <strong class="text-white text-xs block">1. Ten Tene Temas (En Güçlü Tetikleyici):</strong>
               <p class="text-gray-400 text-[11px]">
-                Bebeğin çıplak göğsünü annenin çıplak tenine yaslayın, üzerinizi battaniyeyle örtün. Annenin bebeğin kokusunu alması oksitosin salgısını saniyeler içinde aktive eder.
+                Bebeğin çıplak göğsünü annenin çıplak tenine yaslayın, üzerinizi battaniyeyle örtün. Ten tene temas, sütün akmasını sağlayan oksitosin salgısını destekler.
               </p>
             </div>
 
@@ -116,7 +116,7 @@ export class InfantFeedingSafetyModal {
               <li>Bebeği dik pozisyonda kucağınıza oturtun (Asla sırtüstü yatırarak beslemeyin).</li>
               <li>Küçük temiz bir fincanın veya tek kullanımlık kağıt bardağın kenarını bebeğin üst dudağına ve alt dudağının kenarına hafifçe dokundurun.</li>
               <li><strong>Sütü bebeğin ağzına dökmeyin!</strong> Bardağı hafifçe eğerek sütün bebeğin dudaklarına temas etmesini sağlayın; bebek diliyle yalayarak kendi hızında içecektir.</li>
-              <li>Böylece biberon enfeksiyonu riski tamamen sıfırlanır ve bebek anne memesini reddetmez.</li>
+              <li>Fincan biberona göre çok daha kolay temizlenir; her kullanımdan önce sabunlu suyla yıkayın.</li>
             </ol>
           </div>
         </div>
@@ -127,7 +127,7 @@ export class InfantFeedingSafetyModal {
           <div class="p-3.5 rounded-2xl bg-amber-500/[0.08] border border-amber-500/25 space-y-1.5">
             <h4 class="font-bold text-amber-300 text-sm flex items-center gap-1.5">
               ${Icons.shield('w-4 h-4')}
-              <span>Sahra Koşullarında Toz Mama Hazırlama Kuralları (DSÖ Standardı)</span>
+              <span>Sahra Koşullarında Toz Mama Hazırlama Kuralları</span>
             </h4>
             <p>
               Toz bebek mamaları steril değildir; bakteri içerebilir. Bu nedenle suyu sadece ılıtmak yetersizdir.
@@ -136,16 +136,16 @@ export class InfantFeedingSafetyModal {
 
           <div class="space-y-2">
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
-              <strong class="text-white text-xs block">1. 1 Dakika Fokurdayarak Kaynatma:</strong>
+              <strong class="text-white text-xs block">1. Suyu Kaynatın, Çok Sıcakken Karıştırın:</strong>
               <p class="text-gray-400 text-[11px]">
-                Şişe veya kaynak suyunu en az 1 tam dakika kaynatın. Ardından suyun yaklaşık 70°C'ye (ılık ile sıcak arası) inmesini bekleyin ve mamayı karıştırın (70°C sıcaklık mamanın içindeki <em>Cronobacter</em> bakterilerini öldürür).
+                Suyu fokurdatarak kaynatın. Kaynadıktan sonra en fazla 30 dakika bekleyin — su hâlâ çok sıcak (en az 70°C, ele dokunulamayacak kadar) olmalı — ve mamayı bu suyla karıştırın. Bu sıcaklık toz mamada bulunabilen <em>Cronobacter</em> gibi bakterileri öldürür. Ilık suyla hazırlamak yeterli değildir.
               </p>
             </div>
 
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <strong class="text-white text-xs block">2. Bilek İçi Isı Kontrolü:</strong>
               <p class="text-gray-400 text-[11px]">
-                Mamayı hazırladıktan sonra kabı soğuk suyun içinde bekleterek vücut sıcaklığına getirin. Bileğinizin içine damlatarak yakmadığından emin olmadan bebeğe vermeyin.
+                Mamayı hazırladıktan sonra kabı soğuk suyun içinde bekleterek vücut sıcaklığına indirin. Bileğinizin içine damlatarak yakmadığından emin olmadan bebeğe vermeyin.
               </p>
             </div>
 
@@ -171,9 +171,9 @@ export class InfantFeedingSafetyModal {
             <div>
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-bold text-white">Bebek Besleme & Relaktasyon</h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-bold font-mono">DSÖ / UNICEF</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-bold font-mono">GENEL BİLGİ</span>
               </div>
-              <p class="text-[11px] text-gray-400">Afet ve çadırkent koşullarında bebekleri kirli su ve biberon enfeksiyonlarından koruma rehberi.</p>
+              <p class="text-[11px] text-gray-400">DSÖ/UNICEF rehberlerinden derlenmiştir; resmi yayın değildir. Bebekte ateş, ishal ya da beslenememe varsa 112'yi arayın veya sağlık görevlisine başvurun.</p>
             </div>
           </div>
           <button id="btn-close-infant-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">

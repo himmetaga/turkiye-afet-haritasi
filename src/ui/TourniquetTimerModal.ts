@@ -1,5 +1,11 @@
 import { Icons } from './icons';
 import { soundSynthesizer } from '../services/soundSynthesizer';
+import { escapeHtml } from '../utils/safeText';
+
+/** Sohbet kanalına gönderim. Gönderilemediyse { sent: false } döner ya da hata fırlatır. */
+export type BroadcastCallback = (text: string) => void | Promise<unknown>;
+
+const VALID_LIMBS = ['Sağ Kol', 'Sol Kol', 'Sağ Bacak', 'Sol Bacak'];
 
 export interface TourniquetRecord {
   id: string;
@@ -15,10 +21,10 @@ export class TourniquetTimerModal {
   private container: HTMLElement;
   private records: TourniquetRecord[] = [];
   private intervalId: number | null = null;
-  private onBroadcast?: (text: string) => void;
+  private onBroadcast?: BroadcastCallback;
   private selectedLimb: TourniquetRecord['limb'] = 'Sağ Bacak';
 
-  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void) {
+  constructor(parent: HTMLElement, onBroadcast?: BroadcastCallback) {
     this.onBroadcast = onBroadcast;
     this.container = document.createElement('div');
     this.container.id = 'tourniquet-timer-modal';
@@ -35,7 +41,28 @@ export class TourniquetTimerModal {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        this.records = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          // Kayıtlar cihazda saklanır; biçimi bozuk ya da beklenmeyen kayıtları alma.
+          this.records = parsed
+            .filter(
+              (r: any) =>
+                r &&
+                typeof r.id === 'string' &&
+                /^[A-Za-z0-9_-]{1,64}$/.test(r.id) &&
+                typeof r.victimName === 'string' &&
+                VALID_LIMBS.includes(r.limb) &&
+                typeof r.appliedAt === 'number' &&
+                Number.isFinite(r.appliedAt)
+            )
+            .map((r: any) => ({
+              id: r.id,
+              victimName: r.victimName.slice(0, 80),
+              limb: r.limb,
+              appliedAt: r.appliedAt,
+              initialNotes: typeof r.initialNotes === 'string' ? r.initialNotes.slice(0, 200) : undefined
+            }));
+        }
       }
     } catch {}
   }
@@ -112,7 +139,7 @@ export class TourniquetTimerModal {
         elapsedMin,
         formattedElapsed,
         stage: 'safe',
-        stageText: 'Güvenli Süre',
+        stageText: 'Süre takibi',
         stageBadgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
       };
     } else if (elapsedMin < 90) {
@@ -144,7 +171,9 @@ export class TourniquetTimerModal {
 
   private updateTimers(): void {
     this.records.forEach((r) => {
-      const card = this.container.querySelector(`[data-tq-id="${r.id}"]`);
+      const card = Array.from(this.container.querySelectorAll('[data-tq-id]')).find(
+        (el) => el.getAttribute('data-tq-id') === r.id
+      );
       if (card) {
         const info = this.getElapsedInfo(r.appliedAt);
         const timerEl = card.querySelector('.tq-timer-display');
@@ -188,7 +217,7 @@ export class TourniquetTimerModal {
             <div class="text-sm font-semibold text-gray-200">Aktif Turnike Kaydı Yok</div>
             <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
               Kanayan uzva turnike uyguladığınız anda yukarıdaki butona basarak kronometreyi başlatın.
-              Süre 120 dakikayı aşarsa doku kangreni ve uzuv kaybı riski başlar.
+              2 saatten sonra uzuv hasarı riski artar; turnikeyi yine de kendiniz çözmeyin.
             </p>
           </div>
         `
@@ -198,13 +227,13 @@ export class TourniquetTimerModal {
               const stamp = `T: ${this.formatTime(r.appliedAt)} - ${r.limb.toUpperCase()}`;
 
               return `
-                <div data-tq-id="${r.id}" class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex flex-col gap-2.5">
+                <div data-tq-id="${escapeHtml(r.id)}" class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex flex-col gap-2.5">
                   <div class="flex items-start justify-between gap-2">
                     <div>
                       <div class="flex items-center gap-2">
-                        <span class="text-sm font-bold text-white">${r.victimName}</span>
+                        <span class="text-sm font-bold text-white">${escapeHtml(r.victimName)}</span>
                         <span class="px-2 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 font-mono text-[11px] font-bold">
-                          ${r.limb}
+                          ${escapeHtml(r.limb)}
                         </span>
                       </div>
                       <div class="text-xs text-gray-400 mt-0.5">
@@ -227,7 +256,7 @@ export class TourniquetTimerModal {
                     <div class="text-right">
                       <div class="text-[10px] text-gray-400 font-medium">ALIN DAMGASI</div>
                       <div class="font-mono text-xs sm:text-sm font-bold text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/20">
-                        ${stamp}
+                        ${escapeHtml(stamp)}
                       </div>
                     </div>
                   </div>
@@ -236,7 +265,7 @@ export class TourniquetTimerModal {
                   <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5 text-xs">
                     <button
                       type="button"
-                      data-copy-stamp="${stamp}"
+                      data-copy-stamp="${escapeHtml(stamp)}"
                       class="btn-copy-stamp flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 active:scale-95 transition-all"
                     >
                       ${Icons.copy('w-3.5 h-3.5')}
@@ -248,12 +277,12 @@ export class TourniquetTimerModal {
                         ? `
                       <button
                         type="button"
-                        data-broadcast-tq="${r.id}"
+                        data-broadcast-tq="${escapeHtml(r.id)}"
                         class="btn-broadcast-tq flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 active:scale-95 transition-all"
-                        title="BitChat Afet Ağına turnike durumunu bildir"
+                        title="Turnike durumunu sohbet kanalına yazar. 112'ye iletilmez."
                       >
                         ${Icons.messages('w-3.5 h-3.5')}
-                        <span>Ağa Bildir</span>
+                        <span>Sohbete Yaz</span>
                       </button>
                     `
                         : ''
@@ -261,7 +290,7 @@ export class TourniquetTimerModal {
 
                     <button
                       type="button"
-                      data-remove-tq="${r.id}"
+                      data-remove-tq="${escapeHtml(r.id)}"
                       class="btn-remove-tq flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 active:scale-95 transition-all ml-auto"
                       title="Turnikeyi sonlandır ve sil"
                     >
@@ -269,6 +298,7 @@ export class TourniquetTimerModal {
                       <span>Turnike Çözüldü</span>
                     </button>
                   </div>
+                  <div data-tq-status="${escapeHtml(r.id)}" class="hidden text-[11px] font-semibold leading-snug"></div>
                 </div>
               `;
             })
@@ -325,7 +355,7 @@ export class TourniquetTimerModal {
         <div class="p-3.5 sm:p-4 overflow-y-auto space-y-3 flex-1 scrollbar-thin">
           <div class="flex items-center justify-between text-xs text-gray-400 px-1">
             <span>AKTİF TURNİKELER (${this.records.length})</span>
-            <span class="text-[10px] text-gray-500">120 dakikadan sonra kangren başlar</span>
+            <span class="text-[10px] text-gray-500">2 saatten sonra uzuv hasarı riski artar</span>
           </div>
           ${recordsHtml}
 
@@ -333,12 +363,13 @@ export class TourniquetTimerModal {
           <div class="mt-4 p-3 rounded-xl bg-rose-500/[0.08] border border-rose-500/20 text-xs text-rose-200/90 space-y-1.5">
             <div class="font-bold flex items-center gap-1.5 text-rose-300">
               ${Icons.alertTriangle('w-4 h-4')}
-              <span>T.C. Sağlık Bakanlığı Turnike Kuralları:</span>
+              <span>Genel turnike kuralları (ilk yardım eğitiminin yerini tutmaz):</span>
             </div>
             <ul class="list-disc list-inside space-y-1 text-[11px] text-gray-300">
               <li>Turnikeyi yaranın <strong>5 - 7 cm yukarısına</strong> (eklemlerin üzerine değil) uygulayın.</li>
               <li>Turnike uygulandığı an kazazedenin alnına silinmez kalemle saati yazın (Örn: <code>T: 14:35</code>).</li>
-              <li>Turnikeyi <strong>asla gevşetmeyin veya çözmeyin</strong>; gevşetme işlemi yalnızca hastane ameliyathanesinde uzman cerrahlarca yapılmalıdır.</li>
+              <li>Turnikeyi <strong>gevşetmeyin ve çözmeyin</strong>; süre uzasa bile çözme kararını sağlık ekibine bırakın.</li>
+              <li>Turnike yalnızca kol ya da bacaktaki, baskıyla durmayan şiddetli kanama içindir. Hemen <strong>112'yi arayın</strong>.</li>
             </ul>
           </div>
         </div>
@@ -391,15 +422,35 @@ export class TourniquetTimerModal {
     });
 
     this.container.querySelectorAll<HTMLButtonElement>('.btn-broadcast-tq').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-broadcast-tq');
         const match = this.records.find((r) => r.id === id);
-        if (match && this.onBroadcast) {
-          const info = this.getElapsedInfo(match.appliedAt);
-          const msg = `🚨 [TURNİKE ACİL TIBBİ BİLDİRİM] Kazazede: ${match.victimName} | Uzuv: ${match.limb} | Başlangıç: ${this.formatTime(match.appliedAt)} | Geçen Süre: ${info.formattedElapsed} | Durum: ${info.stageText}. Acil cerrahi müdahale bekleniyor!`;
-          this.onBroadcast(msg);
-          btn.innerHTML = `${Icons.checkCircle('w-3.5 h-3.5 text-cyan-400')} <span class="text-cyan-400">Ağa Gönderildi</span>`;
-          setTimeout(() => this.render(), 1800);
+        if (!match || !this.onBroadcast) return;
+
+        const info = this.getElapsedInfo(match.appliedAt);
+        const msg = `🚨 [TURNİKE BİLDİRİMİ] Kazazede: ${match.victimName} | Uzuv: ${match.limb} | Başlangıç: ${this.formatTime(match.appliedAt)} | Geçen Süre: ${info.formattedElapsed}. Acil sağlık yardımı gerekiyor.`;
+
+        // Gönderimin sonucu bilinmeden "gönderildi" deme.
+        let sent = true;
+        btn.disabled = true;
+        try {
+          const result = await Promise.resolve(this.onBroadcast(msg));
+          if (result && typeof result === 'object' && (result as { sent?: unknown }).sent === false) {
+            sent = false;
+          }
+        } catch {
+          sent = false;
+        }
+        btn.disabled = false;
+
+        const statusEl = Array.from(this.container.querySelectorAll('[data-tq-status]')).find(
+          (el) => el.getAttribute('data-tq-status') === id
+        );
+        if (statusEl) {
+          statusEl.className = `text-[11px] font-semibold leading-snug ${sent ? 'text-cyan-300' : 'text-rose-300'}`;
+          statusEl.textContent = sent
+            ? "Sohbet kanalına gönderildi (112'ye iletilmez — ayrıca 112'yi arayın)"
+            : "İnternet yok — gönderilemedi. 112'yi arayın.";
         }
       });
     });

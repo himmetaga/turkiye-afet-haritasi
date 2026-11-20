@@ -8,7 +8,8 @@ export class AcousticDebrisListenerModal {
   private analyser: AnalyserNode | null = null;
   private micStream: MediaStream | null = null;
   private animFrameId: number | null = null;
-  private threshold = 65; // dB threshold
+  // Eşik, mikrofon sinyalinin göreli seviyesidir (%). Kalibre edilmiş dB DEĞİLDİR.
+  private threshold = 50;
   private triggeredCount = 0;
   private lastTriggerTime = 0;
   private onTriggerWhistle?: () => void;
@@ -82,14 +83,14 @@ export class AcousticDebrisListenerModal {
       sum += dataArray[i];
     }
     const average = sum / dataArray.length;
-    // Map 0-255 to ~30-100 dB
-    const currentDb = Math.round(30 + (average / 255) * 70);
+    // Göreli seviye (0-100). Telefon mikrofonu kalibre olmadığı için dB olarak gösterilmez.
+    const currentDb = Math.round((average / 255) * 100);
 
     const meterBar = this.container.querySelector('#vu-meter-bar') as HTMLElement | null;
     const dbValueEl = this.container.querySelector('#vu-db-value') as HTMLElement | null;
 
     if (meterBar) {
-      const pct = Math.min(100, Math.max(5, (currentDb - 30) * 1.4));
+      const pct = Math.min(100, Math.max(2, currentDb));
       meterBar.style.width = `${pct}%`;
       meterBar.className = `h-full rounded-full transition-all duration-75 ${
         currentDb >= this.threshold ? 'bg-rose-500' : currentDb >= this.threshold - 10 ? 'bg-amber-400' : 'bg-emerald-400'
@@ -97,7 +98,7 @@ export class AcousticDebrisListenerModal {
     }
 
     if (dbValueEl) {
-      dbValueEl.textContent = `${currentDb} dB`;
+      dbValueEl.textContent = `%${currentDb}`;
     }
 
     const now = Date.now();
@@ -114,7 +115,7 @@ export class AcousticDebrisListenerModal {
     const countEl = this.container.querySelector('#trigger-count') as HTMLElement | null;
     if (countEl) countEl.textContent = `${this.triggeredCount} Kez`;
 
-    // Trigger whistle sound
+    // Kısa bir bip çalar ve düdük ekranını açar (düdüğü kendiliğinden başlatmaz)
     try {
       soundSynthesizer.playCountdownBeep(950, 200);
       if (this.onTriggerWhistle) {
@@ -140,14 +141,14 @@ export class AcousticDebrisListenerModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-bold text-white">Akustik Enkaz Dinleme & Otomatik S.O.S</h2>
+                <h2 class="text-sm sm:text-base font-bold text-white">Gürültü Eşiği Uyarıcısı (deneysel)</h2>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
                   this.isListening ? 'bg-emerald-500 text-black animate-pulse' : 'bg-white/10 text-gray-400'
                 }">
                   ${this.isListening ? 'DİNLİYOR...' : 'PASİF'}
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">Enkaz altında dışarıdaki arama ekiplerinin sesini veya çekiç darbelerini algılayınca otomatik düdük çalar.</p>
+              <p class="text-[11px] text-gray-400">Ortam sesi ayarladığınız eşiği aşınca kısa bir bip çalar ve düdük ekranını açar. Sesin kaynağını ayırt edemez.</p>
             </div>
           </div>
           <button id="btn-close-listener-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -159,41 +160,41 @@ export class AcousticDebrisListenerModal {
         <div class="p-3.5 sm:p-5 overflow-y-auto space-y-4 flex-1 text-xs">
           <!-- Alert Banner on Trigger -->
           <div id="trigger-banner" class="hidden p-3 rounded-xl bg-rose-500 text-white font-bold text-center animate-bounce">
-            🚨 KURTARMA SESİ ALGILANDI! S.O.S DÜDÜĞÜ VE FLAŞÖR ÇALINIYOR!
+            Eşik üstü ses algılandı — kısa bip çalındı. Düdüğü kendiniz başlatın.
           </div>
 
           <!-- VU Meter -->
           <div class="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
             <div class="flex items-center justify-between text-xs font-bold">
-              <span class="text-gray-300">ORTAM SES SEVİYESİ (VU METER)</span>
-              <span id="vu-db-value" class="font-mono text-cyan-400 text-sm">30 dB</span>
+              <span class="text-gray-300">MİKROFON SEVİYESİ (göreli, dB değil)</span>
+              <span id="vu-db-value" class="font-mono text-cyan-400 text-sm">Ölçüm yok</span>
             </div>
             <div class="w-full h-3 rounded-full bg-white/10 overflow-hidden p-0.5">
               <div id="vu-meter-bar" class="h-full rounded-full bg-emerald-400 transition-all duration-75" style="width: 5%"></div>
             </div>
             <div class="flex items-center justify-between text-[10px] text-gray-500 font-mono">
-              <span>Sessiz (30 dB)</span>
-              <span class="text-amber-400">Eşik Değeri (${this.threshold} dB)</span>
-              <span>Gürültülü (100 dB)</span>
+              <span>Sessiz (%0)</span>
+              <span class="text-amber-400">Eşik (%${this.threshold})</span>
+              <span>Gürültülü (%100)</span>
             </div>
           </div>
 
           <!-- Threshold Slider -->
           <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
             <div class="flex items-center justify-between">
-              <label for="input-db-threshold" class="font-bold text-gray-200">Tetiklenme Hassasiyeti:</label>
-              <span id="label-threshold" class="font-mono text-amber-300 font-bold">${this.threshold} dB</span>
+              <label for="input-db-threshold" class="font-bold text-gray-200">Tetiklenme Eşiği:</label>
+              <span id="label-threshold" class="font-mono text-amber-300 font-bold">%${this.threshold}</span>
             </div>
             <input
               id="input-db-threshold"
               type="range"
-              min="45"
-              max="85"
+              min="20"
+              max="80"
               step="1"
               value="${this.threshold}"
               class="w-full accent-amber-400 cursor-pointer"
             />
-            <p class="text-[10px] text-gray-400">Eşik değerini düşürürseniz daha sessiz tıkırtılara yanıt verir; yükseltirseniz yalnızca kuvvetli çekiç vuruşlarında düdük çalar.</p>
+            <p class="text-[10px] text-gray-400">Eşiği düşürürseniz daha sessiz seslerde, yükseltirseniz yalnızca yüksek seslerde bip çalar. Her tür gürültü (konuşma, rüzgar, kendi bip sesi) tetikleyebilir.</p>
           </div>
 
           <!-- Controls -->
@@ -207,7 +208,7 @@ export class AcousticDebrisListenerModal {
                 class="flex-1 py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold text-xs sm:text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2"
               >
                 ${Icons.mic('w-4 h-4')}
-                <span>Akustik Dinlemeyi Başlat</span>
+                <span>Dinlemeyi Başlat</span>
               </button>
             `
                 : `
@@ -225,11 +226,11 @@ export class AcousticDebrisListenerModal {
           <!-- Stats & Guide -->
           <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5 text-gray-300">
             <div class="flex items-center justify-between text-[11px]">
-              <span class="text-gray-400">Algılanan Ses Tetiklemeleri:</span>
+              <span class="text-gray-400">Eşik aşımı sayısı:</span>
               <span id="trigger-count" class="font-mono font-bold text-rose-400">${this.triggeredCount} Kez</span>
             </div>
             <p class="text-[11px] text-gray-400 leading-relaxed pt-1 border-t border-white/5">
-              💡 <strong>Tavsiye:</strong> Telefonunuzu komodin, masa veya düz bir zemin üzerine bırakın. Dışarıdan arama kurtarma köpeği havlaması, megafon sesi veya moloz çekici geldiğinde telefonunuz otomatik olarak karşılık vererek yerinizi tespit ettirir.
+              ⚠️ <strong>Sınırlar:</strong> Bu araç kurtarma ekiplerini tanıyamaz ve yerinizi kimseye bildirmez; yalnızca gürültü eşiği aşılınca bip çalar. Ekran kapanırsa veya tarayıcı arka plana geçerse çalışmaz, pili de tüketir. Sesinizi duyurmak için düdük ekranını veya üç vuruş yöntemini kullanın.
             </p>
           </div>
         </div>
@@ -256,7 +257,7 @@ export class AcousticDebrisListenerModal {
       const val = parseInt((e.target as HTMLInputElement).value, 10);
       this.threshold = val;
       const label = q<HTMLElement>('#label-threshold');
-      if (label) label.textContent = `${val} dB`;
+      if (label) label.textContent = `%${val}`;
     });
   }
 }

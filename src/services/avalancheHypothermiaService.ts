@@ -129,7 +129,7 @@ export class AvalancheHypothermiaService {
       hypothermiaAdvice.push('⚠️ RÜZGAR SOĞUĞU: Hissedilen dondurucu soğuk vücut ısısını hızla tüketir; çadır ve açık alanda rüzgar kesici siper oluşturun.');
       hypothermiaAdvice.push('☕ SICAK ŞEKERLİ İÇECEK: Titreme vücudun glikozunu tüketir; sıcak şekerli sıvılar içirin, asla alkol vermeyin (alkol damarları genişleterek ısı kaybını hızlandırır).');
     } else {
-      hypothermiaAdvice.push('✅ Hissedilen rüzgar soğuğu güvenli sınırda; ıslak giysileri derhal kuru olanlarla değiştiriniz.');
+      hypothermiaAdvice.push('ℹ️ Bu değerlerde donma (frostbite) riski düşük görünüyor; hipotermi riski ise sürer, özellikle ıslaksanız veya uzun süre dışarıdaysanız. Islak giysileri hemen kuru olanlarla değiştirin.');
     }
 
     return {
@@ -181,8 +181,10 @@ export class AvalancheHypothermiaService {
     } else if (angle > 46) {
       tacticalRules.push(`⚠️ SARP YAMAÇ (${angle}° Eğim): Kar birikimi dev plaka yapmaz ancak küçük kar akıntıları ve taş düşmesi riski taşır.`);
     } else {
-      tacticalRules.push(`✅ GÜVENLİ DÜZ EĞİM (${angle}° Eğim): Yamaç eğimi çığ tetikleme eşiğinin altındadır; yukarıdaki dik yamaçların döküntü konisinde olmamaya dikkat ediniz.`);
+      tacticalRules.push(`ℹ️ EĞİM 30°'NİN ALTINDA (${angle}°): Bu eğimde plaka çığın başlaması beklenmez, ancak üstteki dik yamaçlardan gelen çığ sizi vurabilir. Dik yamaçların altında ve akma yolunda durmayın.`);
     }
+
+    tacticalRules.push('ℹ️ Bu hesap yalnızca eğim açısına ve seçtiğiniz kar türüne dayanır; kar örtüsünü ölçemez. Çığ bülteninin veya yerel uzmanın yerini tutmaz.');
 
     tacticalRules.push('❄️ ÇIĞ ALTINDA KALINIRSA: Akış esnasında yüzme hareketleri yapın; durma anında ellerinizi yüzünüzün önüne alarak en az 1 litrelik HAVA BOŞLUĞU (Air pocket) açın.');
 

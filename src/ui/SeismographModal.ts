@@ -9,6 +9,8 @@ export class SeismographModal {
   private animFrameId: number | null = null;
   private unsubscribe: (() => void) | null = null;
   private currentStatus: SeismicNodeStatus | null = null;
+  private sensorState: 'starting' | 'unavailable' | 'no-data' | 'live' = 'starting';
+  private noDataTimer: number | null = null;
 
   constructor(parent: HTMLElement) {
     this.container = document.createElement('div');
@@ -24,20 +26,89 @@ export class SeismographModal {
     this.container.classList.remove('opacity-0', 'pointer-events-none');
     this.container.classList.add('opacity-100', 'pointer-events-auto');
 
-    seismicSensorNode.start();
+    this.currentStatus = null;
+    this.resetMetricsUI();
+    this.setSensorState('starting');
+
     this.unsubscribe = seismicSensorNode.subscribe((status) => {
       this.currentStatus = status;
+      if (this.sensorState !== 'live') this.setSensorState('live');
       this.updateStatusUI(status);
     });
 
+    seismicSensorNode
+      .start()
+      .then((ok) => {
+        if (!ok) {
+          this.setSensorState('unavailable');
+          return;
+        }
+        // İzin verilse bile bazı cihazlar hiç veri göndermez: ölçüm gelmeden "dinleniyor" deme.
+        if (this.noDataTimer) clearTimeout(this.noDataTimer);
+        this.noDataTimer = window.setTimeout(() => {
+          if (this.sensorState === 'starting') this.setSensorState('no-data');
+        }, 2500);
+      })
+      .catch(() => this.setSensorState('unavailable'));
+
     this.initCanvas();
     this.startRenderLoop();
+  }
+
+  private setSensorState(state: 'starting' | 'unavailable' | 'no-data' | 'live'): void {
+    this.sensorState = state;
+    const dot = this.container.querySelector('#seismo-state-dot');
+    const text = this.container.querySelector('#seismo-state-text');
+    if (!dot || !text) return;
+
+    if (state === 'live') {
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+      text.className = 'text-xs font-semibold text-emerald-300';
+      text.textContent = 'Telefon ivmeölçeri okunuyor';
+    } else if (state === 'starting') {
+      dot.className = 'w-2 h-2 rounded-full bg-gray-500';
+      text.className = 'text-xs font-semibold text-gray-300';
+      text.textContent = 'Sensör bekleniyor…';
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+      text.className = 'text-xs font-semibold text-rose-300';
+      text.textContent =
+        state === 'unavailable'
+          ? 'İvmeölçer yok ya da izin verilmedi — ölçüm yapılmıyor'
+          : 'İvmeölçerden veri gelmiyor — ölçüm yapılmıyor';
+      this.resetMetricsUI();
+    }
+  }
+
+  /** Ölçüm yokken hiçbir sayı gösterme. */
+  private resetMetricsUI(): void {
+    const set = (sel: string, value: string) => {
+      const el = this.container.querySelector(sel);
+      if (el) el.textContent = value;
+    };
+    set('#sta-lta-ratio', '—');
+    set('#current-mag', '—');
+    set('#sample-rate', '—');
+    const intensityEl = this.container.querySelector('#intensity-val');
+    if (intensityEl) {
+      intensityEl.className = 'text-base font-bold font-mono text-gray-400 mt-0.5 truncate';
+      intensityEl.textContent = '—';
+    }
+    const badge = this.container.querySelector('#trigger-badge');
+    if (badge) {
+      badge.className = 'px-2 py-0.5 rounded-full text-xs font-semibold bg-white/5 text-gray-400 border border-white/10';
+      badge.textContent = 'Ölçüm yok';
+    }
   }
 
   public hide(): void {
     this.container.classList.remove('opacity-100', 'pointer-events-auto');
     this.container.classList.add('opacity-0', 'pointer-events-none');
 
+    if (this.noDataTimer) {
+      clearTimeout(this.noDataTimer);
+      this.noDataTimer = null;
+    }
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
@@ -97,6 +168,7 @@ export class SeismographModal {
     ctx.lineTo(w, midY);
     ctx.stroke();
 
+    if (this.sensorState !== 'live') return;
     const buffer = seismicSensorNode.getBuffer();
     if (buffer.length < 2) return;
 
@@ -129,14 +201,15 @@ export class SeismographModal {
   private wakeLock: any = null;
   private isWakeLockActive = false;
 
-  private getMercalliIntensity(magMs2: number): { roman: string; desc: string; cls: string } {
+  /** Telefonun kendi titreşim düzeyi. Deprem şiddeti (Mercalli) DEĞİLDİR. */
+  private getVibrationLevel(magMs2: number): { desc: string; cls: string } {
     const gal = magMs2 * 100;
-    if (gal < 1.0) return { roman: 'I', desc: 'Durgun / Hissedilmez', cls: 'text-gray-400' };
-    if (gal < 3.0) return { roman: 'II', desc: 'Çok Hafif', cls: 'text-emerald-400' };
-    if (gal < 8.0) return { roman: 'III', desc: 'Hafif Sarsıntı', cls: 'text-cyan-400' };
-    if (gal < 25.0) return { roman: 'IV', desc: 'Belirgin Sallantı', cls: 'text-amber-400' };
-    if (gal < 60.0) return { roman: 'V', desc: 'Orta Şiddetli', cls: 'text-orange-400' };
-    return { roman: 'VI+', desc: 'Kuvvetli / Şiddetli', cls: 'text-rose-400' };
+    if (gal < 1.0) return { desc: 'Durgun', cls: 'text-gray-400' };
+    if (gal < 3.0) return { desc: 'Çok hafif', cls: 'text-emerald-400' };
+    if (gal < 8.0) return { desc: 'Hafif', cls: 'text-cyan-400' };
+    if (gal < 25.0) return { desc: 'Belirgin', cls: 'text-amber-400' };
+    if (gal < 60.0) return { desc: 'Güçlü', cls: 'text-orange-400' };
+    return { desc: 'Çok güçlü', cls: 'text-rose-400' };
   }
 
   private async toggleWakeLock(): Promise<void> {
@@ -181,11 +254,11 @@ export class SeismographModal {
     const gal = (status.currentMag * 100).toFixed(1);
     if (magEl) magEl.innerHTML = `${status.currentMag.toFixed(2)} <span class="text-[11px] text-gray-400 font-normal">m/s²</span><div class="text-[10px] text-gray-500 font-mono font-normal">${gal} Gal</div>`;
 
-    const intensity = this.getMercalliIntensity(status.currentMag);
+    const intensity = this.getVibrationLevel(status.currentMag);
     const intensityEl = this.container.querySelector('#intensity-val');
     if (intensityEl) {
       intensityEl.className = `text-lg font-bold font-mono mt-0.5 ${intensity.cls}`;
-      intensityEl.textContent = `${intensity.roman} • ${intensity.desc}`;
+      intensityEl.textContent = intensity.desc;
     }
 
     const rateEl = this.container.querySelector('#sample-rate');
@@ -195,10 +268,10 @@ export class SeismographModal {
     if (badge) {
       if (status.isTriggered) {
         badge.className = 'px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse';
-        badge.textContent = '⚠️ SARSINTI ALGILANDI';
+        badge.textContent = '⚠️ Titreşim eşiği aşıldı';
       } else {
         badge.className = 'px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-        badge.textContent = '● Durgun / İzleniyor';
+        badge.textContent = '● Eşiğin altında';
       }
     }
   }
@@ -216,10 +289,10 @@ export class SeismographModal {
             </span>
             <div>
               <h3 class="text-base font-bold text-white tracking-wide">
-                Canlı Cihaz Sismografı & Sensör Düğümü
+                Telefon İvmeölçer Göstergesi
               </h3>
               <p class="text-[11px] text-gray-400">
-                Earthquake Network mimarisi: Akıllı ivmeölçer tabanlı mikrosarsıntı izleme
+                Yalnızca bu telefonun titreşimini gösterir — deprem tespiti ya da uyarısı yapmaz
               </p>
             </div>
           </div>
@@ -233,21 +306,21 @@ export class SeismographModal {
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <div class="rounded-xl bg-white/5 p-2.5 text-center">
             <span class="text-[10px] text-gray-400 font-mono uppercase">STA/LTA Oranı</span>
-            <div id="sta-lta-ratio" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">1.00</div>
+            <div id="sta-lta-ratio" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">—</div>
           </div>
           <div class="rounded-xl bg-white/5 p-2.5 text-center">
             <span class="text-[10px] text-gray-400 font-mono uppercase">İvme (Gal / m/s²)</span>
-            <div id="current-mag" class="text-base font-bold font-mono text-cyan-400 mt-0.5">0.00 <span class="text-[11px] text-gray-400 font-normal">m/s²</span><div class="text-[10px] text-gray-500 font-mono font-normal">0.0 Gal</div></div>
+            <div id="current-mag" class="text-base font-bold font-mono text-cyan-400 mt-0.5">—</div>
           </div>
           <div class="rounded-xl bg-white/5 p-2.5 text-center">
-            <span class="text-[10px] text-gray-400 font-mono uppercase">Şiddet (Mercalli)</span>
-            <div id="intensity-val" class="text-base font-bold font-mono text-gray-400 mt-0.5 truncate">I • Durgun</div>
+            <span class="text-[10px] text-gray-400 font-mono uppercase">Telefon Titreşimi</span>
+            <div id="intensity-val" class="text-base font-bold font-mono text-gray-400 mt-0.5 truncate">—</div>
           </div>
           <div class="rounded-xl bg-white/5 p-2.5 flex flex-col items-center justify-center">
-            <div id="trigger-badge" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              ● Durgun / İzleniyor
+            <div id="trigger-badge" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-white/5 text-gray-400 border border-white/10">
+              Ölçüm yok
             </div>
-            <div id="sample-rate" class="text-[10px] text-gray-500 font-mono mt-1">60 Hz</div>
+            <div id="sample-rate" class="text-[10px] text-gray-500 font-mono mt-1">—</div>
           </div>
         </div>
 
@@ -255,7 +328,7 @@ export class SeismographModal {
         <div class="relative w-full h-44 rounded-xl bg-obsidian-950 border border-white/10 overflow-hidden mb-3">
           <canvas id="seismo-canvas" class="w-full h-full block"></canvas>
           <div class="absolute bottom-2 left-3 text-[10px] text-gray-500 font-mono">
-            STA / LTA Gerçek Zamanlı Dinamik Filtre • DC Gravite Ayrıştırma
+            Telefon ivmeölçer sinyali (ham titreşim)
           </div>
         </div>
 
@@ -281,12 +354,12 @@ export class SeismographModal {
         <!-- Status Bar -->
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-xs font-semibold text-emerald-300">Canlı Sismik Dinleme Devrede</span>
+            <span id="seismo-state-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+            <span id="seismo-state-text" class="text-xs font-semibold text-gray-300">Sensör bekleniyor…</span>
           </div>
 
           <span class="text-[11px] text-gray-400 font-medium hidden sm:inline">
-            Cihazınızı düz bir masaya veya zemine bıraktığınızda mikrosismik titreşimler kaydedilir.
+            Telefonu düz bir yüzeye bırakın. Değerler telefonun kendi hareketidir; deprem şiddeti (Mercalli) değildir.
           </span>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { antiManipulationService } from './antiManipulationService';
-import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
+import { generateSecretKey, getPublicKey, finalizeEvent, verifyEvent } from 'nostr-tools/pure';
 
 export interface BitChatMessage {
   id: string;
@@ -13,13 +13,24 @@ export interface BitChatMessage {
   district?: string;
   coordinates?: [number, number];
   batteryLevel?: number;
+  /**
+   * 'nostr': bir Nostr rölesi üzerinden geldi/gitti.
+   * 'mesh': yalnızca bu cihazda (aynı tarayıcının sekmeleri arasında) duruyor.
+   * 'webrtc' ve 'qr' eski kayıtlarla uyum için tutuluyor.
+   */
   transport: 'nostr' | 'mesh' | 'webrtc' | 'qr';
-  powNonce?: number;
-  powDifficulty?: number;
+  /** Kendi mesajımız henüz hiçbir röleye iletilemediyse true. */
+  pending?: boolean;
   warningNotice?: string;
-  proximityBadge?: string;
-  proximityClass?: string;
 }
+
+/** broadcastMessage sonucu: mesajın kendisi + gerçekten gönderilip gönderilmediği. */
+export type BitChatBroadcastResult = BitChatMessage & {
+  /** En az bir bağlı röleye yazılabildiyse true. false ise mesaj yalnızca kuyruktadır. */
+  sent: boolean;
+  /** Mesajın yazıldığı röle sayısı. */
+  relays: number;
+};
 
 export interface BitChatIdentity {
   pubkey: string;
@@ -41,8 +52,83 @@ const DEFAULT_RELAYS = [
   'wss://nostr.mom'
 ];
 
+const MESSAGE_TYPES = new Set(['chat', 'safe', 'sos']);
+const TRANSPORTS = new Set(['nostr', 'mesh', 'webrtc', 'qr']);
+const CHANNEL_PATTERN = /^#[a-z0-9-]{1,40}$/;
+
 type MessageListener = (msg: BitChatMessage) => void;
-type StatusListener = (status: { connectedRelays: number; meshPeers: number }) => void;
+type StatusListener = (status: { connectedRelays: number }) => void;
+
+function cleanString(value: unknown, maxLen: number): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.slice(0, maxLen);
+}
+
+/**
+ * Dışarıdan (başka sekme, yerel önbellek) gelen ham nesneyi, yalnızca bilinen ve
+ * tipi doğrulanmış alanlardan yeniden kurar. Tanınmayan alanlar atılır.
+ */
+function buildValidatedMessage(raw: unknown): BitChatMessage | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+
+  const id = cleanString(r.id, 128);
+  const text = cleanString(r.text, 1000);
+  if (!id || !text) return null;
+
+  const timestamp = Number(r.timestamp);
+  if (!Number.isFinite(timestamp)) return null;
+
+  const channelRaw = cleanString(r.channel, 41);
+  const channel = channelRaw && CHANNEL_PATTERN.test(channelRaw) ? channelRaw : '#afet-genel';
+  const type = (typeof r.type === 'string' && MESSAGE_TYPES.has(r.type) ? r.type : 'chat') as BitChatMessage['type'];
+  const transport = (typeof r.transport === 'string' && TRANSPORTS.has(r.transport)
+    ? r.transport
+    : 'mesh') as BitChatMessage['transport'];
+
+  const msg: BitChatMessage = {
+    id,
+    pubkey: cleanString(r.pubkey, 64) || '',
+    senderName: cleanString(r.senderName, 40) || 'Bilinmeyen',
+    text,
+    timestamp,
+    channel,
+    type,
+    transport
+  };
+
+  const city = cleanString(r.city, 60);
+  if (city) msg.city = city;
+  const district = cleanString(r.district, 60);
+  if (district) msg.district = district;
+
+  if (
+    Array.isArray(r.coordinates) &&
+    r.coordinates.length === 2 &&
+    typeof r.coordinates[0] === 'number' &&
+    typeof r.coordinates[1] === 'number' &&
+    Number.isFinite(r.coordinates[0]) &&
+    Number.isFinite(r.coordinates[1])
+  ) {
+    msg.coordinates = [r.coordinates[0], r.coordinates[1]];
+  }
+
+  if (typeof r.batteryLevel === 'number' && Number.isFinite(r.batteryLevel)) {
+    msg.batteryLevel = Math.max(0, Math.min(100, Math.round(r.batteryLevel)));
+  }
+
+  if (r.pending === true) msg.pending = true;
+
+  // Uyarı metni dışarıdan alınmaz; varsa yerelde yeniden üretilir.
+  if (typeof r.warningNotice === 'string') {
+    const heuristic = antiManipulationService.analyzeTextSafety(text);
+    if (heuristic.warningMessage) msg.warningNotice = heuristic.warningMessage;
+  }
+
+  return msg;
+}
 
 class BitChatService {
   private secretKey: Uint8Array;
@@ -53,10 +139,7 @@ class BitChatService {
   private messageListeners: Set<MessageListener> = new Set();
   private statusListeners: Set<StatusListener> = new Set();
   private sockets: Map<string, WebSocket> = new Map();
-  private connectedRelays = 0;
   private activeChannel = '#afet-genel';
-  private peerConnection: RTCPeerConnection | null = null;
-  private dataChannel: RTCDataChannel | null = null;
   private isConnectingRelays = false;
 
   constructor() {
@@ -69,11 +152,35 @@ class BitChatService {
     this.connectRelays();
   }
 
+  /** Şu anda gerçekten açık olan röle bağlantısı sayısı. */
+  private openRelayCount(): number {
+    let count = 0;
+    this.sockets.forEach((ws) => {
+      if (ws.readyState === WebSocket.OPEN) count++;
+    });
+    return count;
+  }
+
+  /** Ham Nostr olayını açık rölelere yazar; yazılabilen röle sayısını döndürür. */
+  private sendToRelays(rawEvent: string): number {
+    let sent = 0;
+    this.sockets.forEach((ws) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(rawEvent);
+          sent++;
+        } catch {}
+      }
+    });
+    return sent;
+  }
+
   private loadOutboxQueue(): void {
     try {
       const stored = localStorage.getItem(STORAGE_OUTBOX_KEY);
       if (stored) {
-        this.outboxQueue = JSON.parse(stored) || [];
+        const parsed = JSON.parse(stored);
+        this.outboxQueue = Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
       }
     } catch {}
   }
@@ -85,24 +192,30 @@ class BitChatService {
   }
 
   private flushOutbox(): void {
-    if (this.outboxQueue.length === 0 || this.connectedRelays === 0) return;
+    if (this.outboxQueue.length === 0 || this.openRelayCount() === 0) return;
     const remaining: string[] = [];
+    let changed = false;
     for (const rawEvent of this.outboxQueue) {
-      let sentAny = false;
-      this.sockets.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          try {
-            ws.send(rawEvent);
-            sentAny = true;
-          } catch {}
-        }
-      });
-      if (!sentAny) {
+      if (this.sendToRelays(rawEvent) === 0) {
         remaining.push(rawEvent);
+        continue;
       }
+      // Kuyruktaki mesaj artık iletildi: "bekliyor" işaretini kaldır.
+      try {
+        const parsed = JSON.parse(rawEvent);
+        const eventId = Array.isArray(parsed) ? parsed[1]?.id : undefined;
+        const local = this.messages.find((m) => m.id === eventId);
+        if (local && local.pending) {
+          local.pending = false;
+          local.transport = 'nostr';
+          changed = true;
+          this.messageListeners.forEach((listener) => listener(local));
+        }
+      } catch {}
     }
     this.outboxQueue = remaining;
     this.saveOutboxQueue();
+    if (changed) this.saveMessages();
   }
 
   private loadOrCreateSecretKey(): Uint8Array {
@@ -131,8 +244,12 @@ class BitChatService {
       const stored = localStorage.getItem(STORAGE_IDENTITY_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.pubkey === fullPubkey) {
-          return parsed;
+        if (parsed && parsed.pubkey === fullPubkey) {
+          return {
+            pubkey: fullPubkey,
+            alias: cleanString(parsed.alias, 24) || `AfetZede-${fullPubkey.slice(0, 4)}`,
+            createdAt: Number.isFinite(Number(parsed.createdAt)) ? Number(parsed.createdAt) : Date.now()
+          };
         }
       }
     } catch {}
@@ -165,20 +282,21 @@ class BitChatService {
   }
 
   private loadCachedMessages(): void {
+    this.messages = [];
     try {
       const stored = localStorage.getItem(STORAGE_MESSAGES_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Eski sürümlerin eklediği örnek (gerçek olmayan) mesajları temizle
-        this.messages = Array.isArray(parsed)
-          ? parsed.filter((m: BitChatMessage) => !String(m?.id).startsWith('bitchat-init-'))
-          : [];
-        return;
+        if (Array.isArray(parsed)) {
+          for (const raw of parsed) {
+            const msg = buildValidatedMessage(raw);
+            // Eski sürümlerin eklediği örnek (gerçek olmayan) mesajları temizle
+            if (msg && !msg.id.startsWith('bitchat-init-')) this.messages.push(msg);
+          }
+        }
       }
     } catch {}
-
     // Sohbet boş başlar: örnek/sahte mesaj gösterilmez (afet anında yanıltıcı olabilir).
-    this.messages = [];
   }
 
   private saveMessages(): void {
@@ -187,13 +305,15 @@ class BitChatService {
     } catch {}
   }
 
+  /** Yalnızca aynı tarayıcının diğer sekmeleriyle eşitleme sağlar; başka cihaza ulaşmaz. */
   private initBroadcastChannel(): void {
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         this.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
         this.broadcastChannel.onmessage = (event) => {
           if (event.data?.type === 'BITCHAT_MSG') {
-            this.handleIncomingMessage(event.data.message, false);
+            const msg = buildValidatedMessage(event.data.message);
+            if (msg) this.handleIncomingMessage(msg, false);
           }
         };
       } catch {}
@@ -224,7 +344,6 @@ class BitChatService {
 
       ws.onopen = () => {
         clearTimeout(timeout);
-        this.connectedRelays++;
         this.notifyStatus();
         this.flushOutbox();
 
@@ -247,6 +366,15 @@ class BitChatService {
           const data = JSON.parse(e.data);
           if (Array.isArray(data) && data[0] === 'EVENT' && data[2]?.content) {
             const ev = data[2];
+            // İmzası ve kimliği doğrulanamayan olaylar gösterilmez.
+            let isValid = false;
+            try {
+              isValid = verifyEvent(ev);
+            } catch {
+              isValid = false;
+            }
+            if (!isValid) return;
+
             const tagMap = new Map<string, string>();
             if (Array.isArray(ev.tags)) {
               for (const t of ev.tags) {
@@ -255,36 +383,30 @@ class BitChatService {
                 }
               }
             }
-            const type = (tagMap.get('disaster_type') as 'chat' | 'safe' | 'sos') || 'chat';
-            const district = tagMap.get('district') || '';
-            const city = tagMap.get('city') || '';
-            const channel = tagMap.get('channel') || '#afet-genel';
-            const senderName = tagMap.get('alias') || `AfetZede-${String(ev.pubkey).slice(0, 4)}`;
 
-            const msg: BitChatMessage = {
+            const msg = buildValidatedMessage({
               id: String(ev.id),
-              pubkey: String(ev.pubkey).slice(0, 10),
-              senderName,
+              pubkey: String(ev.pubkey),
+              senderName: tagMap.get('alias') || `AfetZede-${String(ev.pubkey).slice(0, 4)}`,
               text: String(ev.content),
               timestamp: Number(ev.created_at) * 1000,
-              channel,
-              type,
-              city,
-              district,
+              channel: tagMap.get('channel') || '#afet-genel',
+              type: tagMap.get('disaster_type') || 'chat',
+              city: tagMap.get('city') || '',
+              district: tagMap.get('district') || '',
               transport: 'nostr'
-            };
-            this.handleIncomingMessage(msg, false);
+            });
+            if (msg) this.handleIncomingMessage(msg, false);
           }
         } catch {}
       };
 
       ws.onclose = () => {
         clearTimeout(timeout);
-        if (this.sockets.has(relayUrl)) {
+        if (this.sockets.get(relayUrl) === ws) {
           this.sockets.delete(relayUrl);
-          this.connectedRelays = Math.max(0, this.connectedRelays - 1);
-          this.notifyStatus();
         }
+        this.notifyStatus();
         // Auto-reconnect to ensure cross-device messages always sync
         setTimeout(() => {
           this.connectSingleRelay(relayUrl);
@@ -300,19 +422,13 @@ class BitChatService {
   }
 
   private notifyStatus(): void {
-    const status = {
-      connectedRelays: this.connectedRelays,
-      meshPeers: this.broadcastChannel ? 1 : 0
-    };
+    const status = { connectedRelays: this.openRelayCount() };
     this.statusListeners.forEach((l) => l(status));
   }
 
   public subscribeStatus(listener: StatusListener): () => void {
     this.statusListeners.add(listener);
-    listener({
-      connectedRelays: this.connectedRelays,
-      meshPeers: this.broadcastChannel ? 1 : 0
-    });
+    listener({ connectedRelays: this.openRelayCount() });
     return () => this.statusListeners.delete(listener);
   }
 
@@ -352,11 +468,20 @@ class BitChatService {
     }
   }
 
+  /**
+   * Mesajı imzalar ve bağlı Nostr rölelerine yazar.
+   *
+   * - Hız sınırına takılırsa Promise reddedilir (Error).
+   * - Çözülen değer mesajın kendisidir; ek olarak `sent` (en az bir röleye
+   *   yazıldı mı) ve `relays` (kaç röleye yazıldı) alanlarını taşır.
+   *   `sent === false` ise mesaj GÖNDERİLMEMİŞTİR; yalnızca bu cihazda kuyruktadır
+   *   ve bağlantı gelince iletilmeye çalışılır.
+   */
   public async broadcastMessage(
     text: string,
     type: 'chat' | 'safe' | 'sos' = 'chat',
     meta?: { city?: string; district?: string; coordinates?: [number, number]; batteryLevel?: number }
-  ): Promise<BitChatMessage> {
+  ): Promise<BitChatBroadcastResult> {
     // 1. Rate Limiter (Spam ve asılsız SOS engeli)
     const rateCheck = antiManipulationService.checkRateLimit(type === 'sos' ? 'sos' : 'chat');
     if (!rateCheck.allowed) {
@@ -366,84 +491,82 @@ class BitChatService {
     // 2. Heuristik Panik & Dezenformasyon Analizi
     const heuristic = antiManipulationService.analyzeTextSafety(text);
 
-    // 3. Hashcash Proof-of-Work (Bot ve script flooding koruması)
+    // 3. Hashcash Proof-of-Work (gönderimi yavaşlatır; alıcı tarafta doğrulanmaz)
     const now = Date.now();
-    const id = `msg-${this.identity.pubkey}-${now}-${Math.random().toString(36).slice(2, 6)}`;
-    const difficulty = type === 'sos' ? 12 : 10;
-    const pow = await antiManipulationService.solveProofOfWork(`${this.identity.pubkey}:${now}:${text}`, difficulty);
+    const pow = await antiManipulationService.solveProofOfWork(`${this.identity.pubkey}:${now}:${text}`, type === 'sos' ? 12 : 10);
 
-    // 4. Coğrafi Mesafe Çiti / Yerinde Doğrulama
-    let proximityBadge: string | undefined;
-    let proximityClass: string | undefined;
-    if (meta?.coordinates) {
-      const prox = antiManipulationService.checkProximity(meta.coordinates, meta.coordinates);
-      proximityBadge = prox.badgeLabel;
-      proximityClass = prox.badgeClass;
-    }
+    const city = meta?.city?.trim() || undefined;
+    const district = meta?.district?.trim() || undefined;
 
     const message: BitChatMessage = {
-      id,
+      id: `msg-${this.identity.pubkey}-${now}-${Math.random().toString(36).slice(2, 6)}`,
       pubkey: this.identity.pubkey,
       senderName: this.identity.alias,
       text: text.trim(),
       timestamp: now,
       channel: this.activeChannel,
       type,
-      city: meta?.city,
-      district: meta?.district,
+      city,
+      district,
       coordinates: meta?.coordinates,
       batteryLevel: meta?.batteryLevel,
-      transport: this.connectedRelays > 0 ? 'nostr' : 'mesh',
-      powNonce: pow.nonce,
-      powDifficulty: pow.difficulty,
-      warningNotice: heuristic.warningMessage,
-      proximityBadge,
-      proximityClass
+      transport: 'mesh',
+      pending: true,
+      warningNotice: heuristic.warningMessage
     };
 
-    // 5. Local append & broadcast to other tabs/windows
+    // 4. Sign via BIP-340 Schnorr
+    let nostrPayload: string | null = null;
+    try {
+      const finalized = finalizeEvent(
+        {
+          kind: 1,
+          created_at: Math.floor(now / 1000),
+          tags: [
+            ['t', 'afet-live'],
+            ['channel', this.activeChannel],
+            ['disaster_type', type],
+            ['alias', this.identity.alias],
+            ['city', city || ''],
+            ['district', district || ''],
+            ['nonce', String(pow.nonce), String(pow.difficulty)],
+            ['client', 'afet.live-bitchat']
+          ],
+          content: message.text
+        },
+        this.secretKey
+      );
+      message.id = finalized.id;
+      nostrPayload = JSON.stringify(['EVENT', finalized]);
+    } catch (err) {
+      console.warn('Nostr sign error:', err);
+    }
+
+    // 5. Try to write to connected relays right now
+    let relays = 0;
+    if (nostrPayload) {
+      relays = this.sendToRelays(nostrPayload);
+      if (relays === 0) {
+        // Bağlantı yok: kuyruğa al, bağlantı gelince denenecek.
+        this.outboxQueue.push(nostrPayload);
+        if (this.outboxQueue.length > 50) this.outboxQueue = this.outboxQueue.slice(-50);
+        this.saveOutboxQueue();
+      }
+    }
+
+    const sent = relays > 0;
+    if (sent) {
+      message.pending = false;
+      message.transport = 'nostr';
+    }
+
+    // 6. Local append & sync to other tabs of this browser
     this.handleIncomingMessage(message, true);
 
-    // 6. Sign via BIP-340 Schnorr and persist in Store-and-Forward Outbox
-    try {
-      const eventTemplate = {
-        kind: 1,
-        created_at: Math.floor(now / 1000),
-        tags: [
-          ['t', 'afet-live'],
-          ['channel', this.activeChannel],
-          ['disaster_type', type],
-          ['alias', this.identity.alias],
-          ['city', meta?.city || ''],
-          ['district', meta?.district || ''],
-          ['nonce', String(pow.nonce), String(pow.difficulty)],
-          ['client', 'afet.live-bitchat']
-        ],
-        content: message.text
-      };
-
-      const finalized = finalizeEvent(eventTemplate, this.secretKey);
-      message.id = finalized.id;
-      const nostrPayload = JSON.stringify(['EVENT', finalized]);
-
-      this.outboxQueue.push(nostrPayload);
-      if (this.outboxQueue.length > 50) this.outboxQueue = this.outboxQueue.slice(-50);
-      this.saveOutboxQueue();
-      this.flushOutbox();
-    } catch (err) {
-      console.warn('Nostr sign/publish error:', err);
-    }
-
-    // 7. Send over WebRTC DataChannel if peer is active
-    if (this.dataChannel && this.dataChannel.readyState === 'open') {
-      try {
-        this.dataChannel.send(JSON.stringify({ type: 'BITCHAT_DIRECT', message }));
-      } catch {}
-    }
-
-    return message;
+    return { ...message, sent, relays };
   }
 
+  /** Kullanıcının bir mesaj için kendi cihazına düştüğü kişisel not (başkalarına iletilmez). */
   public voteMessage(messageId: string, vote: 'verify' | 'flag') {
     return antiManipulationService.voteMessage(messageId, this.identity.pubkey, vote);
   }
@@ -452,112 +575,37 @@ class BitChatService {
     return antiManipulationService.getMessageReputation(messageId, this.identity.pubkey);
   }
 
-  // WebRTC P2P Direct Pair (Zero-Server Phone-to-Phone)
-  public async createWebRTCOffer(): Promise<string> {
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-
-    this.dataChannel = this.peerConnection.createDataChannel('bitchat_emergency');
-    this.setupDataChannel(this.dataChannel);
-
-    const offer = await this.peerConnection.createOffer();
-    await this.peerConnection.setLocalDescription(offer);
-
-    await new Promise<void>((resolve) => {
-      if (this.peerConnection?.iceGatheringState === 'complete') {
-        resolve();
-      } else {
-        const check = () => {
-          if (this.peerConnection?.iceGatheringState === 'complete') {
-            this.peerConnection.removeEventListener('icegatheringstatechange', check);
-            resolve();
-          }
-        };
-        this.peerConnection?.addEventListener('icegatheringstatechange', check);
-        setTimeout(resolve, 1500); // Max wait
-      }
-    });
-
-    return JSON.stringify(this.peerConnection.localDescription);
-  }
-
-  public async acceptWebRTCOffer(offerStr: string): Promise<string> {
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-
-    this.peerConnection.ondatachannel = (e) => {
-      this.dataChannel = e.channel;
-      this.setupDataChannel(this.dataChannel);
-    };
-
-    const offer = JSON.parse(offerStr);
-    await this.peerConnection.setRemoteDescription(offer);
-
-    const answer = await this.peerConnection.createAnswer();
-    await this.peerConnection.setLocalDescription(answer);
-
-    await new Promise<void>((resolve) => {
-      if (this.peerConnection?.iceGatheringState === 'complete') {
-        resolve();
-      } else {
-        const check = () => {
-          if (this.peerConnection?.iceGatheringState === 'complete') {
-            this.peerConnection.removeEventListener('icegatheringstatechange', check);
-            resolve();
-          }
-        };
-        this.peerConnection?.addEventListener('icegatheringstatechange', check);
-        setTimeout(resolve, 1500);
-      }
-    });
-
-    return JSON.stringify(this.peerConnection.localDescription);
-  }
-
-  public async finalizeWebRTCAnswer(answerStr: string): Promise<void> {
-    if (!this.peerConnection) throw new Error('Peer connection not started');
-    const answer = JSON.parse(answerStr);
-    await this.peerConnection.setRemoteDescription(answer);
-  }
-
-  private setupDataChannel(channel: RTCDataChannel): void {
-    channel.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        if (data.type === 'BITCHAT_DIRECT' && data.message) {
-          data.message.transport = 'webrtc';
-          this.handleIncomingMessage(data.message, true);
-        }
-      } catch {}
-    };
-    channel.onopen = () => {
-      this.notifyStatus();
-    };
-  }
-
-  /** Emergency Wipe: Destroys all stored messages, keys and cached history. */
+  /**
+   * Kimlik sıfırlama: bu cihazdaki mesaj geçmişini, gönderim kuyruğunu, takma adı
+   * ve gizli anahtarı siler; yeni bir anahtar çifti üretir.
+   * Not: daha önce rölelere ulaşmış mesajlar rölelerden silinemez.
+   */
   public emergencyWipe(): void {
     try {
       localStorage.removeItem(STORAGE_IDENTITY_KEY);
       localStorage.removeItem(STORAGE_MESSAGES_KEY);
+      localStorage.removeItem(STORAGE_SK_KEY);
+      localStorage.removeItem(STORAGE_OUTBOX_KEY);
       sessionStorage.clear();
-      this.messages = [];
-      this.identity = this.loadOrCreateIdentity();
-      this.messageListeners.forEach((l) =>
-        l({
-          id: 'wipe-notice',
-          pubkey: 'system',
-          senderName: 'Sistem',
-          text: 'Tüm mesaj geçmişi ve kimlik anahtarları cihazdan kalıcı olarak silindi.',
-          timestamp: Date.now(),
-          channel: this.activeChannel,
-          type: 'chat',
-          transport: 'mesh'
-        })
-      );
     } catch {}
+
+    this.messages = [];
+    this.outboxQueue = [];
+    this.secretKey = this.loadOrCreateSecretKey();
+    this.identity = this.loadOrCreateIdentity();
+
+    this.messageListeners.forEach((l) =>
+      l({
+        id: 'wipe-notice',
+        pubkey: 'system',
+        senderName: 'Sistem',
+        text: 'Bu cihazdaki mesaj geçmişi, gönderim kuyruğu ve kimlik anahtarı silindi; yeni bir kimlik oluşturuldu.',
+        timestamp: Date.now(),
+        channel: this.activeChannel,
+        type: 'chat',
+        transport: 'mesh'
+      })
+    );
   }
 }
 

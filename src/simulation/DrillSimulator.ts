@@ -212,8 +212,9 @@ export class DrillSimulator {
     const distKm = (distM / 1000).toFixed(1);
     const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
     const nearestPoint = nearest[0]?.point || null;
-    const escapeDist = nearest[0]?.distanceMeters || 0;
-    const escapeMin = nearest[0]?.walkingMinutes || 1;
+    const escapeInfo = nearest[0]
+      ? `(${nearest[0].distanceMeters} m • ~${nearest[0].walkingMinutes} dk)`
+      : '';
 
     this.container.innerHTML = `
       <div class="w-full bg-gradient-to-b from-obsidian-950/98 via-obsidian-950/92 to-obsidian-950/80 border-b border-rose-500/30 backdrop-blur-xl shadow-2xl p-2.5 sm:p-4 text-white">
@@ -275,9 +276,9 @@ export class DrillSimulator {
             <div>
               <span class="text-[10px] text-emerald-400 font-bold uppercase block">Kaçış Rotası</span>
               <span class="text-xs font-semibold text-white truncate max-w-[170px] inline-block">
-                ${nearestPoint ? nearestPoint.name : 'Toplanma Alanı'}
+                ${nearestPoint ? nearestPoint.name : 'Toplanma alanı verisi yok'}
               </span>
-              <span class="text-[10px] font-mono text-emerald-300 ml-1">(${escapeDist} m • ~${escapeMin} dk)</span>
+              <span class="text-[10px] font-mono text-emerald-300 ml-1">${escapeInfo}</span>
             </div>
           </div>
 

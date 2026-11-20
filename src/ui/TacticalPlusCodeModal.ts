@@ -9,6 +9,8 @@
  */
 
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { getLocationSourceLabel, hasGpsFix, hasUsableLocation } from '../utils/locationState';
 import { openLocationCodeService, PlusCodeArea } from '../services/openLocationCodeService';
 import { registerModalOpen, registerModalClose, setupModalMobileDismiss } from '../utils/mobileModalHelper';
 
@@ -113,7 +115,7 @@ export class TacticalPlusCodeModal {
                   Google OLC
                 </span>
               </div>
-              <p class="text-[11px] text-white/60">Sokaksız Alanda %100 Çevrimdışı 14x14m SAR Adresi</p>
+              <p class="text-[11px] text-white/60">Adres tarif edilemeyen yerde yaklaşık 14x14 m'lik konum kodu (çevrimdışı çalışır)</p>
             </div>
           </div>
           <button id="btn-close-pluscode" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-white/70 hover:text-white">
@@ -134,10 +136,9 @@ export class TacticalPlusCodeModal {
 
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400/90 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Bulunduğunuz Konumun Plus Kodu
+                ${hasUsableLocation() ? 'Konumunuzun Plus Kodu' : 'Harita noktasının Plus Kodu — SİZİN KONUMUNUZ DEĞİL'}
               </span>
-              <span class="text-[10px] text-white/50 font-mono">14m x 14m Hassasiyet</span>
+              <span class="text-[10px] text-white/50 font-mono">${hasGpsFix() ? '≈14 m x 14 m kare' : ''}</span>
             </div>
 
             <div class="flex items-center justify-between gap-2 my-2">
@@ -150,8 +151,13 @@ export class TacticalPlusCodeModal {
             </div>
 
             <p class="text-[11px] text-white/70 font-mono">
-              GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+              ${escapeHtml(getLocationSourceLabel())}: ${lat.toFixed(6)}, ${lng.toFixed(6)}
             </p>
+            ${
+              hasUsableLocation()
+                ? ''
+                : '<p class="mt-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-[11px] leading-snug">⚠️ Cihazınızdan gerçek konum alınamadı. Bu kod yalnızca haritanın gösterdiği noktaya aittir; kimseye "konumum" diye iletmeyin. Konum iznini açıp yeniden deneyin.</p>'
+            }
 
             <!-- Telsiz Çağrı Butonu -->
             <div class="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-2">
@@ -168,7 +174,7 @@ export class TacticalPlusCodeModal {
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <h3 class="text-xs font-black uppercase tracking-wider text-white/80 flex items-center gap-1.5">
-                📻 Telsiz Fonetik Okunuşu (AFAD / TRAC / AKUT)
+                📻 Telsiz Fonetik Okunuşu (NATO alfabesi)
               </h3>
               <span class="text-[10px] text-white/40">Gürültülü Sahra Telsiz Kuralı</span>
             </div>
@@ -206,7 +212,7 @@ export class TacticalPlusCodeModal {
                 id="pluscode-input"
                 type="text"
                 placeholder="Örn: 8GG3VX2Q+9R"
-                value="${this.inputCode}"
+                value="${escapeHtml(this.inputCode)}"
                 class="flex-1 px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-white font-mono placeholder-white/30 text-sm focus:outline-none focus:border-emerald-400"
               />
               <button
@@ -239,7 +245,13 @@ export class TacticalPlusCodeModal {
                 : this.inputCode && !this.decodedResult
                 ? `
               <div class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px]">
-                ⚠️ Geçersiz Plus Code formatı. Kod en az 8 karakter ve '+' işareti içermelidir (Örn: 8GG3VX2Q+9R).
+                ⚠️ ${
+                  openLocationCodeService.isShort(this.inputCode)
+                    ? 'Kısa kod (ör. VX2Q+9R) tek başına konum vermez. 8 haneli tam kodu girin (ör. 8GHCVX2Q+9R).'
+                    : openLocationCodeService.getInvalidReason(this.inputCode) === 'too_long'
+                    ? '10 haneden uzun kodlar desteklenmiyor. Kodu + işaretinden sonra 2 hane olacak şekilde girin.'
+                    : 'Geçersiz Plus Code. Tam kod + işaretinden önce 8, sonra 2 hane içerir (ör. 8GHCVX2Q+9R).'
+                }
               </div>
             `
                 : ''
@@ -259,7 +271,7 @@ export class TacticalPlusCodeModal {
 
         <!-- Footer -->
         <div class="p-3.5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-[11px] text-white/50 shrink-0">
-          <span>%100 Çevrimdışı Algoritma</span>
+          <span>Çevrimdışı çalışır</span>
           <span>Google Open Location Code (Apache 2.0)</span>
         </div>
       </div>
@@ -281,8 +293,12 @@ export class TacticalPlusCodeModal {
 
     const smsBtn = this.container.querySelector('#btn-sms-code');
     smsBtn?.addEventListener('click', () => {
+      if (!hasUsableLocation()) {
+        alert('Cihazınızdan gerçek konum alınamadı. Yanlış konum göndermemek için mesaj hazırlanmadı. Konum iznini açın ya da adresinizi yazarak 112\'yi arayın.');
+        return;
+      }
       const msg = encodeURIComponent(
-        `ACİL DURUM KONUMUM: Plus Code: ${currentCode} (GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}). Arama kurtarma talep ediyorum.`
+        `ACİL DURUM. ${hasGpsFix() ? 'Konumum' : 'Son bilinen konumum (güncel olmayabilir)'}: Plus Code ${currentCode} (${lat.toFixed(6)}, ${lng.toFixed(6)}). Yardım istiyorum.`
       );
       window.location.href = `sms:?body=${msg}`;
     });

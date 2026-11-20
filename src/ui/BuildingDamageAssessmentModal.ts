@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 interface DamageRecord {
   id: string;
@@ -59,12 +60,12 @@ export class BuildingDamageAssessmentModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">Bina Hasar Tespit & DASK Kanıtı</h2>
+                <h2 class="text-sm sm:text-base font-black tracking-tight text-white">Kişisel Hasar Notları</h2>
                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  FEMA & BAKANLIK
+                  KİŞİSEL NOT
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">Deprem sonrası kolon/kiriş hasar tespiti ve resmi delil kaydı</p>
+              <p class="text-[11px] text-gray-400">Gördüğünüz hasarı kendiniz için not edin. Tutanak veya delil değildir.</p>
             </div>
           </div>
           <button id="btn-close-damage" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-all">
@@ -76,11 +77,11 @@ export class BuildingDamageAssessmentModal {
         <div class="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs">
           <!-- Visual Damage Comparison Card -->
           <div class="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2">
-            <span class="font-bold text-gray-200 block">🔍 Kritik Yapısal Çatlak Kılavuzu:</span>
+            <span class="font-bold text-gray-200 block">🔍 Çatlaklar hakkında genel bilgi (karar için uzman gerekir):</span>
             <div class="grid grid-cols-2 gap-2 text-[11px]">
               <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                <strong>🟢 Tehlikesiz Sıva Çatlağı:</strong>
-                <p class="text-[10px] text-gray-300 mt-0.5">Yüzeyde, kılcal (<1mm), duvardan duvara uzamayan boya kabarmaları. Taşıyıcı kolon sağlamdır.</p>
+                <strong>Kılcal Sıva Çatlağı:</strong>
+                <p class="text-[10px] text-gray-300 mt-0.5">Yüzeydeki kılcal (1 mm'den ince) sıva/boya çatlakları genellikle yapısal değildir, ancak binanın sağlam olduğunu göstermez. Kesin karar için uzman incelemesi gerekir.</p>
               </div>
               <div class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
                 <strong>🔴 Tehlikeli 45° X Çatlağı:</strong>
@@ -131,13 +132,13 @@ export class BuildingDamageAssessmentModal {
               type="button"
               class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-amber-500/20"
             >
-              <span>📷 Hasar Kaydını Mühürle & Ekle</span>
+              <span>Notu Kaydet</span>
             </button>
           </div>
 
           <!-- Existing Records List -->
           <div class="space-y-2">
-            <span class="font-bold text-gray-300 block text-xs">Mühürlenmiş Hasar Kayıtları (${this.records.length})</span>
+            <span class="font-bold text-gray-300 block text-xs">Kayıtlı Notlarım (${this.records.length})</span>
             <div id="damage-records-list" class="space-y-2 max-h-40 overflow-y-auto">
               ${
                 this.records.length === 0
@@ -147,11 +148,11 @@ export class BuildingDamageAssessmentModal {
                         (r) => `
                 <div class="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between text-xs">
                   <div>
-                    <div class="font-bold text-white uppercase">${r.component} · ${r.severity.replace('_', ' ')}</div>
-                    <div class="text-[11px] text-gray-400">${r.notes}</div>
+                    <div class="font-bold text-white uppercase">${escapeHtml(r.component)} · ${escapeHtml(String(r.severity ?? '').replace('_', ' '))}</div>
+                    <div class="text-[11px] text-gray-400">${escapeHtml(r.notes)}</div>
                     <div class="text-[9.5px] text-gray-500 font-mono">${new Date(r.timestamp).toLocaleString('tr-TR')}</div>
                   </div>
-                  <span class="text-emerald-400 text-[10px] font-mono font-bold">✓ DELİL MÜHÜRLÜ</span>
+                  <span class="text-gray-400 text-[10px] font-mono">Bu cihazda kayıtlı</span>
                 </div>
               `
                       )
@@ -163,13 +164,13 @@ export class BuildingDamageAssessmentModal {
 
         <!-- Footer -->
         <div class="p-3 bg-black/40 border-t border-white/10 flex items-center justify-between gap-2 shrink-0">
-          <p class="text-[10px] text-gray-400">⚖️ Kaydedilen fotoğraflar ve notlar DASK itirazlarında yasal delil niteliği taşır.</p>
+          <p class="text-[10px] text-gray-400">Bu notlar tutanak veya delil değildir, yalnızca bu cihazda durur. Hasar tespiti için e-Devlet / Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü, DASK için ALO 125.</p>
           <button
             id="btn-copy-dask-summary"
             type="button"
             class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition-all shrink-0"
           >
-            📋 Tutanağı Kopyala
+            📋 Notları Kopyala
           </button>
         </div>
       </div>
@@ -186,7 +187,7 @@ export class BuildingDamageAssessmentModal {
     q<HTMLButtonElement>('#btn-add-damage-record')?.addEventListener('click', () => {
       const comp = (q<HTMLSelectElement>('#select-damage-component')?.value || 'kolon') as string;
       const sev = (q<HTMLSelectElement>('#select-damage-severity')?.value || 'agir_hasarli') as string;
-      const notes = q<HTMLInputElement>('#input-damage-notes')?.value.trim() || 'Hasar tespiti yapıldı';
+      const notes = q<HTMLInputElement>('#input-damage-notes')?.value.trim() || 'Not yazılmadı';
 
       const record: DamageRecord = {
         id: `dmg-${Date.now()}`,
@@ -199,7 +200,7 @@ export class BuildingDamageAssessmentModal {
       this.records.unshift(record);
       this.saveRecords();
       this.render();
-      alert('✓ Hasar tespiti yerel belleğe zaman damgasıyla mühürlendi.');
+      alert('Not bu cihaza kaydedildi.');
     });
 
     q<HTMLButtonElement>('#btn-copy-dask-summary')?.addEventListener('click', () => {
@@ -208,16 +209,16 @@ export class BuildingDamageAssessmentModal {
         return;
       }
       const text =
-        `🏛️ [DASK VE RESMİ HASAR TESPİT TUTANAĞI]\n` +
+        `[KİŞİSEL HASAR NOTLARIM — tutanak veya delil değildir]\n` +
         `Tarih: ${new Date().toLocaleString('tr-TR')}\n` +
         `Kayıt Sayısı: ${this.records.length}\n` +
         this.records
           .map((r, i) => `${i + 1}. [${r.component.toUpperCase()}] ${r.severity}: ${r.notes}`)
           .join('\n') +
-        `\nBu tutanak afet.live üzerinden adli delil amacıyla mühürlenmiştir.`;
+        `\nBu notlar kullanıcının kendi gözlemidir; uzman hasar tespiti değildir.`;
 
       navigator.clipboard.writeText(text).then(() => {
-        alert('📋 Hasar tespit tutanağı panoya kopyalandı.');
+        alert('Notlar panoya kopyalandı.');
       });
     });
   }

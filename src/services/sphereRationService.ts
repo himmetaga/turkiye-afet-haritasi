@@ -1,21 +1,29 @@
 /**
  * sphereRationService.ts
  * =============================================================================
- * Sphere Project (Humanitarian Charter & Minimum Standards in Disaster Response)
- * & WHO Acil Durum Beslenme ve Su İhtiyacı Standartları
- * Referans: The Sphere Handbook (Chapter: Water Supply, Sanitation & Food Security)
- * =============================================================================
- * Afet sonrasında arama kurtarma ve insani yardımın ulaşamadığı ilk 72 saat
- * ("Altın 72 Saat") ve takip eden 7 gün boyunca bir ailenin hayatta kalabilmesi
- * için gereken minimum içme suyu, hijyen suyu ve kalori ihtiyacını hesaplar.
+ * Afet sonrası ilk günler için hane halkı su ve enerji ihtiyacı hesabı.
+ *
+ * Kullanılan iki sayı Sphere El Kitabı'nın asgari ölçüleridir:
+ *  - Su: kişi başı günde toplam en az 15 litre (içme + yemek + hijyen);
+ *        bunun yaklaşık 3 litresi içme ve yemek hazırlama içindir.
+ *  - Enerji: kişi başı günde ortalama 2100 kcal (tüm yaşların ortalaması).
+ *
+ * Erzak listesi (konserve, bisküvi vb.) bir standart değil, örnek öneridir.
+ * Başka çarpan ya da katsayı kullanılmaz.
  */
+
+export const SPHERE_TOTAL_WATER_L_PER_PERSON_DAY = 15;
+export const DRINKING_WATER_L_PER_PERSON_DAY = 3;
+export const OTHER_WATER_L_PER_PERSON_DAY =
+  SPHERE_TOTAL_WATER_L_PER_PERSON_DAY - DRINKING_WATER_L_PER_PERSON_DAY;
+export const SPHERE_KCAL_PER_PERSON_DAY = 2100;
 
 export interface SphereHouseholdInput {
   adultsCount: number;
   childrenCount: number; // 2-12 yaş
   infantsCount: number; // 0-2 yaş
+  /** Yetişkinlerden kaçı hamile ya da emziriyor (ayrı kişi DEĞİL; yetişkin sayısını aşamaz) */
   pregnantLactatingCount: number;
-  isColdWinter: boolean; // Kış / Soğuk hava koşulu (+%15-20 kalori ihtiyacı)
   durationDays: 3 | 7 | 14;
 }
 
@@ -30,7 +38,9 @@ export interface RationItem {
 }
 
 export interface SpherePlanResult {
+  totalPeople: number;
   totalDrinkingWaterLiters: number;
+  /** Yemek pişirme ve hijyen suyu */
   totalHygieneWaterLiters: number;
   totalWaterLiters: number;
   dailyTotalCalories: number;
@@ -41,130 +51,119 @@ export interface SpherePlanResult {
 }
 
 export class SphereRationService {
-  /**
-   * Sphere standartlarına göre hane halkı su ve kalori rasyonunu hesaplar.
-   */
   public calculateRations(input: SphereHouseholdInput): SpherePlanResult {
     const adults = Math.max(0, input.adultsCount);
     const children = Math.max(0, input.childrenCount);
     const infants = Math.max(0, input.infantsCount);
-    const mothers = Math.max(0, input.pregnantLactatingCount);
+    // Hamile / emziren sayısı yetişkinlerin içindedir; ayrı kişi olarak sayılmaz.
+    const mothers = Math.min(adults, Math.max(0, input.pregnantLactatingCount));
     const days = input.durationDays;
-    const isCold = input.isColdWinter;
 
-    // Kişi başı günlük içme ve temel yemek suyu: 3.0 Litre (WHO/Sphere)
-    // Bebekler için anne sütü/mama suyu: 2.0 Litre
     const totalPeople = adults + children + infants;
-    const dailyDrinkingWater = adults * 3.0 + children * 2.2 + infants * 1.5 + mothers * 0.8;
-    const dailyHygieneWater = (adults + children) * 3.0 + infants * 2.0; // Temel el/yüz/bebek temizliği
-    const totalDrinkingWaterLiters = Math.ceil(dailyDrinkingWater * days);
-    const totalHygieneWaterLiters = Math.ceil(dailyHygieneWater * days);
+
+    const totalDrinkingWaterLiters = Math.ceil(totalPeople * DRINKING_WATER_L_PER_PERSON_DAY * days);
+    const totalHygieneWaterLiters = Math.ceil(totalPeople * OTHER_WATER_L_PER_PERSON_DAY * days);
     const totalWaterLiters = totalDrinkingWaterLiters + totalHygieneWaterLiters;
 
-    // Kalori hesabı (Sphere Minimum Standard: 2,100 kcal / yetişkin)
-    let baseCalories =
-      adults * 2100 +
-      children * 1500 +
-      infants * 900 +
-      mothers * 450; // Hamile/Emziren ek enerjisi
-
-    if (isCold) {
-      // Hipotermi ve soğuk havada vücut sıcaklığını korumak için %18 ek kalori
-      baseCalories = Math.round(baseCalories * 1.18);
-    }
-
-    const dailyTotalCalories = Math.round(baseCalories);
+    const dailyTotalCalories = totalPeople * SPHERE_KCAL_PER_PERSON_DAY;
     const totalPlanCalories = dailyTotalCalories * days;
 
-    // Gıda ve Rasyon Listesi
+    const eaters = adults + children;
+
     const items: RationItem[] = [
       {
-        name: 'İçme Suyu (Şişeli / Arıtılmış)',
+        name: 'İçme ve Yemek Hazırlama Suyu (şişe ya da arıtılmış)',
         category: 'water',
-        dailyAmountPerPerson: '3.0 L (İçme + Hazırlık)',
+        dailyAmountPerPerson: `${DRINKING_WATER_L_PER_PERSON_DAY} L`,
         totalHouseholdAmount: `${totalDrinkingWaterLiters}`,
         unit: 'Litre',
-        notes: 'Güneş görmeyen serin yerde saklanmalı, susama beklenmeden yudumlanmalı.',
-        shelfLife: '12 - 24 Ay'
+        notes: 'Güneş görmeyen serin yerde saklayın; susamayı beklemeden için.',
+        shelfLife: 'Şişe üzerindeki tarihe bakın'
       },
       {
-        name: 'Temel Hijyen Suyu',
+        name: 'Yemek Pişirme ve Hijyen Suyu',
         category: 'water',
-        dailyAmountPerPerson: '3.0 L (El/Yüz/Yara Temizliği)',
+        dailyAmountPerPerson: `${OTHER_WATER_L_PER_PERSON_DAY} L`,
         totalHouseholdAmount: `${totalHygieneWaterLiters}`,
         unit: 'Litre',
-        notes: 'Klor tabletiyle dezenfekte edilmiş kapalı bidonlarda tutulabilir.',
-        shelfLife: '6 Ay (Düzenli değişim)'
+        notes: 'Kapalı bidonlarda saklayın. İçme suyu kadar temiz olması gerekmez ama el yıkama ve yemek için güvenli olmalı.',
+        shelfLife: 'Düzenli yenileyin'
       },
       {
-        name: 'Hazır Konserve Gıdalar (Barbunya, Nohut, Ton Balığı, Sarma)',
+        name: 'Hazır Konserve Gıdalar (barbunya, nohut, ton balığı, sarma)',
         category: 'protein',
-        dailyAmountPerPerson: '1.5 Kutu (Yaklaşık 600g)',
-        totalHouseholdAmount: `${Math.ceil((adults + children) * 1.5 * days)}`,
+        dailyAmountPerPerson: 'Yaklaşık 1,5 kutu',
+        totalHouseholdAmount: `${Math.ceil(eaters * 1.5 * days)}`,
         unit: 'Kutu (400g)',
         notes: 'Açacak gerektirmeyen çek-aç kapaklı olanları tercih edin.',
-        shelfLife: '2 - 4 Yıl'
+        shelfLife: 'Kutu üzerindeki tarihe bakın'
       },
       {
-        name: 'Yüksek Enerjili Bisküvi / Peksimet / Galeta',
+        name: 'Bisküvi / Peksimet / Galeta',
         category: 'carb',
-        dailyAmountPerPerson: '2 Paket (200g)',
-        totalHouseholdAmount: `${Math.ceil((adults + children) * 2 * days)}`,
+        dailyAmountPerPerson: 'Yaklaşık 2 paket',
+        totalHouseholdAmount: `${Math.ceil(eaters * 2 * days)}`,
         unit: 'Paket (100g)',
-        notes: 'Susuzluk yapmayan az tuzlu bisküviler ve krakerler.',
-        shelfLife: '12 - 18 Ay'
+        notes: 'Az tuzlu olanları seçin.',
+        shelfLife: 'Paket üzerindeki tarihe bakın'
       },
       {
         name: 'Tahin, Pekmez, Helva veya Fıstık Ezmesi',
         category: 'energy',
-        dailyAmountPerPerson: '3-4 Yemek Kaşığı (Hızlı Glukoz & Yağ)',
-        totalHouseholdAmount: `${Math.ceil(((adults + children) * 70 * days) / 1000 * 10) / 10}`,
+        dailyAmountPerPerson: '3-4 yemek kaşığı',
+        totalHouseholdAmount: `${Math.ceil(((eaters * 70 * days) / 1000) * 10) / 10}`,
         unit: 'Kilogram',
-        notes: 'Pişirme gerektirmeyen, termal direnç sağlayan yoğun kalori deposu.',
-        shelfLife: '12 Ay'
+        notes: 'Pişirme gerektirmez, az yer kaplar, enerjisi yüksektir.',
+        shelfLife: 'Paket üzerindeki tarihe bakın'
       },
       {
-        name: 'Kuru Yemiş ve Kuru Meyve (Ceviz, Fındık, Kuru İncir, Kayısı)',
+        name: 'Kuru Yemiş ve Kuru Meyve (ceviz, fındık, kuru incir, kayısı)',
         category: 'energy',
-        dailyAmountPerPerson: '1 Avuç (Yaklaşık 80g)',
-        totalHouseholdAmount: `${Math.ceil(((adults + children) * 80 * days) / 1000 * 10) / 10}`,
+        dailyAmountPerPerson: '1 avuç (yaklaşık 80g)',
+        totalHouseholdAmount: `${Math.ceil(((eaters * 80 * days) / 1000) * 10) / 10}`,
         unit: 'Kilogram',
-        notes: 'Magnezyum, potasyum ve krampları önleyen mineraller içerir.',
-        shelfLife: '6 - 12 Ay'
+        notes: 'Pişirme gerektirmez; tuzsuz olanları seçin.',
+        shelfLife: 'Paket üzerindeki tarihe bakın'
       }
     ];
 
     if (infants > 0) {
       items.push({
-        name: 'Bebek Maması / Devam Sütü Tozu',
+        name: 'Bebek Maması / Devam Sütü (anne sütü almayan bebekler için)',
         category: 'infant',
-        dailyAmountPerPerson: '6 Öğün / Gün',
-        totalHouseholdAmount: `${Math.ceil(infants * 0.4 * days * 10) / 10}`,
-        unit: 'Kutu (800g)',
-        notes: 'Yalnızca kaynatılmış veya güvenli şişe suyu ile hazırlanmalı.',
-        shelfLife: '12 - 18 Ay'
+        dailyAmountPerPerson: 'Kutudaki ölçüye göre',
+        totalHouseholdAmount: 'Kutudaki günlük ölçü × gün sayısı',
+        unit: '',
+        notes: 'Yalnızca kaynatılıp ılıtılmış ya da güvenli şişe suyuyla hazırlayın. Emzirme sürüyorsa devam edin.',
+        shelfLife: 'Kutu üzerindeki tarihe bakın'
       });
     }
 
-    // Günlük rasyon tüketim planı
     const dailySchedule = [];
     for (let d = 1; d <= Math.min(days, 3); d++) {
       dailySchedule.push({
         day: d,
-        title: d === 1 ? '1. Gün: Şok ve İlk İntibak' : d === 2 ? '2. Gün: Su ve Enerji Disiplini' : '3. Gün: Kritik Eşik (72 Saat)',
-        waterSchedule: 'Sabah 500ml, Öğle 800ml, Akşam 800ml + 400ml gece nemlendirme.',
-        mealSchedule: 'Sabah bisküvi ve helva/fındık; Öğle kuru meyve ve konserve; Akşam proteinli konserve ve galeta.'
+        title: `${d}. Gün`,
+        waterSchedule: `Kişi başı yaklaşık ${DRINKING_WATER_L_PER_PERSON_DAY} litreyi güne yayarak için; susamayı beklemeyin.`,
+        mealSchedule: 'Gün içine yayılmış üç öğün: bisküvi/galeta, konserve, kuru yemiş ya da helva.'
       });
     }
 
     const criticalWarnings: string[] = [
-      '💧 ASLA Susuzluğu geciktirmek için tükürük yutmayın veya deniz suyu/kar suyu direkt tüketmeyin (Kar suyu eritilip mineral katılmalıdır).',
-      '🧂 Aşırı tuzlu cipslar, salamura veya kurutulmuş etler su kaybını 3 kat artırır; acil durumda tüketmeyin.',
-      '👶 Bebek maması kaplarını açıkta bırakmayın; sahra koşullarında ishal en büyük ölüm sebebidir.',
-      '❄️ Soğuk kış ortamında titreme başlarsa hemen pekmez veya tahin gibi hızlı kana karışan karbonhidrat verin.'
+      '💧 Deniz suyu içmeyin. Karı eritip mümkünse kaynatarak için; kar yemek vücut ısısını düşürür.',
+      '🧂 Çok tuzlu yiyecekler susuzluğu artırır; su kısıtlıysa az tüketin.',
+      '👶 Mama kaplarını ve biberonları açıkta bırakmayın; ishal bebekler için hayati tehlikedir.',
+      '❄️ Soğukta enerji ihtiyacı artar. Titreyen kişiyi kuru ve sıcak tutun; bilinci açıksa sıcak, şekerli içecek verin.'
     ];
 
+    if (mothers > 0) {
+      criticalWarnings.push(
+        '🤰 Hamile ve emziren kadınların su ve enerji ihtiyacı ortalamadan fazladır; onlara daha büyük pay ayırın.'
+      );
+    }
+
     return {
+      totalPeople,
       totalDrinkingWaterLiters,
       totalHygieneWaterLiters,
       totalWaterLiters,
@@ -178,4 +177,3 @@ export class SphereRationService {
 }
 
 export const sphereRationService = new SphereRationService();
-

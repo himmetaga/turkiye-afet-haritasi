@@ -2,6 +2,8 @@ import qrcode from 'qrcode-generator';
 import { AssemblyPoint, EmergencyFacility } from '../types';
 import { haversineDistanceMeters, estimateWalkingMinutes, findNearestAssemblyPoints } from '../utils/geoMath';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { hasUsableLocation } from '../utils/locationState';
 
 export interface FamilyCardConfig {
   familyName: string;
@@ -17,7 +19,8 @@ export class SocialShareCard {
   private facilities: EmergencyFacility[];
   private config: FamilyCardConfig = {
     familyName: 'AİLEMİZ',
-    cityContact: 'Şehir Dışı İrtibat: Yakın Akraba / 05xx xxx xx xx'
+    // Boş başlar: örnek bir ad / numara karta veri gibi yazılmaz.
+    cityContact: ''
   };
 
   constructor(
@@ -62,11 +65,14 @@ export class SocialShareCard {
   }
 
   private getPointsData() {
-    const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 4);
-    const p1 = nearest[0]?.point || this.assemblyPoints[0] || null;
-    const p2 = nearest[1]?.point || this.assemblyPoints[1] || null;
+    // Gerçek konum ölçümü yoksa "en yakın" nokta seçilemez: varsayılan harita merkezine
+    // göre bulunan alanlar ailenin buluşma noktası gibi gösterilmez.
+    const located = hasUsableLocation();
+    const nearest = located ? findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 4) : [];
+    const p1 = nearest[0]?.point || null;
+    const p2 = nearest[1]?.point || null;
 
-    const hospitals = this.facilities
+    const hospitals = (located ? this.facilities : [])
       .filter((f) => f.category === 'hospital')
       .map((f) => {
         const dist = haversineDistanceMeters(this.userCoords, f.coordinates);
@@ -77,12 +83,22 @@ export class SocialShareCard {
     const nearestHospital = hospitals[0] || null;
 
     return {
+      located,
       p1,
-      p1Dist: p1 ? haversineDistanceMeters(this.userCoords, p1.coordinates) : 0,
+      p1Dist: p1 ? Math.round(haversineDistanceMeters(this.userCoords, p1.coordinates)) : null,
       p2,
-      p2Dist: p2 ? haversineDistanceMeters(this.userCoords, p2.coordinates) : 0,
+      p2Dist: p2 ? Math.round(haversineDistanceMeters(this.userCoords, p2.coordinates)) : null,
       hospital: nearestHospital
     };
+  }
+
+  private formatDistance(distMeters: number | null): string {
+    if (distMeters === null) return '';
+    return `${distMeters.toLocaleString('tr-TR')} metre (~${estimateWalkingMinutes(distMeters)} dk yürüme)`;
+  }
+
+  private missingText(located: boolean): string {
+    return located ? 'Veri yok' : 'Konum alınamadı — alan seçilemedi';
   }
 
   private async generateStoryCanvas(): Promise<HTMLCanvasElement> {
@@ -94,7 +110,7 @@ export class SocialShareCard {
     const ctx = canvas.getContext('2d');
     if (!ctx) return canvas;
 
-    const { p1, p1Dist, p2, p2Dist, hospital } = this.getPointsData();
+    const { located, p1, p1Dist, p2, p2Dist, hospital } = this.getPointsData();
 
     // 1. Ultra Dark Obsidian Background with subtle radial glow
     ctx.fillStyle = '#090a0f';
@@ -148,12 +164,12 @@ export class SocialShareCard {
     // Main Title
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 68px system-ui, -apple-system, sans-serif';
-    const famTitle = `${(this.config.familyName || 'AİLEMİZ').toUpperCase()} AFET BULUŞMA PLANI`;
+    const famTitle = `${(this.config.familyName || 'AİLEMİZ').toLocaleUpperCase('tr-TR')} AFET BULUŞMA PLANI`;
     ctx.fillText(famTitle.slice(0, 26), 80, 245);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 30px system-ui, -apple-system, sans-serif';
-    ctx.fillText('Deprem sonrasında aile bireylerimizin toplanacağı resmi alanlar', 80, 300);
+    ctx.fillText('Deprem sonrasında ailemizin buluşacağı toplanma alanları', 80, 300);
 
     // CARD 1: 1. Birincil Toplanma Alanı
     let y = 370;
@@ -176,7 +192,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
-    const p1Name = p1 ? p1.name : 'Toplanma Alanı Bulunamadı';
+    const p1Name = p1 ? p1.name : this.missingText(located);
     ctx.fillText(p1Name.slice(0, 28), 110, y + 145);
 
     ctx.fillStyle = '#94a3b8';
@@ -186,8 +202,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#34d399';
     ctx.font = 'bold 36px monospace';
-    const p1DistStr = `${p1Dist.toLocaleString()} metre (~${estimateWalkingMinutes(p1Dist)} dk)`;
-    ctx.fillText(p1DistStr, 110, y + 245);
+    ctx.fillText(this.formatDistance(p1Dist), 110, y + 245);
 
     // CARD 2: 2. Yedek Toplanma Alanı
     y += 310;
@@ -209,7 +224,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
-    const p2Name = p2 ? p2.name : 'İkinci Toplanma Alanı';
+    const p2Name = p2 ? p2.name : this.missingText(located);
     ctx.fillText(p2Name.slice(0, 30), 110, y + 135);
 
     ctx.fillStyle = '#94a3b8';
@@ -219,8 +234,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 32px monospace';
-    const p2DistStr = `${p2Dist.toLocaleString()} metre (~${estimateWalkingMinutes(p2Dist)} dk)`;
-    ctx.fillText(p2DistStr, 110, y + 225);
+    ctx.fillText(this.formatDistance(p2Dist), 110, y + 225);
 
     // CARD 3: En Yakın Hastane
     y += 290;
@@ -238,12 +252,14 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
-    const hospName = hospital ? hospital.facility.name : 'Bölge Acil Sağlık Merkezi';
+    const hospName = hospital ? hospital.facility.name : this.missingText(located);
     ctx.fillText(hospName.slice(0, 32), 110, y + 110);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '26px system-ui, -apple-system, sans-serif';
-    const hospDist = hospital ? `${hospital.distanceMeters.toLocaleString()} m • Acil Servis Aktif` : 'Yakında';
+    const hospDist = hospital
+      ? `Kuş uçuşu ${Math.round(hospital.distanceMeters).toLocaleString('tr-TR')} m • Açık olup olmadığını teyit edin`
+      : '';
     ctx.fillText(hospDist, 110, y + 158);
 
     // CARD 4: Şehir Dışı İrtibat & Acil Numaralar
@@ -258,15 +274,15 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#fbbf24';
     ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
-    ctx.fillText('📞 ŞEHİR DIŞI İRTİBAT KİŞİSİ (AFET PROTOKOLÜ)', 110, y + 55);
+    ctx.fillText('📞 ŞEHİR DIŞI İRTİBAT KİŞİSİ', 110, y + 55);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-    ctx.fillText(this.config.cityContact.slice(0, 40), 110, y + 110);
+    ctx.fillText((this.config.cityContact.trim() || 'Yazılmadı').slice(0, 40), 110, y + 110);
 
     ctx.fillStyle = '#cbd5e1';
     ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
-    ctx.fillText('ACİL ÇAĞRI: 112  •  AFAD: 122  •  POLİS: 155', 110, y + 165);
+    ctx.fillText('TÜM ACİL DURUMLAR İÇİN TEK NUMARA: 112', 110, y + 165);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '22px system-ui, -apple-system, sans-serif';
@@ -283,7 +299,10 @@ export class SocialShareCard {
     ctx.stroke();
 
     // Generate QR image on canvas
-    const qrUrl = `https://afet.live/?lat=${this.userCoords[1].toFixed(5)}&lng=${this.userCoords[0].toFixed(5)}&zoom=16`;
+    // Gerçek konum ölçümü yoksa QR'a koordinat yazılmaz.
+    const qrUrl = located
+      ? `https://afet.live/?lat=${this.userCoords[1].toFixed(5)}&lng=${this.userCoords[0].toFixed(5)}&zoom=16`
+      : 'https://afet.live/';
     const qr = qrcode(0, 'M');
     qr.addData(qrUrl);
     qr.make();
@@ -315,7 +334,7 @@ export class SocialShareCard {
 
     ctx.fillStyle = '#34d399';
     ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
-    ctx.fillText('afet.live üzerinde canlı rotayı açın', 370, y + 145);
+    ctx.fillText("afet.live'da haritayı açın", 370, y + 145);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '24px system-ui, -apple-system, sans-serif';
@@ -380,7 +399,8 @@ export class SocialShareCard {
   }
 
   private render(): void {
-    const { p1, p1Dist, p2, p2Dist, hospital } = this.getPointsData();
+    const { located, p1, p1Dist, p2, p2Dist, hospital } = this.getPointsData();
+    const previewTitle = `${(this.config.familyName || 'AİLEMİZ').toLocaleUpperCase('tr-TR')} AFET BULUŞMA PLANI`;
 
     this.container.innerHTML = `
       <div class="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-3xl bg-obsidian-950/95 border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl text-white">
@@ -413,7 +433,7 @@ export class SocialShareCard {
                 id="input-card-family-name"
                 type="text"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 font-semibold"
-                value="${this.config.familyName}"
+                value="${escapeHtml(this.config.familyName)}"
                 placeholder="Örn: YILMAZ AİLESİ"
               />
             </div>
@@ -423,7 +443,7 @@ export class SocialShareCard {
                 id="input-card-contact"
                 type="text"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-sky-400"
-                value="${this.config.cityContact}"
+                value="${escapeHtml(this.config.cityContact)}"
                 placeholder="Örn: Ankara - Teyze Ayşe: 0532 xxx xx xx"
               />
             </div>
@@ -440,33 +460,33 @@ export class SocialShareCard {
                 <span class="text-gray-400 font-mono text-[10px]">9:16 STORY</span>
               </div>
               <h3 id="preview-family-title" class="text-base font-black text-white leading-tight uppercase mb-1">
-                ${this.config.familyName} AFET BULUŞMA PLANI
+                ${escapeHtml(previewTitle)}
               </h3>
-              <p class="text-[10px] text-gray-400 mb-3">Deprem anında aile bireylerimizin buluşacağı güvenli noktalar</p>
+              <p class="text-[10px] text-gray-400 mb-3">Deprem sonrasında ailemizin buluşacağı toplanma alanları</p>
 
               <!-- Point 1 -->
               <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 mb-2">
                 <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">⭐ 1. BİRİNCİL TOPLANMA ALANI</span>
-                <div class="text-xs font-bold text-white truncate mt-0.5">${p1 ? p1.name : 'Toplanma Alanı'}</div>
-                <div class="text-[10px] text-emerald-300 font-mono font-semibold">${p1Dist.toLocaleString()} m (~${estimateWalkingMinutes(p1Dist)} dk)</div>
+                <div class="text-xs font-bold text-white truncate mt-0.5">${p1 ? escapeHtml(p1.name) : this.missingText(located)}</div>
+                <div class="text-[10px] text-emerald-300 font-mono font-semibold">${this.formatDistance(p1Dist)}</div>
               </div>
 
               <!-- Point 2 -->
               <div class="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 mb-2">
                 <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider block">🔄 2. YEDEK TOPLANMA ALANI</span>
-                <div class="text-xs font-bold text-white truncate mt-0.5">${p2 ? p2.name : 'Yedek Alan'}</div>
-                <div class="text-[10px] text-sky-300 font-mono font-semibold">${p2Dist.toLocaleString()} m (~${estimateWalkingMinutes(p2Dist)} dk)</div>
+                <div class="text-xs font-bold text-white truncate mt-0.5">${p2 ? escapeHtml(p2.name) : this.missingText(located)}</div>
+                <div class="text-[10px] text-sky-300 font-mono font-semibold">${this.formatDistance(p2Dist)}</div>
               </div>
 
               <!-- Hospital -->
               <div class="p-2 rounded-xl bg-white/5 border border-white/10 text-[10px]">
                 <span class="text-rose-400 font-bold">🏥 En Yakın Hastane:</span>
-                <span class="text-gray-200 block truncate">${hospital ? hospital.facility.name : 'Bölge Acil Hastanesi'}</span>
+                <span class="text-gray-200 block truncate">${hospital ? escapeHtml(hospital.facility.name) : this.missingText(located)}</span>
               </div>
             </div>
 
             <div class="pt-2 border-t border-white/10 text-[9px] text-gray-400 flex items-center justify-between">
-              <span>ACİL: 112 • AFAD: 122</span>
+              <span>ACİL: 112</span>
               <span class="text-emerald-400 font-bold">afet.live</span>
             </div>
           </div>
@@ -507,7 +527,7 @@ export class SocialShareCard {
       this.config.familyName = (e.target as HTMLInputElement).value;
       const previewTitle = this.container.querySelector('#preview-family-title');
       if (previewTitle) {
-        previewTitle.textContent = `${(this.config.familyName || 'AİLEMİZ').toUpperCase()} AFET BULUŞMA PLANI`;
+        previewTitle.textContent = `${(this.config.familyName || 'AİLEMİZ').toLocaleUpperCase('tr-TR')} AFET BULUŞMA PLANI`;
       }
     });
 

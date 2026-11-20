@@ -49,10 +49,10 @@ export class EarlyWarningHUD {
             </span>
             <div class="flex flex-col">
               <span class="text-[11px] font-mono uppercase tracking-widest text-rose-400 font-bold">
-                🚨 SİSMİK ERKEN UYARI SİSTEMİ
+                🚨 YAKININIZDA DEPREM BİLDİRİLDİ
               </span>
               <h3 class="text-sm sm:text-base font-extrabold tracking-tight text-white">
-                ${status.earthquake ? status.earthquake.title : 'Deprem Dalgası Algılandı'}
+                ${status.earthquake ? status.earthquake.title : 'Deprem bildirildi'}
               </h3>
             </div>
           </div>
@@ -75,16 +75,20 @@ export class EarlyWarningHUD {
           </div>
         </div>
 
+        <p class="mt-2 text-[10.5px] text-gray-300 leading-snug">
+          Bu bildirim deprem listesinden gelir, resmi erken uyarı değildir. Süreler ve şiddet kaba tahmindir; liste çoğu zaman sarsıntıdan sonra güncellenir.
+        </p>
+
         <!-- Wave Arrival Countdowns -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 my-3">
           <!-- Destructive S-Wave Countdown (Main) -->
           <div class="col-span-2 sm:col-span-1 rounded-xl bg-white/5 border border-white/10 p-3 flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Yıkıcı S-Dalgası</span>
+            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">S-Dalgası</span>
             <div class="text-3xl sm:text-4xl font-black font-mono my-1 ${isShaking ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">
               ${isShaking ? 'SARSINTI' : `${sEta}s`}
             </div>
             <span class="text-[10px] font-medium text-gray-300">
-              ${isShaking ? 'Derhal Çök-Kapan-Tutun!' : 'Varışına Kalan Süre'}
+              ${isShaking ? 'Sarsıntı ulaşmış olabilir: Çök-Kapan-Tutun' : 'Tahmini varış (kaba hesap)'}
             </span>
           </div>
 

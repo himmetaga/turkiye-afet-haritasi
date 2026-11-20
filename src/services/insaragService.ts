@@ -1,25 +1,22 @@
 /**
  * insaragService.ts
  * =============================================================================
- * UN OCHA / INSARAG Uluslararası Kentsel Arama ve Kurtarma (USAR)
- * Enkaz İşaretleme ve Yapısal Triyaj Sistemi
- * Referans: INSARAG Guidelines Vol II: Operations, Manual B (Marking System)
- * AFAD & AKUT & İtfaiye Saha Standartları
- * =============================================================================
- * Arama kurtarma ekiplerinin enkaz üzerine sprey boyayla çizdiği 1x1 metrelik
- * kare ve 'X' işaretlerinin;
- * 1. Çözülmesi (Decoder): Afetzede ve gönüllülerin duvardaki işareti okuyup
- *    içeride canlı kalıp kalmadığını, hangi ekibin ne zaman girdiğini ve gaz/çökme
- *    riski olup olmadığını saniyeler içinde anlamasını sağlar.
- * 2. Oluşturulması (Generator): Kurtarma ekiplerinin uluslararası standartta
- *    ve hatasız şablon üretmesini sağlar.
+ * Enkaz üzerindeki arama işaretleri için BASİTLEŞTİRİLMİŞ yardımcı.
+ *
+ * Bu dosya resmi INSARAG el kitabının uygulaması DEĞİLDİR. Buradaki
+ * "tek çizgi / çarpı + dört bölme" düzeni ABD FEMA arama işaretlerine benzer;
+ * sahadaki ekipler farklı sistemler kullanabilir. Bu yüzden:
+ *  - hiçbir işaret "bina güvenli / temizlendi" diye yorumlanmaz,
+ *  - L / D sayıları "kurtarıldı" diye yorumlanmaz,
+ *  - örnek/uydurma ekip kodu, tarih ya da sayı gösterilmez.
+ * Tek sabit öneri: binaya girmeyin, işaretin anlamını sahadaki ekipten teyit edin.
  */
 
+import { escapeHtml } from '../utils/safeText';
+
 export type InsaragStatus =
-  | 'in_progress' // '/' tek çizgi: Arama sürüyor
-  | 'completed' // 'X' çarpı: Arama tamamlandı
-  | 'cleared' // Kutu içinde X: Tüm kazazedeler çıkarıldı, bina kapatıldı
-  | 'passed'; // 'G': Boş/İlerlendi
+  | 'in_progress' // '/' tek çizgi
+  | 'completed'; // 'X' çarpı
 
 export interface InsaragTag {
   teamId: string;
@@ -30,7 +27,6 @@ export interface InsaragTag {
   hazards: string[];
   status: InsaragStatus;
   notes?: string;
-  targetRoomArrow?: 'up' | 'down' | 'left' | 'right' | 'none';
 }
 
 export interface DecodedExplanation {
@@ -40,80 +36,54 @@ export interface DecodedExplanation {
   teamSummary: string;
   victimSummary: string;
   hazardSummary: string;
+  /** Her zaman false: bu yardımcı hiçbir işareti "girilebilir" diye yorumlamaz. */
   isSafeToEnter: boolean;
   recommendation: string;
 }
 
+/** Bu ekranda seçim kolaylığı için kullanılan kısaltmalar; resmi kod listesi değildir. */
 export const COMMON_HAZARDS = [
-  { code: 'G', label: 'Gaz Sızıntısı Kokusu / Patlama Riski', danger: 'high' },
-  { code: 'E', label: 'Açıkta Elektrik Kabloları / Yüksek Gerilim', danger: 'high' },
-  { code: 'COL', label: 'Kritik Yapısal Çökme Riski (Askıda Döşeme)', danger: 'critical' },
-  { code: 'A', label: 'Asbest ve Toksik Toz Salınımı', danger: 'medium' },
-  { code: 'W', label: 'Su Baskını / Patlayan Ana Şebeke Borusu', danger: 'medium' },
-  { code: 'OK', label: 'Belirgin Tehlike Tespit Edilmedi (Güvenli)', danger: 'low' }
+  { code: 'GAZ', label: 'Gaz kokusu / patlama riski', danger: 'high' },
+  { code: 'ELK', label: 'Açıkta elektrik kablosu', danger: 'high' },
+  { code: 'ÇÖK', label: 'Çökme riski', danger: 'critical' },
+  { code: 'TOZ', label: 'Asbest / zararlı toz', danger: 'medium' },
+  { code: 'SU', label: 'Su baskını / patlak boru', danger: 'medium' }
 ];
+
+export const INSARAG_FIXED_RECOMMENDATION =
+  'İşaret ne olursa olsun binaya girmeyin; işaretin anlamını sahadaki ekipten teyit edin.';
 
 export class InsaragService {
   /**
-   * Girilen INSARAG etiketini analiz edip anlaşılır Türkçe açıklama üretir.
+   * Seçilen işaret parçalarını temkinli bir Türkçe açıklamaya çevirir.
    */
   public decode(tag: InsaragTag): DecodedExplanation {
-    let headline = '';
-    let statusBadge = '';
-    let statusColor = 'text-amber-400';
-    let isSafeToEnter = false;
-    let recommendation = '';
+    const inProgress = tag.status === 'in_progress';
 
-    switch (tag.status) {
-      case 'in_progress':
-        headline = '⚠️ ARAMA VE KURTARMA ÇALIŞMASI DEVAM EDİYOR';
-        statusBadge = 'İçeride Ekip Var (/)';
-        statusColor = 'text-amber-400';
-        recommendation =
-          'Enkaz içine kesinlikle girmeyiniz. Ekiplerin dinleme yapabilmesi için çevrede mutlak sessizlik sağlayınız.';
-        break;
-      case 'completed':
-        headline = 'ℹ️ ARAMA ÇALIŞMASI TAMAMLANDI';
-        statusBadge = 'Arama Bitti (X)';
-        statusColor = 'text-blue-400';
-        recommendation =
-          'Ekip binadaki aramasını tamamlamıştır. Artçı sarsıntılar nedeniyle binaya izinsiz girmeyiniz.';
-        break;
-      case 'cleared':
-        headline = '✅ BİNA TAMAMEN TAHLİYE EDİLDİ VE KAPATILDI';
-        statusBadge = 'Temizlendi [X]';
-        statusColor = 'text-emerald-400';
-        recommendation =
-          'Tüm canlı ve vefat eden kazazedeler çıkarılmıştır. Saha ağır iş makineleri ve enkaz kaldırmaya devredilebilir.';
-        break;
-      case 'passed':
-        headline = '➡️ HIZLI DEĞERLENDİRME YAPILDI - EKİP İLERLEDİ';
-        statusBadge = 'İlerlendi (G)';
-        statusColor = 'text-purple-400';
-        recommendation =
-          'Ekip yapıya hızlıca göz atmış ve canlı belirtisi alamadığı için diğer binalara yönelmiştir.';
-        break;
-    }
+    const headline = inProgress
+      ? 'TEK ÇİZGİ ( / ): Bir ekip aramaya başlamış; arama sürüyor olabilir'
+      : 'ÇARPI ( X ): Bir ekip bu noktadaki aramasını bitirmiş olabilir';
+    const statusBadge = inProgress ? 'Tek çizgi ( / )' : 'Çarpı ( X )';
+    const statusColor = inProgress ? 'text-amber-400' : 'text-blue-400';
 
-    const teamSummary = tag.teamId
-      ? `Bu binada görev yapan ekip: ${tag.teamId} (Giriş: ${tag.startDate}${tag.endDate ? ' - Çıkış: ' + tag.endDate : ''})`
-      : 'Ekip kodu belirtilmemiş.';
+    const team = tag.teamId.trim();
+    const date = tag.startDate.trim();
+    const teamSummary =
+      team || date
+        ? `İşarette yazan ekip kodu: ${team || 'girilmedi'} · tarih/saat: ${date || 'girilmedi'}`
+        : 'Ekip kodu ve tarih girilmedi.';
 
-    const victimSummary = `Kurtarılan Canlı: ${tag.liveCount} Kişi | Çıkarılan Vefat: ${tag.deadCount} Kişi. ${
-      tag.liveCount > 0 ? 'İçeriden canlı kazazede çıkarılmıştır.' : 'Canlı kazazede kaydı bulunmuyor.'
-    }`;
+    const victimSummary = `İşaretlenen canlı (L): ${tag.liveCount} · İşaretlenen vefat (D): ${tag.deadCount} — bu sayılar içeride tespit edilen kişileri gösterebilir; "kurtarıldı" anlamına gelmez.`;
 
-    let hazardSummary = '';
-    if (tag.hazards.length === 0 || tag.hazards.includes('OK')) {
-      hazardSummary = 'Belirgin gaz, asbest veya çökme tehlikesi işaretlenmemiş.';
-      isSafeToEnter = tag.status === 'cleared';
+    let hazardSummary: string;
+    if (tag.hazards.length === 0) {
+      hazardSummary = 'Tehlike notu seçilmedi — bu, binanın güvenli olduğu anlamına gelmez.';
     } else {
       const hazardLabels = tag.hazards.map((h) => {
         const found = COMMON_HAZARDS.find((x) => x.code === h);
         return found ? found.label : h;
       });
-      hazardSummary = `DİKKAT! Tespit edilen tehlikeler: ${hazardLabels.join(', ')}`;
-      isSafeToEnter = false;
+      hazardSummary = `İşaretlenen tehlikeler: ${hazardLabels.join(', ')}`;
     }
 
     return {
@@ -123,69 +93,61 @@ export class InsaragService {
       teamSummary,
       victimSummary,
       hazardSummary,
-      isSafeToEnter,
-      recommendation
+      isSafeToEnter: false,
+      recommendation: INSARAG_FIXED_RECOMMENDATION
     };
   }
 
   /**
-   * INSARAG sprey boya şablonu için SVG çizimini dinamik olarak üretir.
+   * Seçilen parçaların şematik çizimini üretir. Boş alanlar boş bırakılır;
+   * örnek ekip kodu ya da tarih yazılmaz.
    */
   public generateSvg(tag: InsaragTag, size = 260): string {
     const half = size / 2;
     const padding = 16;
     const innerSize = size - padding * 2;
 
-    const hazardsText = tag.hazards.length > 0 ? tag.hazards.join(',') : 'OK';
-    const datesText = tag.endDate ? `${tag.startDate}-${tag.endDate}` : tag.startDate;
-    const victimsText = `L:${tag.liveCount} D:${tag.deadCount}`;
+    const hazardsText = escapeHtml(tag.hazards.join(','));
+    const datesText = escapeHtml(tag.endDate ? `${tag.startDate}-${tag.endDate}` : tag.startDate);
+    const teamText = escapeHtml(tag.teamId);
+    const victimsText = `L:${Number(tag.liveCount) || 0} D:${Number(tag.deadCount) || 0}`;
 
     let slashPath = '';
-    let boxBorder = '';
 
     if (tag.status === 'in_progress') {
-      // Tek slash '/'
+      // Tek çizgi '/'
       slashPath = `<line x1="${padding}" y1="${size - padding}" x2="${size - padding}" y2="${padding}" stroke="#f59e0b" stroke-width="4.5" stroke-linecap="round" />`;
-    } else if (tag.status === 'completed' || tag.status === 'cleared') {
-      // Tam 'X'
+    } else {
+      // Çarpı 'X'
       slashPath = `
         <line x1="${padding}" y1="${size - padding}" x2="${size - padding}" y2="${padding}" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
         <line x1="${padding}" y1="${padding}" x2="${size - padding}" y2="${size - padding}" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
       `;
     }
 
-    if (tag.status === 'cleared') {
-      boxBorder = `<rect x="${padding - 4}" y="${padding - 4}" width="${innerSize + 8}" height="${innerSize + 8}" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="6,4" rx="4" />`;
-    }
-
     return `
       <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="select-none filter drop-shadow-md">
-        <!-- Arka plan beton hissi -->
         <rect x="0" y="0" width="${size}" height="${size}" fill="#111827" rx="14" stroke="#374151" stroke-width="1.5" />
-        
-        <!-- Dış Kutu (1x1m INSARAG Box) -->
         <rect x="${padding}" y="${padding}" width="${innerSize}" height="${innerSize}" fill="none" stroke="#e5e7eb" stroke-width="2.5" />
-        ${boxBorder}
 
-        <!-- Çapraz Slaşlar -->
         ${slashPath}
 
-        <!-- Kadran 1: ÜST (Tarih ve Saat) -->
+        <!-- ÜST: tarih ve saat -->
         <text x="${half}" y="${padding + 22}" fill="#fbbf24" font-size="11.5" font-family="monospace" font-weight="900" text-anchor="middle">
-          ${datesText || '06.02 09:00'}
+          ${datesText}
         </text>
 
-        <!-- Kadran 2: SOL (Ekip ID) -->
+        <!-- SOL: ekip kodu -->
         <text x="${padding + 10}" y="${half + 4}" fill="#60a5fa" font-size="11" font-family="monospace" font-weight="900" text-anchor="start">
-          ${tag.teamId || 'TR-AFAD'}
+          ${teamText}
         </text>
 
-        <!-- Kadran 3: SAĞ (Tehlikeler: Gaz, Asbest, Çökme) -->
+        <!-- SAĞ: tehlike notları -->
         <text x="${size - padding - 10}" y="${half + 4}" fill="#f87171" font-size="12" font-family="monospace" font-weight="900" text-anchor="end">
           ${hazardsText}
         </text>
 
-        <!-- Kadran 4: ALT (Canlı ve Vefat Kazazedeler) -->
+        <!-- ALT: L / D sayıları -->
         <text x="${half}" y="${size - padding - 14}" fill="#34d399" font-size="12" font-family="monospace" font-weight="900" text-anchor="middle">
           ${victimsText}
         </text>
@@ -195,4 +157,3 @@ export class InsaragService {
 }
 
 export const insaragService = new InsaragService();
-

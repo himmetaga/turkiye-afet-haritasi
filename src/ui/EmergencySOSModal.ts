@@ -1,6 +1,8 @@
 import { rescueWhistle } from '../services/audioService';
 import { AssemblyPoint } from '../types';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { describeLocationForMessage } from '../utils/locationState';
 
 import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
 
@@ -47,12 +49,8 @@ export class EmergencySOSModal {
     const point = this.currentContext.nearestPoint;
 
     let text = `ACİL DURUM / AFET BİLDİRİMİ!\n`;
-    if (coords) {
-      text += `Konum Koordinatım: ${coords[1].toFixed(5)}, ${coords[0].toFixed(5)}\n`;
-      text += `Harita Linki: https://maps.google.com/?q=${coords[1]},${coords[0]}\n`;
-    } else {
-      text += `Konum: GPS sinyali bekleniyor.\n`;
-    }
+    // Koordinat yalnızca gerçek GPS ölçümü varsa yazılır.
+    text += coords ? `${describeLocationForMessage(coords)}\n` : 'Konum alınamadı — adresimi ayrıca yazıyorum:\n';
 
     if (point) {
       text += `Yöneldiğim / En Yakın Toplanma Alanı: ${point.name} (${point.district}, ${point.city})\n`;
@@ -70,12 +68,12 @@ export class EmergencySOSModal {
     if (this.isWhistleActive) {
       btn?.classList.add('bg-rose-600', 'text-white', 'shadow-glow-red');
       btn?.classList.remove('bg-white/10', 'text-rose-400');
-      if (statusText) statusText.textContent = 'DÜDÜK ÇALIYOR (3000 Hz) - DURDURMAK İÇİN DOKUNUN';
+      if (statusText) statusText.textContent = 'DÜDÜK ÇALIYOR - DURDURMAK İÇİN DOKUNUN';
       visualizer?.classList.remove('opacity-0');
     } else {
       btn?.classList.remove('bg-rose-600', 'text-white', 'shadow-glow-red');
       btn?.classList.add('bg-white/10', 'text-rose-400');
-      if (statusText) statusText.textContent = '3000 Hz KURTARMA DÜDÜĞÜNÜ BAŞLAT';
+      if (statusText) statusText.textContent = 'DÜDÜK SESİNİ BAŞLAT';
       visualizer?.classList.add('opacity-0');
     }
   }
@@ -116,17 +114,17 @@ export class EmergencySOSModal {
           >
             ${Icons.whistle('w-6 h-6')}
             <span id="whistle-status-text">
-              ${this.isWhistleActive ? 'DÜDÜK ÇALIYOR (3000 Hz) - DURDUR' : '3000 Hz KURTARMA DÜDÜĞÜNÜ BAŞLAT'}
+              ${this.isWhistleActive ? 'DÜDÜK ÇALIYOR - DURDUR' : 'DÜDÜK SESİNİ BAŞLAT'}
             </span>
           </button>
           <p class="text-[11px] text-gray-400 mt-2">
-            İnternet veya ses dosyası gerektirmez. Doğrudan tarayıcı çipinden 3000 Hz SAR standardında periyodik sinyal yayar.
+            İnternet gerektirmez. Telefon hoparlöründen yaklaşık 3 kHz'lik aralıklı düdük sesi çalar; gerçek bir düdük kadar yüksek değildir.
           </p>
         </div>
 
         <div class="space-y-3">
           <div class="flex items-center justify-between text-xs text-gray-300">
-            <span class="font-medium">Hazır SOS Kurtarma Mesajı</span>
+            <span class="font-medium">Hazır SOS Mesajı (siz gönderene kadar kimseye gitmez)</span>
             <button id="btn-copy-sos" class="flex items-center gap-1 text-emerald-400 hover:text-emerald-300">
               ${Icons.copy('w-3.5 h-3.5')}
               <span id="copy-text">Panoya Kopyala</span>
@@ -138,11 +136,11 @@ export class EmergencySOSModal {
             readonly
             rows="4"
             class="w-full p-3 text-xs font-mono text-gray-200 bg-black/40 rounded-xl resize-none outline-none border-none selection:bg-rose-500/30"
-          >${sosMessage}</textarea>
+          >${escapeHtml(sosMessage)}</textarea>
 
           <div class="grid grid-cols-2 gap-2 pt-1">
             <a
-              href="${smsUrl}"
+              href="${escapeHtml(smsUrl)}"
               class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-glow-red transition-all text-center"
             >
               ${Icons.share('w-4 h-4')}
@@ -150,7 +148,7 @@ export class EmergencySOSModal {
             </a>
 
             <a
-              href="${waUrl}"
+              href="${escapeHtml(waUrl)}"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-glow-emerald transition-all text-center"

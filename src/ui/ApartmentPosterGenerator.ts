@@ -2,6 +2,7 @@ import qrcode from 'qrcode-generator';
 import { AssemblyPoint, EmergencyFacility } from '../types';
 import { haversineDistanceMeters, estimateWalkingMinutes, findNearestAssemblyPoints } from '../utils/geoMath';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 export interface PosterConfig {
   buildingName: string;
@@ -16,7 +17,7 @@ export class ApartmentPosterGenerator {
   private facilities: EmergencyFacility[];
   private config: PosterConfig = {
     buildingName: 'Apartman / Site Acil Durum Panosu',
-    addressText: 'Kadıköy / İstanbul',
+    addressText: '',
     managerContact: ''
   };
 
@@ -147,14 +148,14 @@ export class ApartmentPosterGenerator {
       ctx.fillText(this.config.buildingName || 'Apartman Acil Durum Panosu', 50, 205);
       ctx.fillStyle = '#64748b';
       ctx.font = '20px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`📍 Konum: ${this.config.addressText || 'Belirlenen Bölge'} • Koordinat: ${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}`, 50, 245);
+      ctx.fillText(`📍 Adres: ${this.config.addressText || 'belirtilmedi'} • Koordinat: ${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}`, 50, 245);
 
       // Section 1: Toplanma Alanları
       ctx.fillStyle = '#059669';
       ctx.fillRect(50, 280, width - 100, 48);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-      ctx.fillText('🛡️ EN YAKIN 3 RESMİ AFET TOPLANMA ALANI (AFAD)', 70, 312);
+      ctx.fillText('EN YAKIN 3 TOPLANMA ALANI (AFAD açık verisi, kuş uçuşu mesafe)', 70, 312);
 
       const { nearest3Points, nearestHospital, nearestPharmacy } = this.getNearestData();
 
@@ -208,11 +209,11 @@ export class ApartmentPosterGenerator {
       ctx.fillText('En Yakın Hastane', 70, yPos + 35);
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
-      const hospName = nearestHospital ? nearestHospital.facility.name : 'Acil Sağlık Merkezi';
+      const hospName = nearestHospital ? nearestHospital.facility.name : 'Bulunamadı';
       ctx.fillText(hospName.slice(0, 32), 70, yPos + 65);
       ctx.fillStyle = '#64748b';
       ctx.font = '16px system-ui, -apple-system, sans-serif';
-      const hospDist = nearestHospital ? `${nearestHospital.distanceMeters.toLocaleString()} m • ${nearestHospital.walkingMinutes} dk yürüme` : 'Yakında';
+      const hospDist = nearestHospital ? `${nearestHospital.distanceMeters.toLocaleString()} m • ${nearestHospital.walkingMinutes} dk yürüme` : '';
       ctx.fillText(hospDist, 70, yPos + 95);
 
       // Pharmacy Box
@@ -234,7 +235,9 @@ export class ApartmentPosterGenerator {
       ctx.fillText(pharmName.slice(0, 32), pBoxX + 20, yPos + 65);
       ctx.fillStyle = '#64748b';
       ctx.font = '16px system-ui, -apple-system, sans-serif';
-      const pharmDist = nearestPharmacy ? `${nearestPharmacy.distanceMeters.toLocaleString()} m • ${nearestPharmacy.facility.phone || ''}` : 'Yakında';
+      const pharmDist = nearestPharmacy
+        ? `${nearestPharmacy.distanceMeters.toLocaleString()} m${nearestPharmacy.facility.phone ? ` • ${nearestPharmacy.facility.phone}` : ''}`
+        : '';
       ctx.fillText(pharmDist, pBoxX + 20, yPos + 95);
 
       // Section 3: Tahliye Adımları
@@ -271,14 +274,14 @@ export class ApartmentPosterGenerator {
       yPos += 40;
       ctx.fillStyle = '#b91c1c';
       ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
-      ctx.fillText('ACİL ÇAĞRI: 112 • AFAD: 122 • İTFAİYE: 110 • POLİS: 155', 50, yPos);
+      ctx.fillText('TEK ACİL NUMARA: 112 (ambulans, itfaiye, polis, AFAD)', 50, yPos);
 
       ctx.fillStyle = '#64748b';
       ctx.font = '18px system-ui, -apple-system, sans-serif';
-      ctx.fillText('Bu afişi bina girişine veya asansör yanına asarak komşularınızın hayatını kurtarın.', 50, yPos + 40);
+      ctx.fillText('Bu afişi bina girişine veya asansör yanına asabilirsiniz. Bilgileri asmadan önce kontrol edin.', 50, yPos + 40);
       ctx.font = 'bold 20px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = '#059669';
-      ctx.fillText('Canlı Harita & Navigasyon: https://afet.live', 50, yPos + 75);
+      ctx.fillText('Harita: https://afet.live (internet gerekir)', 50, yPos + 75);
 
       // Download trigger
       const link = document.createElement('a');
@@ -348,7 +351,7 @@ export class ApartmentPosterGenerator {
                 id="input-poster-building"
                 type="text"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
-                value="${this.config.buildingName}"
+                value="${escapeHtml(this.config.buildingName)}"
                 placeholder="Örn: Menekşe Apartmanı - Blok A"
               />
             </div>
@@ -358,8 +361,8 @@ export class ApartmentPosterGenerator {
                 id="input-poster-address"
                 type="text"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
-                value="${this.config.addressText}"
-                placeholder="Örn: Kadıköy / İstanbul"
+                value="${escapeHtml(this.config.addressText)}"
+                placeholder="Mahalle / ilçe / il yazın"
               />
             </div>
           </div>
@@ -373,9 +376,9 @@ export class ApartmentPosterGenerator {
             <!-- A4 Header Banner -->
             <div class="bg-gradient-to-r from-red-600 to-orange-600 text-white p-4 sm:p-5 rounded-xl mb-4 flex items-center justify-between">
               <div>
-                <span class="text-[11px] font-mono tracking-wider uppercase opacity-90 block">T.C. AFAD & Sağlık Bakanlığı Verileriyle</span>
+                <span class="text-[11px] font-mono tracking-wider uppercase opacity-90 block">afet.live — açık veriden derlenmiştir, kurum yayını değildir</span>
                 <h1 class="text-xl sm:text-2xl font-black uppercase tracking-tight">Apartman Afet ve Acil Durum Bilgi Panosu</h1>
-                <p class="text-xs opacity-95 mt-0.5">Bu bina sakinlerinin afet sonrasında intikal edeceği resmi güvenli sahalar</p>
+                <p class="text-xs opacity-95 mt-0.5">Bu binaya en yakın toplanma alanları, hastane ve eczane</p>
               </div>
               <div class="hidden sm:block text-right">
                 <span class="text-xs font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-lg">afet.live</span>
@@ -385,11 +388,11 @@ export class ApartmentPosterGenerator {
             <!-- Building Title -->
             <div class="mb-4 pb-3 border-b border-gray-200 flex flex-wrap items-baseline justify-between gap-2">
               <div>
-                <h2 id="preview-building-name" class="text-xl font-bold text-gray-900">${this.config.buildingName}</h2>
-                <p id="preview-building-address" class="text-xs text-gray-600">📍 ${this.config.addressText} • GPS: ${uLat.toFixed(5)}, ${uLng.toFixed(5)}</p>
+                <h2 id="preview-building-name" class="text-xl font-bold text-gray-900">${escapeHtml(this.config.buildingName)}</h2>
+                <p id="preview-building-address" class="text-xs text-gray-600">📍 ${escapeHtml(this.config.addressText || 'Adres belirtilmedi')} • Koordinat: ${uLat.toFixed(5)}, ${uLng.toFixed(5)}</p>
               </div>
-              <span class="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md font-semibold">
-                🛡️ Doğrulanmış Konum
+              <span class="text-[11px] text-gray-500 px-2.5 py-1">
+                Konumu ve adresi asmadan önce kontrol edin
               </span>
             </div>
 
@@ -397,7 +400,7 @@ export class ApartmentPosterGenerator {
             <div class="mb-5">
               <div class="flex items-center gap-2 mb-2 bg-emerald-700 text-white px-3 py-1.5 rounded-lg">
                 <span class="text-sm">🛡️</span>
-                <h3 class="text-xs font-bold uppercase tracking-wider">En Yakın 3 Resmi Afet Toplanma Alanı (AFAD)</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider">En Yakın 3 Toplanma Alanı (AFAD açık verisi)</h3>
               </div>
               <div class="space-y-2">
                 ${nearest3Points
@@ -416,7 +419,7 @@ export class ApartmentPosterGenerator {
                     </div>
                     <div class="text-right flex-shrink-0">
                       <span class="font-mono text-sm font-bold text-emerald-800">${item.distanceMeters.toLocaleString()} metre</span>
-                      <span class="block text-[11px] text-gray-500 font-medium">~${item.walkingMinutes} dk yürüyüş</span>
+                      <span class="block text-[11px] text-gray-500 font-medium">kuş uçuşu • ~${item.walkingMinutes} dk (tahmin)</span>
                     </div>
                   </div>
                 `
@@ -432,8 +435,8 @@ export class ApartmentPosterGenerator {
                   <span>🏥</span>
                   <span>En Yakın Hastane</span>
                 </div>
-                <div class="text-sm font-bold text-gray-900">${nearestHospital ? nearestHospital.facility.name : 'Sağlık Tesisi'}</div>
-                <p class="text-xs text-gray-600 mt-0.5">${nearestHospital?.facility.address || nearestHospital?.facility.district || 'Bölge Hastanesi'}</p>
+                <div class="text-sm font-bold text-gray-900">${nearestHospital ? nearestHospital.facility.name : 'Bulunamadı'}</div>
+                <p class="text-xs text-gray-600 mt-0.5">${nearestHospital?.facility.address || nearestHospital?.facility.district || ''}</p>
                 <div class="mt-2 text-xs font-semibold text-sky-900 font-mono">
                   ${nearestHospital ? `${nearestHospital.distanceMeters.toLocaleString()} m • ~${nearestHospital.walkingMinutes} dk` : ''}
                 </div>
@@ -445,9 +448,9 @@ export class ApartmentPosterGenerator {
                   <span>En Yakın Eczane (nöbetçi için e-Devlet)</span>
                 </div>
                 <div class="text-sm font-bold text-gray-900">${nearestPharmacy ? nearestPharmacy.facility.name : 'Bulunamadı'}</div>
-                <p class="text-xs text-gray-600 mt-0.5">${nearestPharmacy?.facility.address || nearestPharmacy?.facility.district || 'Eczane'}</p>
+                <p class="text-xs text-gray-600 mt-0.5">${nearestPharmacy?.facility.address || nearestPharmacy?.facility.district || ''}</p>
                 <div class="mt-2 text-xs font-semibold text-amber-900 font-mono">
-                  ${nearestPharmacy ? `${nearestPharmacy.distanceMeters.toLocaleString()} m • Tel: ${nearestPharmacy.facility.phone || '11880'}` : ''}
+                  ${nearestPharmacy ? `${nearestPharmacy.distanceMeters.toLocaleString()} m${nearestPharmacy.facility.phone ? ` • Tel: ${nearestPharmacy.facility.phone}` : ''}` : ''}
                 </div>
               </div>
             </div>
@@ -482,10 +485,10 @@ export class ApartmentPosterGenerator {
             <div class="pt-3 border-t border-gray-300 flex items-center justify-between gap-4">
               <div>
                 <div class="text-xs font-black text-red-700 tracking-wider">
-                  ACİL ÇAĞRI: 112 • AFAD: 122 • İTFAİYE: 110 • POLİS: 155
+                  TEK ACİL NUMARA: 112 (ambulans, itfaiye, polis, AFAD)
                 </div>
                 <div class="text-[11px] text-gray-500 mt-0.5">
-                  Canlı Sokak Rotası ve İnternetsiz Harita: <strong>https://afet.live</strong>
+                  Harita: <strong>https://afet.live</strong> (internet gerekir)
                 </div>
                 <div class="text-[10px] text-gray-400 mt-0.5">
                   Bu afişi apartman duyuru panonuza asarak komşularınızı bilinçlendirin.
@@ -497,7 +500,7 @@ export class ApartmentPosterGenerator {
                   ${qrSvg}
                 </div>
                 <div class="text-[10px] leading-tight text-gray-600 max-w-[90px]">
-                  <strong>Kameranızı tutun:</strong> Canlı harita rotasını hemen açın
+                  <strong>Kameranızı tutun:</strong> Haritayı açın
                 </div>
               </div>
             </div>
@@ -528,7 +531,7 @@ export class ApartmentPosterGenerator {
       this.config.addressText = (e.target as HTMLInputElement).value;
       const previewAddr = this.container.querySelector('#preview-building-address');
       if (previewAddr) {
-        previewAddr.textContent = `📍 ${this.config.addressText} • GPS: ${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}`;
+        previewAddr.textContent = `📍 ${this.config.addressText || 'Adres belirtilmedi'} • Koordinat: ${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}`;
       }
     });
 

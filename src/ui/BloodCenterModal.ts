@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 import { EmergencyFacility } from '../types';
 import { haversineDistanceMeters } from '../utils/geoMath';
 
@@ -61,14 +62,14 @@ export class BloodCenterModal {
   private facilities: EmergencyFacility[] = [];
   private selectedGroup = '0-';
   private onNavigateToPoint?: (point: EmergencyFacility) => void;
-  private onBroadcastBloodRequest?: (text: string) => void;
+  private onBroadcastBloodRequest?: (text: string) => unknown;
 
   constructor(
     parent: HTMLElement,
     userCoords: [number, number],
     facilities: EmergencyFacility[] = [],
     onNavigateToPoint?: (point: EmergencyFacility) => void,
-    onBroadcastBloodRequest?: (text: string) => void
+    onBroadcastBloodRequest?: (text: string) => unknown
   ) {
     this.userCoords = userCoords;
     this.facilities = facilities;
@@ -124,10 +125,10 @@ export class BloodCenterModal {
             </span>
             <div>
               <h3 class="text-base font-bold text-white tracking-wide">
-                Kızılay Kan Merkezleri & Donör Ağı
+                Kan Bağış Merkezleri
               </h3>
               <p class="text-[11px] text-gray-400">
-                Afet kan ihtiyacı, donör uyumluluk matrisi ve en yakın merkezler
+                Kan grubu uyumluluğu (genel bilgi) ve haritadaki en yakın merkezler
               </p>
             </div>
           </div>
@@ -191,15 +192,15 @@ export class BloodCenterModal {
           <!-- Broadcast Urgent Blood Request -->
           <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-between gap-3">
             <div class="text-xs">
-              <div class="font-bold text-rose-300">🚨 Acil Kan İhtiyacı İlanı Ver</div>
-              <div class="text-[10.5px] text-gray-300 mt-0.5">BitChat afet lojistik kanalına doğrulanmış formatta yayınlayın</div>
+              <div class="font-bold text-rose-300">🚨 Kan İhtiyacını Sohbette Paylaş</div>
+              <div class="text-[10.5px] text-gray-300 mt-0.5">Herkese açık sohbet kanalına yazılır; Kızılay'a iletilmez. Kan talebi için hastane kan merkezi veya Kızılay 168.</div>
             </div>
             <button
               id="btn-broadcast-blood-req"
               type="button"
               class="px-3 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs active:scale-95 transition-all flex-shrink-0"
             >
-              Yayınla
+              Paylaş
             </button>
           </div>
 
@@ -207,26 +208,26 @@ export class BloodCenterModal {
           <div>
             <div class="text-xs font-bold text-white mb-2 flex items-center justify-between">
               <span>En Yakın Kan Bağış Noktaları</span>
-              <span class="text-[10.5px] text-gray-400 font-normal">${bloodCenters.length} Doğrulanmış Merkez</span>
+              <span class="text-[10.5px] text-gray-400 font-normal">${bloodCenters.length} merkez</span>
             </div>
 
             <div class="space-y-2">
               ${bloodCenters.slice(0, 5).map((bc) => `
                 <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-3 text-xs">
                   <div class="min-w-0">
-                    <div class="font-bold text-white truncate">${bc.name}</div>
-                    <div class="text-[11px] text-gray-400 truncate mt-0.5">${bc.address || bc.city}</div>
-                    <div class="text-[10.5px] text-rose-400 font-mono mt-0.5">Mesafe: ~${bc.distKm} km • 📞 ${bc.phone || '168'}</div>
+                    <div class="font-bold text-white truncate">${escapeHtml(bc.name)}</div>
+                    <div class="text-[11px] text-gray-400 truncate mt-0.5">${escapeHtml(bc.address || bc.city || '')}</div>
+                    <div class="text-[10.5px] text-rose-400 font-mono mt-0.5">Mesafe: ~${bc.distKm} km (kuş uçuşu) • ${bc.phone ? `📞 ${escapeHtml(bc.phone)}` : 'Telefon: veri yok (Kızılay 168)'}</div>
                   </div>
                   <button
                     type="button"
-                    data-point-id="${bc.id}"
+                    data-point-id="${escapeHtml(bc.id)}"
                     class="btn-route-blood px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-xs border border-rose-500/30 active:scale-95 transition-all flex-shrink-0"
                   >
                     Rota
                   </button>
                 </div>
-              `).join('')}
+              `).join('') || '<div class="p-3 text-center text-gray-500 text-xs">Yakında kayıtlı merkez bulunamadı.</div>'}
             </div>
           </div>
         </div>
@@ -271,21 +272,29 @@ export class BloodCenterModal {
     });
 
     // Broadcast urgent blood request
-    this.container.querySelector('#btn-broadcast-blood-req')?.addEventListener('click', () => {
-      const hospitalName = prompt('Kan ihtiyacı olan hastane veya merkez adı:', 'En Yakın Şehir Hastanesi');
+    this.container.querySelector('#btn-broadcast-blood-req')?.addEventListener('click', async () => {
+      const hospitalName = prompt('Kan ihtiyacı olan hastane veya merkez adı:', '');
       if (!hospitalName) return;
       const unitCount = prompt('Kaç ünite kan aranıyor?', '2');
       const contact = prompt('İletişim telefon numarası veya hasta yakını:', '');
       const groupLabel = BLOOD_MATRIX[this.selectedGroup]?.group || this.selectedGroup;
 
-      const text = `🩸 ACİL KAN ÇAĞRISI: [${groupLabel}] • ${hospitalName} için ACİL ${unitCount || 2} ÜNİTE KAN ARANIYOR. ${contact ? `İletişim: ${contact}` : ''} Konum: [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}]`;
+      const text = `🩸 KAN İHTİYACI: [${groupLabel}] • ${hospitalName} için ${unitCount ? `${unitCount} ünite` : ''} kan aranıyor. ${contact ? `İletişim: ${contact}` : ''}`;
 
       if (this.onBroadcastBloodRequest) {
         this.hide();
-        this.onBroadcastBloodRequest(text);
+        // Geri çağrı bir Promise döndürürse sonucuna bakılır; { sent: false } "gönderilmedi" demektir.
+        try {
+          const result: any = await this.onBroadcastBloodRequest(text);
+          if (result && result.sent === false) {
+            alert('Bağlantı yok: kan ihtiyacı mesajı GÖNDERİLMEDİ. Hastane kan merkezini veya Kızılay 168\'i arayın.');
+          }
+        } catch (err: any) {
+          alert(err?.message || 'Mesaj gönderilemedi.');
+        }
       } else {
         navigator.clipboard?.writeText(text);
-        alert('Acil kan çağrısı panoya kopyalandı! Kriz odasında paylaşabilirsiniz.');
+        alert('Mesaj panoya kopyalandı. Kimseye gönderilmedi; kendiniz paylaşmalısınız.');
       }
     });
 

@@ -8,22 +8,22 @@ interface RadioChannel {
   isPriority?: boolean;
 }
 
+// Kanalların belirli bir göreve (ilk yardım, lojistik vb.) ayrıldığı bir plan yoktur;
+// bu yüzden yalnızca kanal numarası ve frekans gösterilir.
 const PMR_CHANNELS: RadioChannel[] = [
-  { channel: 'Kanal 1', freq: '446.00625 MHz', purpose: 'Genel Afet Çağrı & İmdat', role: 'İlk temas ve yardım çağrısı', isPriority: true },
-  { channel: 'Kanal 2', freq: '446.01875 MHz', purpose: 'Mahalle & Sokak Koordinasyonu', role: 'Yerel toplanma alanı içi iletişim' },
-  { channel: 'Kanal 3', freq: '446.03125 MHz', purpose: 'Lojistik & Erzak Dağıtımı', role: 'Çadır ve gıda dağıtım ekipleri' },
-  { channel: 'Kanal 4', freq: '446.04375 MHz', purpose: 'İlk Yardım & Tıbbi İhtiyaçlar', role: 'Yaralı transferi ve ecza koordinasyonu' },
-  { channel: 'Kanal 5', freq: '446.05625 MHz', purpose: 'Aile & Komşular İletişim', role: 'Kişisel ve yakın çevre takibi' },
-  { channel: 'Kanal 6', freq: '446.06875 MHz', purpose: 'Genel Bilgi & Durum Paylaşımı', role: 'Şebeke dışı durum bilgilendirmesi' },
-  { channel: 'Kanal 7', freq: '446.08125 MHz', purpose: 'Tahliye & Güzergah Kontrolü', role: 'Yol durumu ve araç konvoyları' },
-  { channel: 'Kanal 8', freq: '446.09375 MHz', purpose: 'Arama Kurtarma & TRAC Dinleme', role: 'Enkaz çevresi dinleme ve STK koordinasyonu', isPriority: true }
+  { channel: 'Kanal 1', freq: '446.00625 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 2', freq: '446.01875 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 3', freq: '446.03125 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 4', freq: '446.04375 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 5', freq: '446.05625 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 6', freq: '446.06875 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 7', freq: '446.08125 MHz', purpose: 'PMR 446 kanalı', role: '' },
+  { channel: 'Kanal 8', freq: '446.09375 MHz', purpose: 'PMR 446 kanalı', role: '' }
 ];
 
 const TRAC_FREQUENCIES: RadioChannel[] = [
-  { channel: 'VHF Simpleks', freq: '145.500 MHz', purpose: 'Ulusal Afet & İlk Çağrı', role: 'Tüm Türkiye ortak afet toplanma frekansı', isPriority: true },
-  { channel: 'UHF Simpleks', freq: '433.500 MHz', purpose: 'Enkaz & Bina İçi Penetrasyon', role: 'Beton geçişi avantajlı arama kurtarma frekansı', isPriority: true },
-  { channel: 'HF Gündüz (40m)', freq: '7.092 MHz LSB', purpose: 'Şehirlerarası Kriz Masası', role: 'GSM/İnternet yokken iller arası telsiz köprüsü' },
-  { channel: 'HF Gece (80m)', freq: '3.777 MHz LSB', purpose: 'Şehirlerarası Gece İletişimi', role: 'İyonosferik gece yayılımında ulusal afet ağı' }
+  { channel: 'VHF Simpleks', freq: '145.500 MHz', purpose: 'Amatör telsiz VHF çağrı frekansı', role: 'Kullanmak için amatör telsiz lisansı gerekir' },
+  { channel: 'UHF Simpleks', freq: '433.500 MHz', purpose: 'Amatör telsiz UHF çağrı frekansı', role: 'Kullanmak için amatör telsiz lisansı gerekir' }
 ];
 
 export class EmergencyRadioModal {
@@ -116,7 +116,7 @@ export class EmergencyRadioModal {
                 Afet Telsizi & Frekans Rehberi
               </h3>
               <p class="text-[11px] text-gray-400">
-                GSM ve internet çöktüğünde kullanılan TRAC & PMR 446 telsiz frekansları
+                PMR 446 ve amatör telsiz çağrı frekansları (bilgi amaçlıdır)
               </p>
             </div>
           </div>
@@ -137,6 +137,11 @@ export class EmergencyRadioModal {
                 Afet durumunda telsizinizdeki alt tonu mutlaka <strong>"0" veya "KAPALI / OFF"</strong> yapın. Alt ton açık kalırsa sadece aynı ton kodunu kullanan cihazları duyabilirsiniz; kurtarma ekiplerinin ve vatandaşların çağrıları filtrelenir!
               </p>
             </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-white/[0.04] border border-white/10 text-[11.5px] text-gray-200 leading-relaxed">
+            Kanalların görevlere ayrıldığı bir afet kanal planı yoktur ve bu kanalları birinin dinlediğinin garantisi yoktur.
+            Bulunduğunuz bölgedeki ekiplerin hangi kanalı kullandığını öğrenin. Telsiz, 112'nin yerini tutmaz.
           </div>
 
           <!-- Section 1: PMR 446 (Lisanssız El Telsizleri) -->
@@ -172,9 +177,9 @@ export class EmergencyRadioModal {
           <div>
             <div class="flex items-center justify-between mb-2">
               <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>📡</span><span>TRAC & Amatör Telsiz Afet Frekansları</span>
+                <span>📡</span><span>Amatör Telsiz Çağrı Frekansları</span>
               </h4>
-              <span class="text-[10px] text-gray-400 font-mono">TAMP Haberleşme Grubu</span>
+              <span class="text-[10px] text-gray-400 font-mono">Lisans gerekir</span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -262,13 +267,12 @@ export class EmergencyRadioModal {
 
     this.container.querySelector('#btn-copy-radio')?.addEventListener('click', () => {
       const summary = `📻 afet.live Afet Telsiz Frekansları:\n` +
-        `• PMR Kanal 1 (446.00625 MHz): Genel Afet Çağrı\n` +
-        `• PMR Kanal 8 (446.09375 MHz): Arama Kurtarma Dinleme\n` +
-        `• VHF 145.500 MHz: TRAC Ulusal Afet Çağrı\n` +
-        `• UHF 433.500 MHz: TRAC Enkaz & Bina İçi Penetrasyon\n` +
-        `• Önemli: Afette alt tonu (CTCSS) MUTLAKA KAPATIN (Ton: 0 / OFF)!`;
+        `• PMR 446 Kanal 1-8: 446.00625 - 446.09375 MHz (12.5 kHz aralıklı, lisanssız)\n` +
+        `• Amatör VHF çağrı: 145.500 MHz, UHF çağrı: 433.500 MHz (lisans gerekir)\n` +
+        `• Kanalların görevlere ayrıldığı bir afet kanal planı yoktur; bölgenizdeki ekiplerin kanalını öğrenin.\n` +
+        `• Alt tonu (CTCSS) kapatın (Ton: 0 / OFF), yoksa başka cihazları duyamayabilirsiniz.`;
       navigator.clipboard.writeText(summary);
-      alert('Afet telsiz frekansları panoya kopyalandı.');
+      alert('Telsiz frekansları panoya kopyalandı.');
     });
 
     this.container.addEventListener('click', (e) => {

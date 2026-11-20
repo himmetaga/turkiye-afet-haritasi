@@ -4,7 +4,8 @@
 //  1. iOS 13+ DeviceMotionEvent.requestPermission() (must run inside a tap)
 //  2. Screen Wake Lock (re-acquired automatically when the tab becomes visible)
 //  3. AudioContext unlock so the alarm can fire at 03:00 without a tap
-//  4. Sustained STA/LTA trigger (debounced) OR network early-warning → full alarm
+//  4. Sustained STA/LTA trigger (debounced) OR a new nearby/strong entry in the polled
+//     earthquake list (usually arrives AFTER shaking — not a true early warning) → full alarm
 // ---------------------------------------------------------------------------
 
 import { seismicSensorNode, SeismicNodeStatus } from './seismicSensorNode';

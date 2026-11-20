@@ -95,7 +95,7 @@ export class CPRCoachModal {
                   110 BPM
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">AHA & ERC Standartlarında Sesli & Titreşimli Metronom</p>
+              <p class="text-[11px] text-gray-400">Dakikada 100-120 bası aralığında sesli ve titreşimli metronom. Önce 112'yi arayın.</p>
             </div>
           </div>
           <button id="btn-close-cpr" class="p-2 text-gray-400 hover:text-white rounded-xl bg-white/5 transition-all">
@@ -140,8 +140,8 @@ export class CPRCoachModal {
 
           <!-- Critical Field Medicine Rules -->
           <div class="w-full p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[10.5px] text-amber-300 text-left space-y-1">
-            <p><strong>⚠️ Ezilme (Crush) Sendromu:</strong> Enkazdan çıkan ve saatlerce sıkışmış kişiye ASLA aniden bol su içirmeyin! Kas toksinleri böbrek iflasına ve ani kalp durmasına yol açabilir.</p>
-            <p><strong>🩺 Bası Noktası:</strong> İki meme ucunun tam ortasına, göğüs kemiğinin alt yarısına el ayasını kilitleyerek dik açıyla en az 5-6 cm bastırın.</p>
+            <p><strong>⚠️ Ezilme (Crush) Sendromu:</strong> Crush (ezilme) sendromunda erken sıvı hayat kurtarır: hemen 112'ye / sağlık ekibine haber verin. Bilinci açık ve yutabilen kazazedeye yudum yudum su verilebilir; meyve suyu, muz gibi potasyumlu şeyler vermeyin. Bilinci kapalıysa ağızdan hiçbir şey vermeyin. Kesin karar sağlık ekibinindir.</p>
+            <p><strong>🩺 Bası Noktası:</strong> İki meme ucunun tam ortasına, göğüs kemiğinin alt yarısına el ayasını kilitleyerek dik açıyla 5-6 cm bastırın.</p>
           </div>
         </div>
       </div>

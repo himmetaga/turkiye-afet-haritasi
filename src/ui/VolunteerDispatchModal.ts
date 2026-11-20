@@ -7,6 +7,7 @@ import {
   VolunteerSkillRole,
   VOLUNTEER_ROLES
 } from '../services/volunteerDispatchService';
+import { escapeHtml } from '../utils/safeText';
 
 export class VolunteerDispatchModal {
   private container: HTMLElement;
@@ -75,12 +76,12 @@ export class VolunteerDispatchModal {
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-bold text-white tracking-wide">Afet Gönüllü Sahra Pasaportu</h2>
+                <h2 class="text-base font-bold text-white tracking-wide">Gönüllü Bilgi Kartı (kişisel beyan)</h2>
                 <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider" style="color: ${roleDef.badgeColor}; background: ${roleDef.badgeColor}20; border: 1px solid ${roleDef.badgeColor}40;">
                   ${roleDef.title.split(' (')[0]}
                 </span>
               </div>
-              <p class="text-xs text-gray-400">INSARAG & AFAD Uyumlu Çevrimdışı Kriz Akreditasyonu</p>
+              <p class="text-xs text-gray-400">Resmi kimlik veya akreditasyon değildir; AFAD ya da INSARAG tarafından verilmemiştir. Resmi gönüllülük başvurusu: gonullu.afad.gov.tr</p>
             </div>
           </div>
           <button id="btn-close-volunteer" class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors">
@@ -95,7 +96,7 @@ export class VolunteerDispatchModal {
               ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow'
               : 'text-gray-400 hover:text-white'
           }">
-            🪪 Sahra Görev Kartı & QR
+            🪪 Bilgi Kartı & QR
           </button>
           <button data-tab="edit_profile" class="btn-vol-tab px-3 py-1.5 rounded-xl transition-all ${
             this.activeTab === 'edit_profile'
@@ -136,7 +137,7 @@ export class VolunteerDispatchModal {
           <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-amber-300">
             <div>
               <div class="font-bold">Profiliniz Henüz Tamamlanmadı!</div>
-              <div class="text-[11px] text-amber-200/80">Kriz masasında yetkilendirilmek için bilgilerinizi giriniz.</div>
+              <div class="text-[11px] text-amber-200/80">Kartı oluşturmak için bilgilerinizi girin.</div>
             </div>
             <button id="btn-go-edit" class="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs shrink-0">
               Profili Doldur
@@ -154,13 +155,13 @@ export class VolunteerDispatchModal {
           <div class="flex items-center gap-2">
             <span class="text-xl">${roleDef.icon}</span>
             <div>
-              <div class="text-[9px] uppercase tracking-widest text-gray-400 font-mono">T.C. AFET GÖNÜLLÜ SAHRA KARTI</div>
+              <div class="text-[9px] uppercase tracking-widest text-gray-400 font-mono">GÖNÜLLÜ BİLGİ KARTI • KİŞİSEL BEYAN</div>
               <div class="font-black text-sm tracking-wide text-white">${roleDef.title}</div>
             </div>
           </div>
           <div class="text-right">
             <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider" style="background: ${roleDef.badgeColor}; color: #ffffff;">
-              ${this.profile.availability === 'READY_NOW' ? 'GÖREVE HAZIR' : 'YEREL DESTEK'}
+              ${this.profile.availability === 'READY_NOW' ? 'HEMEN HAZIR' : this.profile.availability === 'WITHIN_24H' ? '24 SAATTE HAZIR' : 'YALNIZCA KENDİ ŞEHRİNDE'}
             </span>
           </div>
         </div>
@@ -171,31 +172,31 @@ export class VolunteerDispatchModal {
           <!-- Details Left (2 cols) -->
           <div class="sm:col-span-2 space-y-2.5">
             <div>
-              <div class="text-[10px] text-gray-400 uppercase font-semibold">Gönüllü / Yetkili</div>
+              <div class="text-[10px] text-gray-400 uppercase font-semibold">Ad Soyad (beyan)</div>
               <div class="text-base font-black text-white tracking-wide">
-                ${this.profile.fullName.toUpperCase() || 'İSİMSİZ GÖNÜLLÜ'}
+                ${escapeHtml(this.profile.fullName.toLocaleUpperCase('tr-TR')) || 'Girilmedi'}
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
                 <span class="text-[9px] text-gray-400 block">Kan Grubu</span>
-                <span class="font-bold text-rose-400 text-sm">${this.profile.bloodGroup}</span>
+                <span class="font-bold text-rose-400 text-sm">${escapeHtml(this.profile.bloodGroup)}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
                 <span class="text-[9px] text-gray-400 block">Şehir / Lokasyon</span>
-                <span class="font-bold text-gray-200">${this.profile.city || 'Belirtilmedi'}</span>
+                <span class="font-bold text-gray-200">${escapeHtml(this.profile.city) || 'Belirtilmedi'}</span>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
                 <span class="text-[9px] text-gray-400 block">İletişim Tel</span>
-                <span class="font-bold text-cyan-300 font-mono">${this.profile.phone || 'Girilmedi'}</span>
+                <span class="font-bold text-cyan-300 font-mono">${escapeHtml(this.profile.phone) || 'Girilmedi'}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
                 <span class="text-[9px] text-gray-400 block">T.C. Son 4</span>
-                <span class="font-bold text-gray-200 font-mono">${this.profile.nationalIdLast4 ? `***${this.profile.nationalIdLast4}` : '----'}</span>
+                <span class="font-bold text-gray-200 font-mono">${this.profile.nationalIdLast4 ? `***${escapeHtml(this.profile.nationalIdLast4)}` : 'Girilmedi'}</span>
               </div>
             </div>
 
@@ -203,7 +204,7 @@ export class VolunteerDispatchModal {
               this.profile.emergencyContact
                 ? `
               <div class="text-[10px] text-gray-400">
-                Acil Durum Yakını: <strong class="text-gray-200">${this.profile.emergencyContact}</strong>
+                Acil Durum Yakını: <strong class="text-gray-200">${escapeHtml(this.profile.emergencyContact)}</strong>
               </div>
             `
                 : ''
@@ -216,7 +217,7 @@ export class VolunteerDispatchModal {
               ${qrSvg}
             </div>
             <div class="text-[8px] font-bold text-slate-800 uppercase tracking-widest mt-1 text-center font-mono">
-              ÇEVRİMDISI SAHRA DOĞRULAMA
+              BEYAN BİLGİLERİ (QR)
             </div>
           </div>
 
@@ -224,8 +225,12 @@ export class VolunteerDispatchModal {
 
         <!-- Required Gear Footnote -->
         <div class="pt-3 border-t border-white/10 text-[10px] text-gray-400">
-          <strong class="text-white">Sahada Zorunlu Asgari KKD:</strong>
+          <strong class="text-white">Bu alan için önerilen koruyucu donanım:</strong>
           ${roleDef.requiredGear.join(' • ')}
+        </div>
+
+        <div class="text-[10px] text-amber-200/90 leading-snug">
+          Bu kart yalnızca sizin yazdığınız bilgileri gösterir; hiçbir kurum tarafından doğrulanmamış ve onaylanmamıştır. Sahaya giriş izni vermez.
         </div>
 
       </div>
@@ -234,12 +239,12 @@ export class VolunteerDispatchModal {
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
         <button id="btn-copy-vol-sms" class="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-[0.98]">
           ${Icons.copy('w-4 h-4')}
-          AFAD / Kriz Masası SMS Metnini Kopyala
+          Bilgi Metnini Kopyala
         </button>
 
         <button id="btn-share-vol-pass" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
           ${Icons.share('w-4 h-4')}
-          Kimlik Kartı Bilgilerini Paylaş
+          Kart Bilgilerini Paylaş
         </button>
       </div>
     `;
@@ -260,12 +265,12 @@ export class VolunteerDispatchModal {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-[10px] text-gray-400 mb-1">Adınız Soyadınız *</label>
-              <input name="fullName" type="text" value="${p.fullName}" placeholder="Örn: Ahmet Yılmaz" required class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none focus:border-blue-400" />
+              <input name="fullName" type="text" value="${escapeHtml(p.fullName)}" placeholder="Örn: Ahmet Yılmaz" required class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none focus:border-blue-400" />
             </div>
 
             <div>
               <label class="block text-[10px] text-gray-400 mb-1">Telefon Numarası *</label>
-              <input name="phone" type="tel" value="${p.phone}" placeholder="0532 123 4567" required class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none focus:border-blue-400" />
+              <input name="phone" type="tel" value="${escapeHtml(p.phone)}" placeholder="0532 123 4567" required class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none focus:border-blue-400" />
             </div>
 
             <div>
@@ -277,29 +282,29 @@ export class VolunteerDispatchModal {
 
             <div>
               <label class="block text-[10px] text-gray-400 mb-1">İkamet Şehri</label>
-              <input name="city" type="text" value="${p.city}" placeholder="Örn: İstanbul / Kadıköy" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              <input name="city" type="text" value="${escapeHtml(p.city)}" placeholder="Örn: İstanbul / Kadıköy" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
             </div>
 
             <div>
               <label class="block text-[10px] text-gray-400 mb-1">T.C. Kimlik No (Yalnızca Son 4 Hane)</label>
-              <input name="nationalIdLast4" type="text" maxlength="4" value="${p.nationalIdLast4}" placeholder="1234" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono outline-none" />
+              <input name="nationalIdLast4" type="text" maxlength="4" value="${escapeHtml(p.nationalIdLast4)}" placeholder="1234" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono outline-none" />
               <div class="text-[9px] text-gray-500 mt-0.5">Güvenliğiniz için tam numaranız istenmez.</div>
             </div>
 
             <div>
               <label class="block text-[10px] text-gray-400 mb-1">Acil Durum Yakını & Telefonu</label>
-              <input name="emergencyContact" type="text" value="${p.emergencyContact}" placeholder="Örn: Eşim Ayşe - 0533..." class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              <input name="emergencyContact" type="text" value="${escapeHtml(p.emergencyContact)}" placeholder="Örn: Eşim Ayşe - 0533..." class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
             </div>
           </div>
         </div>
 
         <div class="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
           <div class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-            <span>🎖️</span> Uzmanlık & Görev Dağılımı
+            <span>🎖️</span> Yardım Edebileceğiniz Alan
           </div>
 
           <div>
-            <label class="block text-[10px] text-gray-400 mb-1.5">Asli Sahra Göreviniz / Uzmanlığınız</label>
+            <label class="block text-[10px] text-gray-400 mb-1.5">Yardım edebileceğiniz alan / uzmanlığınız</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               ${(Object.keys(VOLUNTEER_ROLES) as VolunteerSkillRole[]).map((r) => {
                 const def = VOLUNTEER_ROLES[r];
@@ -330,29 +335,29 @@ export class VolunteerDispatchModal {
               <select name="experienceLevel" class="w-full px-2.5 py-2 rounded-xl bg-obsidian-900 border border-white/10 text-white text-xs outline-none">
                 <option value="BEGINNER" ${p.experienceLevel === 'BEGINNER' ? 'selected' : ''}>Gönüllü / Başlangıç Seviye</option>
                 <option value="INTERMEDIATE" ${p.experienceLevel === 'INTERMEDIATE' ? 'selected' : ''}>Saha Deneyimli (Daha önce görev aldı)</option>
-                <option value="CERTIFIED_EXPERT" ${p.experienceLevel === 'CERTIFIED_EXPERT' ? 'selected' : ''}>Sertifikalı Uzman (AFAD / AKUT / INSARAG / TRAC)</option>
+                <option value="CERTIFIED_EXPERT" ${p.experienceLevel === 'CERTIFIED_EXPERT' ? 'selected' : ''}>Sertifikam var (kendi beyanım)</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-[10px] text-gray-400 mb-1">Sahaya İntikal Durumu</label>
+              <label class="block text-[10px] text-gray-400 mb-1">Ne zaman hazır olabilirsiniz?</label>
               <select name="availability" class="w-full px-2.5 py-2 rounded-xl bg-obsidian-900 border border-white/10 text-white text-xs outline-none">
-                <option value="READY_NOW" ${p.availability === 'READY_NOW' ? 'selected' : ''}>Hemen Göreve Hazırım</option>
+                <option value="READY_NOW" ${p.availability === 'READY_NOW' ? 'selected' : ''}>Hemen hazırım</option>
                 <option value="WITHIN_24H" ${p.availability === 'WITHIN_24H' ? 'selected' : ''}>24 Saat İçinde Hazırlanabilirim</option>
-                <option value="LOCAL_ONLY" ${p.availability === 'LOCAL_ONLY' ? 'selected' : ''}>Yalnızca Kendi Şehrimde Görev Alabilirim</option>
+                <option value="LOCAL_ONLY" ${p.availability === 'LOCAL_ONLY' ? 'selected' : ''}>Yalnızca kendi şehrimde yardım edebilirim</option>
               </select>
             </div>
           </div>
 
           <div>
             <label class="block text-[10px] text-gray-400 mb-1">Varsa Sertifika & Ekipmanlar (Hilti, Jeneratör, Telsiz Çağrı İşareti vb.)</label>
-            <input name="certifications" type="text" value="${p.certifications}" placeholder="Örn: TRAC Lisans No TA2XYZ, 5 kW Jeneratör, Hilti" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
+            <input name="certifications" type="text" value="${escapeHtml(p.certifications)}" placeholder="Örn: TRAC Lisans No TA2XYZ, 5 kW Jeneratör, Hilti" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs outline-none" />
           </div>
         </div>
 
         <button type="submit" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all">
           ${Icons.checkCircle('w-4 h-4')}
-          Sahra Kimlik Kartını Kaydet & QR Üret
+          Bilgi Kartını Kaydet & QR Üret
         </button>
 
       </form>
@@ -364,10 +369,10 @@ export class VolunteerDispatchModal {
       <div class="space-y-3">
         <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 space-y-1">
           <div class="font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider">
-            <span>⚠️</span> İnsani Yardım & Arama Kurtarma Sahra Kanunları
+            <span>⚠️</span> Gönüllüler İçin Genel Saha Kuralları
           </div>
           <div class="text-[11px] text-rose-200/90 leading-relaxed">
-            Afet bölgesinde bireysel, koordinesiz hareket etmek yardım değil ek risk yaratır. Lütfen aşağıdaki INSARAG ve AFAD standart kurallarına harfiyen uyun.
+            Afet bölgesinde bireysel, koordinesiz hareket etmek yardım değil ek risk yaratır. Önce resmi gönüllülük sistemine (gonullu.afad.gov.tr) kaydolun ve sahadaki yetkililerin talimatına uyun. Aşağıdakiler genel kurallardır.
           </div>
         </div>
 
@@ -474,7 +479,7 @@ export class VolunteerDispatchModal {
         const text = volunteerDispatchService.generateQrPayload(this.profile);
         if (navigator.share) {
           navigator.share({
-            title: `Afet Gönüllü Kimlik Kartı - ${this.profile.fullName}`,
+            title: `Gönüllü Bilgi Kartı (kişisel beyan) - ${this.profile.fullName}`,
             text: text
           }).catch(() => {});
         } else if (navigator.clipboard) {

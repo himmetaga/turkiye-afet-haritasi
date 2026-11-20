@@ -6,7 +6,7 @@ import { Icons } from './icons';
 /**
  * Night Seismograph Watch HUD
  *  - Intro sheet: explains requirements, starts the watch (tap → iOS permission prompt)
- *  - Ambient OLED screen: pure #000, very dim clock + live STA/LTA trace, anti burn-in drift
+ *  - Ambient OLED screen: pure #000, very dim clock + live acceleration-magnitude trace, anti burn-in drift
  *  - Alarm: full-brightness red/white strobe + big silence button
  */
 export class NightWatchHUD {
@@ -90,9 +90,10 @@ export class NightWatchHUD {
         </div>
 
         <p class="text-[12.5px] text-gray-300 leading-relaxed mb-4">
-          Ekran saf siyaha geçer, yalnızca çok sönük bir saat ve canlı sismograf çizgisi kalır.
-          Sürekli bir sarsıntı (STA/LTA) algılanırsa ya da ağdan erken uyarı gelirse
-          <strong class="text-rose-300">tam sesli 2.9 kHz siren</strong> ve <strong class="text-rose-300">kırmızı/beyaz flaşör</strong> devreye girer.
+          Ekran saf siyaha geçer, yalnızca çok sönük bir saat ve telefonun ivmeölçer çizgisi kalır.
+          Telefon güçlü ve sürekli bir sarsıntı algılarsa ya da deprem listesine yakın ve güçlü yeni bir kayıt düşerse (bu genellikle sarsıntıdan sonra olur)
+          <strong class="text-rose-300">tam sesli siren</strong> ve <strong class="text-rose-300">kırmızı/beyaz flaşör</strong> devreye girer.
+          Alarmın çalacağı garanti değildir; telefon sarsıntıyı kaçırabilir ya da yanlış alarm verebilir.
         </p>
 
         <div class="rounded-2xl bg-white/[0.04] border border-white/[0.06] p-3.5 mb-4">
@@ -105,7 +106,7 @@ export class NightWatchHUD {
         </div>
 
         <ul class="space-y-1.5 text-[11.5px] mb-5">
-          ${check(motionOk, 'İvmeölçer desteği mevcut', 'Bu tarayıcı ivmeölçer verisi sağlamıyor — yalnızca ağ erken uyarısı çalışır')}
+          ${check(motionOk, 'İvmeölçer desteği mevcut', 'Bu tarayıcı ivmeölçer verisi sağlamıyor — sarsıntı algılanamaz; yalnızca deprem listesindeki yeni kayıtlar alarm verebilir')}
           ${check(wakeOk, 'Ekran açık tutma (Wake Lock) destekleniyor', 'Wake Lock desteklenmiyor — Otomatik Kilit\'i "Asla" yapın')}
           ${isIOS ? check(true, 'iPhone: Başlat\'a dokununca "Hareket ve Yön" izni istenecek', '') : ''}
         </ul>
@@ -152,7 +153,7 @@ export class NightWatchHUD {
 
     if (state.motionPermission === 'denied') {
       // Still useful for network early warnings, but tell the user clearly.
-      this.openAmbient('İvmeölçer izni reddedildi. Ayarlar › Safari › Hareket ve Yön Erişimi\'ni açın. Ağ erken uyarısı aktif.');
+      this.openAmbient('İvmeölçer izni reddedildi; bu cihaz sarsıntıyı algılayamaz. Ayarlar › Safari › Hareket ve Yön Erişimi\'ni açın. Yalnızca deprem listesine düşen yeni kayıtlar alarm verebilir (genellikle sarsıntıdan sonra).');
     } else {
       this.openAmbient();
     }
@@ -173,7 +174,7 @@ export class NightWatchHUD {
           </div>
 
           <div id="nw-status" class="mt-6 text-center text-[13px] font-medium" style="color:#78716c">
-            Sismik Nöbet Aktif — Deprem Anında Tam Sesli Alarm Çalacak
+            Nöbet başlatılıyor…
           </div>
           <div id="nw-meta" class="mt-2 font-mono text-[11px] tracking-wide" style="color:#44403c"></div>
           ${notice ? `<div class="mt-4 max-w-sm text-center text-[11.5px]" style="color:#a16207">${notice}</div>` : ''}
@@ -265,15 +266,22 @@ export class NightWatchHUD {
       const parts = [
         `STA/LTA ${s.staLtaRatio.toFixed(2)}`,
         s.sensorReceiving ? 'SENSÖR ●' : 'SENSÖR ○',
-        s.wakeLockActive ? 'EKRAN KİLİDİ AÇIK' : 'WAKE LOCK YOK'
+        s.wakeLockActive ? 'EKRAN AÇIK TUTULUYOR' : 'EKRAN KAPANABİLİR — OTOMATİK KİLİDİ KAPATIN'
       ];
       meta.textContent = parts.join('  ·  ');
     }
     if (status) {
+      const sensorMissing = s.phase !== 'arming' && !s.sensorReceiving;
       status.textContent =
         s.phase === 'arming'
           ? `Nöbet ${s.armingRemainingSec} sn içinde başlıyor — telefonu düz bir yere bırakın`
-          : 'Sismik Nöbet Aktif — Deprem Anında Tam Sesli Alarm Çalacak';
+          : s.sensorReceiving
+          ? 'Nöbet açık — bu telefon güçlü ve sürekli sarsıntı algılarsa alarm çalar (garanti değildir)'
+          : 'SENSÖR VERİSİ YOK — bu cihaz şu an sarsıntıyı algılayamıyor';
+      // Sensör yoksa uyarı sönük kalmasın: amber renk ve daha yüksek parlaklık.
+      (status as HTMLElement).style.color = sensorMissing ? '#f59e0b' : '#78716c';
+      const dimEl = this.ambient.querySelector('#nw-dim') as HTMLElement | null;
+      if (dimEl) dimEl.style.opacity = sensorMissing || !s.wakeLockActive ? '0.85' : '0.38';
     }
 
     if (s.phase === 'alarm' && this.lastPhase !== 'alarm') this.enterAlarm(s);
@@ -286,7 +294,7 @@ export class NightWatchHUD {
     const alarm = this.ambient.querySelector('#nw-alarm') as HTMLElement | null;
     const dim = this.ambient.querySelector('#nw-drift') as HTMLElement | null;
     const src = this.ambient.querySelector('#nw-alarm-src');
-    if (src) src.textContent = s.alarmSource === 'network' ? 'Ağ erken uyarısı alındı' : 'Cihaz sensörü sürekli sarsıntı algıladı';
+    if (src) src.textContent = s.alarmSource === 'network' ? 'Deprem listesine yakın ve güçlü yeni bir kayıt düştü' : 'Bu telefonun sensörü sürekli sarsıntı algıladı';
     dim?.classList.add('hidden');
     alarm?.classList.remove('hidden');
     alarm?.classList.add('flex');
@@ -352,8 +360,8 @@ export class NightWatchHUD {
     ctx.lineJoin = 'round';
     ctx.beginPath();
     for (let i = 0; i < buf.length; i++) {
-      // Alternate sign so the trace looks like a seismogram instead of a one-sided envelope.
-      const y = mid - (i % 2 === 0 ? 1 : -1) * Math.min(mid - 2, buf[i].magnitude * h * 0.45);
+      // Ölçülen ivme büyüklüğü olduğu gibi (tek yönlü) çizilir; dalga görüntüsü uydurulmaz.
+      const y = mid - Math.min(mid - 2, buf[i].magnitude * h * 0.45);
       if (i === 0) ctx.moveTo(0, y);
       else ctx.lineTo(i * step, y);
     }

@@ -1,5 +1,7 @@
 import qrcode from 'qrcode-generator';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { describeLocationForMessage, hasUsableLocation, getLocationSourceLabel } from '../utils/locationState';
 
 export interface QRPackState {
   status: 'SAFE' | 'HELP';
@@ -74,8 +76,11 @@ export class OfflineQRPackModal {
       try {
         const b: any = await (navigator as any).getBattery();
         this.state.batteryLevel = Math.round(b.level * 100);
+        return;
       } catch {}
     }
+    // Okunamıyorsa eski (kayıtlı) değer gösterilmez.
+    this.state.batteryLevel = undefined;
   }
 
   private async updateBatteryAndRender(): Promise<void> {
@@ -88,15 +93,16 @@ export class OfflineQRPackModal {
     const [lng, lat] = this.userCoords;
     const now = new Date();
     const timeStr = now.toLocaleString('tr-TR');
-    const mapsLink = `https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+    // Konum satırı yalnızca gerçek bir GPS ölçümü varsa koordinat içerir.
+    const locationLine = describeLocationForMessage(this.userCoords);
 
     // Concise, standard plain text that any mobile phone camera or terminal can parse
     const lines = [
       `AFET.LIVE ACİL DURUM KİMLİĞİ`,
       `DURUM: ${isSafe ? 'GÜVENDEYİM (İyiyim)' : 'ACİL YARDIM GEREKLİ!'}`,
       `ZAMAN: ${timeStr}`,
-      `GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-      `HARİTA: ${mapsLink}`,
+      locationLine,
+      hasUsableLocation() ? `KOORDİNAT: ${lat.toFixed(6)}, ${lng.toFixed(6)}` : '',
       this.state.name ? `KİŞİ: ${this.state.name}` : '',
       `KİŞİ SAYISI: ${this.state.peopleCount}`,
       this.state.bloodGroup !== 'Bilinmiyor' ? `KAN GRUBU: ${this.state.bloodGroup}` : '',
@@ -141,11 +147,11 @@ export class OfflineQRPackModal {
                   Çevrimdışı "Güvendeyim" QR Paketi
                 </h3>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300">
-                  %100 İnternetsiz
+                  İnternet gerekmez
                 </span>
               </div>
               <p class="text-[11px] text-gray-400">
-                Baz istasyonu çöktüğünde arama-kurtarma görevlilerine kamerayla anında okunur
+                Ekranı gösterdiğiniz kişi bilgilerinizi telefon kamerasıyla okuyabilir; kimseye otomatik gönderilmez
               </p>
             </div>
           </div>
@@ -194,6 +200,11 @@ export class OfflineQRPackModal {
             <div class="mt-2 text-center text-[10.5px] text-gray-400">
               Parlaklığı artırın. Herhangi bir telefon kamerası veya barkod okuyucuyla taranabilir.
             </div>
+            ${
+              hasUsableLocation()
+                ? ''
+                : `<div class="mt-2 text-center text-[11px] text-amber-300">Konum alınamadı; QR'da koordinat yok. Adresinizi "Kısa Not" alanına yazın.</div>`
+            }
           </div>
 
           <!-- Quick Metadata Inputs -->
@@ -207,7 +218,7 @@ export class OfflineQRPackModal {
                   id="qr-input-name"
                   type="text"
                   placeholder="Örn: Ahmet Yılmaz"
-                  value="${this.state.name}"
+                  value="${escapeHtml(this.state.name)}"
                   class="w-full px-3 py-1.5 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none focus:border-emerald-500/50"
                 />
               </div>
@@ -221,7 +232,7 @@ export class OfflineQRPackModal {
                   ${bloodOptions
                     .map(
                       (b) =>
-                        `<option value="${b}" ${this.state.bloodGroup === b ? 'selected' : ''}>${b}</option>`
+                        `<option value="${escapeHtml(b)}" ${this.state.bloodGroup === b ? 'selected' : ''}>${escapeHtml(b)}</option>`
                     )
                     .join('')}
                 </select>
@@ -236,15 +247,15 @@ export class OfflineQRPackModal {
                   type="number"
                   min="1"
                   max="50"
-                  value="${this.state.peopleCount}"
+                  value="${Number(this.state.peopleCount) || 1}"
                   class="w-full px-3 py-1.5 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none focus:border-emerald-500/50 font-mono"
                 />
               </div>
 
               <div>
-                <label class="block text-[11px] text-gray-400 mb-1">Cihaz Pili & GPS</label>
-                <div class="px-3 py-1.5 text-[11.5px] font-mono text-emerald-400 bg-white/5 rounded-xl border border-white/10 truncate">
-                  ${this.state.batteryLevel !== undefined ? `🔋 %${this.state.batteryLevel} · ` : ''}GPS Kilitli
+                <label class="block text-[11px] text-gray-400 mb-1">Cihaz Pili & Konum</label>
+                <div class="px-3 py-1.5 text-[11.5px] font-mono ${hasUsableLocation() ? 'text-emerald-400' : 'text-amber-300'} bg-white/5 rounded-xl border border-white/10">
+                  ${this.state.batteryLevel !== undefined ? `🔋 %${Number(this.state.batteryLevel) || 0} · ` : ''}${escapeHtml(getLocationSourceLabel())}
                 </div>
               </div>
             </div>
@@ -255,7 +266,7 @@ export class OfflineQRPackModal {
                 id="qr-input-note"
                 type="text"
                 placeholder="Örn: İnsülin ilacı gerekli / Enkaz yok bahçedeyiz"
-                value="${this.state.note}"
+                value="${escapeHtml(this.state.note)}"
                 class="w-full px-3 py-1.5 text-xs text-white bg-white/5 rounded-xl border border-white/10 outline-none focus:border-emerald-500/50"
               />
             </div>

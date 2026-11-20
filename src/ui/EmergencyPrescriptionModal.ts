@@ -1,4 +1,5 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 
 export interface ChronicMedication {
   id: string;
@@ -26,7 +27,7 @@ const COMMON_DRUGS: GenericDrugReference[] = [
     category: 'cardio',
     categoryLabel: 'Kalp & Hipertansiyon',
     equivalents: ['Saneloc', 'Mecorlong', 'Lopresor', 'Cardiostad'],
-    fieldAdvice: 'Sahra eczanesinde Beloc yoksa; Metoprolol içeren herhangi bir beta bloker aynı etkiyi sağlar.'
+    fieldAdvice: 'Aynı etken maddede bile salım formu farklı olabilir (ZOK/uzun salımlı ile normal tablet aynı değildir). Değişiklik için eczacıya veya hekime danışın.'
   },
   {
     brand: 'Delix / Triatec',
@@ -77,12 +78,28 @@ const COMMON_DRUGS: GenericDrugReference[] = [
     fieldAdvice: 'Akut nefes darlığında bronş açıcıdır. Enkaz tozu veya duman maruziyetinde hayati kurtarıcıdır.'
   },
   {
-    brand: 'Seretide / Foster / Symbicort',
+    brand: 'Seretide',
+    active: 'Salmeterol / Flutikazon',
+    category: 'respiratory',
+    categoryLabel: 'Astım & KOAH',
+    equivalents: [],
+    fieldAdvice: 'Kortikosteroid + uzun etkili bronkodilatör. Doz atlanmamalıdır. Farklı etken maddeli inhalerler birbirinin eşdeğeri değildir; değişiklik için hekime veya eczacıya danışın.'
+  },
+  {
+    brand: 'Foster',
+    active: 'Beklometazon / Formoterol',
+    category: 'respiratory',
+    categoryLabel: 'Astım & KOAH',
+    equivalents: [],
+    fieldAdvice: 'Kortikosteroid + uzun etkili bronkodilatör. Doz atlanmamalıdır. Farklı etken maddeli inhalerler birbirinin eşdeğeri değildir; değişiklik için hekime veya eczacıya danışın.'
+  },
+  {
+    brand: 'Symbicort',
     active: 'Budesonid / Formoterol',
     category: 'respiratory',
     categoryLabel: 'Astım & KOAH',
-    equivalents: ['Foster', 'Symbicort', 'Bufomix'],
-    fieldAdvice: 'Kortikosteroid + uzun etkili bronkodilatör. Doz atlanmamalıdır.'
+    equivalents: ['Bufomix'],
+    fieldAdvice: 'Kortikosteroid + uzun etkili bronkodilatör. Doz atlanmamalıdır. Farklı etken maddeli inhalerler birbirinin eşdeğeri değildir; değişiklik için hekime veya eczacıya danışın.'
   },
   {
     brand: 'Tegretol / Karazepin',
@@ -132,9 +149,9 @@ export class EmergencyPrescriptionModal {
   private container: HTMLElement;
   private myMeds: ChronicMedication[] = [];
   private searchQuery = '';
-  private onBroadcast?: (text: string) => void;
+  private onBroadcast?: (text: string) => unknown;
 
-  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void) {
+  constructor(parent: HTMLElement, onBroadcast?: (text: string) => unknown) {
     this.onBroadcast = onBroadcast;
     this.container = document.createElement('div');
     this.container.id = 'emergency-prescription-modal';
@@ -210,17 +227,17 @@ export class EmergencyPrescriptionModal {
                 <div class="p-3 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="text-xs sm:text-sm font-bold text-white">${m.brandName}</span>
-                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono font-medium">${m.dosage}</span>
+                      <span class="text-xs sm:text-sm font-bold text-white">${escapeHtml(m.brandName)}</span>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono font-medium">${m.dosage ? escapeHtml(m.dosage) : 'Doz belirtilmedi'}</span>
                     </div>
                     <div class="text-[11px] text-gray-300 mt-0.5">
-                      Etken Madde: <strong class="text-amber-300">${m.activeIngredient}</strong> · <span class="text-gray-400">${m.frequency}</span>
+                      Etken Madde: <strong class="text-amber-300">${escapeHtml(m.activeIngredient)}</strong> · <span class="text-gray-400">${m.frequency ? escapeHtml(m.frequency) : 'Sıklık belirtilmedi'}</span>
                     </div>
-                    ${m.notes ? `<div class="text-[10px] text-gray-400 italic mt-0.5">${m.notes}</div>` : ''}
+                    ${m.notes ? `<div class="text-[10px] text-gray-400 italic mt-0.5">${escapeHtml(m.notes)}</div>` : ''}
                   </div>
                   <button
                     type="button"
-                    data-remove-med="${m.id}"
+                    data-remove-med="${escapeHtml(m.id)}"
                     class="p-1.5 text-gray-400 hover:text-rose-400 rounded-lg hover:bg-white/10 transition-colors shrink-0"
                     title="İlacı kaldır"
                   >
@@ -254,7 +271,7 @@ export class EmergencyPrescriptionModal {
               </button>
             </div>
             <div class="text-[11px] text-gray-300 mt-1.5">
-              <strong class="text-cyan-300">Sahra Eşdeğerleri:</strong> ${d.equivalents.join(', ')}
+              <strong class="text-cyan-300">Aynı etken maddeli diğer adlar:</strong> ${d.equivalents.length ? d.equivalents.join(', ') : 'Belirtilmedi — eczacıya danışın'}
             </div>
             <p class="text-[10.5px] text-gray-400 mt-1 bg-black/20 p-2 rounded-lg border border-white/5">
               💡 ${d.fieldAdvice}
@@ -277,7 +294,7 @@ export class EmergencyPrescriptionModal {
                 <h2 class="text-sm sm:text-base font-bold text-white">Afet İlaç & Tedavi Pasaportu</h2>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">SAHRA EŞDEĞER</span>
               </div>
-              <p class="text-[11px] text-gray-400">Enkaz ve tahliyede kaybolan kronik reçetelerin sahra eczanelerinden temini için eşdeğer etken madde rehberi.</p>
+              <p class="text-[11px] text-gray-400">Kullandığınız ilaçları not edin. Bilgi amaçlıdır; ilaç değişikliğine hekim veya eczacı karar verir.</p>
             </div>
           </div>
           <button id="btn-close-med-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -303,7 +320,7 @@ export class EmergencyPrescriptionModal {
                     this.onBroadcast
                       ? `
                     <button id="btn-broadcast-meds" type="button" class="text-[10.5px] px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-colors">
-                      Ağa İlaç Talebi İlet
+                      Sohbet kanalında paylaş
                     </button>
                   `
                       : ''
@@ -376,7 +393,7 @@ export class EmergencyPrescriptionModal {
                 id="med-search-input"
                 type="text"
                 placeholder="İlaç adı, etken madde veya hastalık ara (örn: Beloc, İnsülin, Ventolin)..."
-                value="${this.searchQuery}"
+                value="${escapeHtml(this.searchQuery)}"
                 class="w-full pl-9 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
               <span class="absolute left-3 top-2.5 text-gray-400">${Icons.search('w-4 h-4')}</span>
@@ -411,8 +428,9 @@ export class EmergencyPrescriptionModal {
     q<HTMLButtonElement>('#btn-add-custom-med')?.addEventListener('click', () => {
       const brand = q<HTMLInputElement>('#med-input-brand')?.value.trim();
       const active = q<HTMLInputElement>('#med-input-active')?.value.trim() || brand;
-      const dosage = q<HTMLInputElement>('#med-input-dosage')?.value.trim() || 'Standart';
-      const frequency = q<HTMLInputElement>('#med-input-freq')?.value.trim() || 'Günde 1';
+      // Boş bırakılan doz/sıklık uydurulmaz; boş saklanır ve "belirtilmedi" diye gösterilir.
+      const dosage = q<HTMLInputElement>('#med-input-dosage')?.value.trim() || '';
+      const frequency = q<HTMLInputElement>('#med-input-freq')?.value.trim() || '';
 
       if (brand) {
         this.addMed({
@@ -433,8 +451,8 @@ export class EmergencyPrescriptionModal {
         this.addMed({
           brandName: brand,
           activeIngredient: active,
-          dosage: 'Doktor Dozu',
-          frequency: 'Düzenli',
+          dosage: '',
+          frequency: '',
           category: cat
         });
       });
@@ -449,9 +467,9 @@ export class EmergencyPrescriptionModal {
 
     q<HTMLButtonElement>('#btn-copy-prescription')?.addEventListener('click', () => {
       const text = this.myMeds
-        .map((m) => `• ${m.brandName} (${m.activeIngredient}) - Doz: ${m.dosage} - Sıklık: ${m.frequency}`)
+        .map((m) => `• ${m.brandName} (${m.activeIngredient}) - Doz: ${m.dosage || 'belirtilmedi'} - Sıklık: ${m.frequency || 'belirtilmedi'}`)
         .join('\n');
-      const fullText = `📋 AFET KRONİK İLAÇ PASAPORTUM:\n${text}\n(Sahra eczanesi muadil ilaç temini içindir)`;
+      const fullText = `📋 KULLANDIĞIM İLAÇLAR (kendi beyanım, reçete değildir):\n${text}`;
       navigator.clipboard.writeText(fullText).then(() => {
         const btn = q<HTMLButtonElement>('#btn-copy-prescription');
         if (btn) btn.textContent = 'Kopyalandı!';
@@ -459,14 +477,21 @@ export class EmergencyPrescriptionModal {
       });
     });
 
-    q<HTMLButtonElement>('#btn-broadcast-meds')?.addEventListener('click', () => {
+    q<HTMLButtonElement>('#btn-broadcast-meds')?.addEventListener('click', async () => {
       if (!this.onBroadcast) return;
       const text = this.myMeds.map((m) => `${m.brandName} (${m.activeIngredient})`).join(', ');
-      const msg = `🚨 [ACİL KRONİK İLAÇ İHTİYACI] Sahra eczanesi / UMKE dikkatine! Acil ihtiyaç duyulan ilaçlar: ${text}. Eşdeğer etken maddeler kabul edilir.`;
-      this.onBroadcast(msg);
+      const msg = `[İLAÇ İHTİYACI] İhtiyaç duyulan ilaçlar: ${text}.`;
+      // Geri çağrı bir Promise döndürürse sonucuna bakılır; { sent: false } "gönderilmedi" demektir.
+      let label = 'Sohbette paylaşıldı (resmi kuruma ulaşmaz)';
+      try {
+        const result: any = await this.onBroadcast(msg);
+        if (result && result.sent === false) label = 'GÖNDERİLEMEDİ (bağlantı yok)';
+      } catch {
+        label = 'GÖNDERİLEMEDİ';
+      }
       const btn = q<HTMLButtonElement>('#btn-broadcast-meds');
-      if (btn) btn.textContent = 'Ağa İletildi!';
-      setTimeout(() => this.render(), 1800);
+      if (btn) btn.textContent = label;
+      setTimeout(() => this.render(), 2500);
     });
   }
 }

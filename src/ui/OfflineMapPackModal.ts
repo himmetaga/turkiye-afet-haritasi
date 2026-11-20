@@ -1,57 +1,43 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { hasUsableLocation } from '../utils/locationState';
+import { syncCurrentRegionOffline, SyncResult } from '../services/offlineSyncService';
 
-interface MapPackItem {
-  id: string;
-  name: string;
-  province: string;
-  sizeMb: number;
-  isDownloaded: boolean;
-}
-
-const DEFAULT_PACKS: MapPackItem[] = [
-  { id: 'ist-marmara', name: 'İstanbul & Marmara Deprem Kuşağı (Tüm İlçeler)', province: 'İstanbul', sizeMb: 18.4, isDownloaded: false },
-  { id: 'hatay-maras', name: 'Hatay, Maraş, Adıyaman & Antep Sahası', province: 'Hatay', sizeMb: 14.2, isDownloaded: false },
-  { id: 'izmir-ege', name: 'İzmir & Ege Kıyı / Tsunami Bölgesi', province: 'İzmir', sizeMb: 11.8, isDownloaded: false },
-  { id: 'ankara-ic', name: 'Ankara & İç Anadolu Lojistik Koridoru', province: 'Ankara', sizeMb: 9.6, isDownloaded: false },
-  { id: 'bursa-kocaeli', name: 'Bursa, Kocaeli & Sakarya Sanayi / Fay Hattı', province: 'Bursa', sizeMb: 10.5, isDownloaded: false }
-];
-
-const STORAGE_KEY = 'afet_downloaded_map_packs_v1';
-
+/**
+ * Çevrimdışı kayıt ekranı.
+ *
+ * Tek bir gerçek işlem sunar: temel verileri ve (konum biliniyorsa) çevredeki
+ * harita karolarını bu cihaza kaydeden syncCurrentRegionOffline çağrısı.
+ * Sonuç, servisin döndürdüğü sayılarla olduğu gibi gösterilir; "bölge paketi",
+ * tahmini boyut ya da çevrimdışı çalışma garantisi gösterilmez.
+ */
 export class OfflineMapPackModal {
   private container: HTMLElement;
-  private packs: MapPackItem[] = [];
-  private totalUsedMb = 0;
-  private isDownloading = false;
+  private getCenter?: () => [number, number] | null;
+  private totalUsedMb: number | null = null;
+  private isSyncing = false;
+  private progressText = '';
+  private lastResult: SyncResult | null = null;
 
-  constructor(parent: HTMLElement) {
+  constructor(parent: HTMLElement, getCenter?: () => [number, number] | null) {
+    this.getCenter = getCenter;
     this.container = document.createElement('div');
     this.container.id = 'offline-map-pack-modal';
     this.container.className =
       'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/85 backdrop-blur-md hidden transition-all';
     parent.appendChild(this.container);
 
-    this.loadPacks();
-    this.updateStorageEstimate();
+    this.cleanupLegacyPackData();
     this.render();
   }
 
-  private loadPacks(): void {
+  /** Eski sürümün hiçbir yerde okunmayan "paket" kayıtlarını temizler. */
+  private cleanupLegacyPackData(): void {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const ids: string[] = JSON.parse(saved);
-        this.packs = DEFAULT_PACKS.map((p) => ({ ...p, isDownloaded: ids.includes(p.id) }));
-        return;
-      }
+      localStorage.removeItem('afet_downloaded_map_packs_v1');
     } catch {}
-    this.packs = [...DEFAULT_PACKS];
-  }
-
-  private savePacks(): void {
     try {
-      const ids = this.packs.filter((p) => p.isDownloaded).map((p) => p.id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+      if ('caches' in window) caches.delete('afet-live-offline-packs-v1').catch(() => {});
     } catch {}
   }
 
@@ -59,7 +45,7 @@ export class OfflineMapPackModal {
     try {
       if (navigator.storage && navigator.storage.estimate) {
         const est = await navigator.storage.estimate();
-        if (est.usage) {
+        if (typeof est.usage === 'number') {
           this.totalUsedMb = Math.round((est.usage / (1024 * 1024)) * 10) / 10;
           this.render();
         }
@@ -77,105 +63,80 @@ export class OfflineMapPackModal {
     this.container.classList.add('hidden');
   }
 
-  private async downloadPack(id: string): Promise<void> {
-    const pack = this.packs.find((p) => p.id === id);
-    if (!pack || pack.isDownloaded || this.isDownloading) return;
-
-    this.isDownloading = true;
-    this.render();
-
-    try {
-      // Pre-cache core files into CacheStorage
-      if ('caches' in window) {
-        const cache = await caches.open('afet-live-offline-packs-v1');
-        const urlsToCache = [
-          '/',
-          '/index.html',
-          '/data/assembly-points.geojson',
-          '/data/emergency-facilities.geojson',
-          '/data/fault-lines.geojson',
-          '/data/summary.json'
-        ];
-        await cache.addAll(urlsToCache);
-      }
-
-      pack.isDownloaded = true;
-      this.savePacks();
-      await this.updateStorageEstimate();
-    } catch {
-      alert('Paket önbelleğe alınırken bir hata oluştu. Lütfen bağlantınızı kontrol edin.');
-    } finally {
-      this.isDownloading = false;
-      this.render();
+  /** Karoların indirileceği merkez: yalnızca gerçek bir konum ölçümü varsa kullanılır. */
+  private async resolveCenter(): Promise<[number, number] | null> {
+    if (this.getCenter && hasUsableLocation()) {
+      const c = this.getCenter();
+      if (c && Number.isFinite(c[0]) && Number.isFinite(c[1])) return c;
     }
+    if (!('geolocation' in navigator)) return null;
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve([pos.coords.longitude, pos.coords.latitude]),
+        () => resolve(null),
+        { timeout: 8000, maximumAge: 5 * 60 * 1000 }
+      );
+    });
   }
 
-  private deletePack(id: string): void {
-    const pack = this.packs.find((p) => p.id === id);
-    if (pack) {
-      pack.isDownloaded = false;
-      this.savePacks();
-      this.updateStorageEstimate();
-      this.render();
+  private async runSync(): Promise<void> {
+    if (this.isSyncing) return;
+    this.isSyncing = true;
+    this.lastResult = null;
+    this.progressText = 'Konum kontrol ediliyor...';
+    this.render();
+
+    const center = await this.resolveCenter();
+    const result = await syncCurrentRegionOffline(center, (p) => {
+      this.progressText = `%${p.progress} — ${p.stage}`;
+      const el = this.container.querySelector('#offline-sync-progress');
+      if (el) el.textContent = this.progressText;
+    });
+
+    this.isSyncing = false;
+    this.lastResult = result;
+    await this.updateStorageEstimate();
+    this.render();
+  }
+
+  private getLastSyncedText(): string {
+    try {
+      const stamp = Number(localStorage.getItem('afet_offline_synced_at'));
+      if (Number.isFinite(stamp) && stamp > 0) {
+        return new Date(stamp).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+      }
+    } catch {}
+    return 'Henüz kaydedilmedi';
+  }
+
+  private renderResult(): string {
+    const r = this.lastResult;
+    if (!r) return '';
+
+    const tileLine =
+      r.tilesTotal > 0
+        ? `Harita karoları: ${r.tilesCached}/${r.tilesTotal} kaydedildi.`
+        : 'Harita karosu kaydedilmedi (konum alınamadı ya da karo adresi okunamadı). Daha önce gezdiğiniz bölgeler tarayıcı önbelleğinde kalmış olabilir.';
+
+    if (r.success) {
+      return `
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-200 text-[11.5px] space-y-1">
+          <strong class="block">Kaydedilen: ${r.cachedItems}/${r.totalItems} dosya</strong>
+          <p>Temel veriler (toplanma alanları, hastaneler, fay hatları) bu cihaza kaydedildi.</p>
+          <p>${tileLine}</p>
+        </div>
+      `;
     }
+
+    return `
+      <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-200 text-[11.5px] space-y-1">
+        <strong class="block">Çevrimdışı kayıt tamamlanamadı (${r.cachedItems}/${r.totalItems} dosya)</strong>
+        <p>Temel verilerin tamamı kaydedilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.</p>
+      </div>
+    `;
   }
 
   private render(): void {
-    const downloadedCount = this.packs.filter((p) => p.isDownloaded).length;
-
-    const listHtml = this.packs
-      .map((p) => {
-        return `
-          <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 flex items-center justify-between gap-3 transition-colors">
-            <div class="flex items-center gap-3">
-              <span class="p-2.5 rounded-xl ${p.isDownloaded ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-gray-400'} shrink-0">
-                ${p.isDownloaded ? Icons.checkCircle('w-4 h-4') : Icons.download('w-4 h-4')}
-              </span>
-              <div>
-                <strong class="text-xs text-white block">${p.name}</strong>
-                <div class="flex items-center gap-2 text-[10px] text-gray-400 mt-0.5">
-                  <span>${p.province}</span>
-                  <span>•</span>
-                  <span class="font-mono text-gray-300">~${p.sizeMb} MB</span>
-                  ${
-                    p.isDownloaded
-                      ? `<span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">İndirildi</span>`
-                      : ''
-                  }
-                </div>
-              </div>
-            </div>
-
-            <div class="shrink-0">
-              ${
-                p.isDownloaded
-                  ? `
-                <button
-                  type="button"
-                  data-delete-pack="${p.id}"
-                  class="btn-delete-pack px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold active:scale-95 transition-all"
-                >
-                  Sil
-                </button>
-              `
-                  : `
-                <button
-                  type="button"
-                  data-download-pack="${p.id}"
-                  class="btn-download-pack px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center gap-1.5 disabled:opacity-50"
-                  ${this.isDownloading ? 'disabled' : ''}
-                >
-                  ${Icons.download('w-3.5 h-3.5')}
-                  <span>${this.isDownloading ? 'İndiriliyor...' : 'İndir'}</span>
-                </button>
-              `
-              }
-            </div>
-          </div>
-        `;
-      })
-      .join('');
-
     this.container.innerHTML = `
       <div class="hud-glass rounded-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl bg-obsidian-900/95 backdrop-blur-2xl text-white">
         <!-- Header -->
@@ -185,11 +146,8 @@ export class OfflineMapPackModal {
               ${Icons.download('w-5 h-5')}
             </span>
             <div>
-              <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-bold text-white">Çevrimdışı Harita İndir</h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold font-mono">SIFIR İNTERNET</span>
-              </div>
-              <p class="text-[11px] text-gray-400">Hücresel şebekeler tamamen kopsa bile sokak seviyesinde harita ve toplanma alanlarını önbelleğe alın.</p>
+              <h2 class="text-sm sm:text-base font-bold text-white">Çevrimdışı Kullanım İçin Kaydet</h2>
+              <p class="text-[11px] text-gray-400">İnternet varken temel verileri ve çevrenizdeki haritayı bu cihaza kaydedin.</p>
             </div>
           </div>
           <button id="btn-close-map-pack-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -199,33 +157,45 @@ export class OfflineMapPackModal {
 
         <!-- Body -->
         <div class="p-3.5 sm:p-5 overflow-y-auto space-y-4 flex-1 text-xs">
-          <!-- Storage Stats -->
-          <div class="p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between">
+          <div class="p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
             <div>
-              <div class="text-[10px] text-gray-400 font-medium">CİHAZ ÖNBELLEK KULLANIMI</div>
+              <div class="text-[10px] text-gray-400 font-medium">BU SİTENİN CİHAZDA KULLANDIĞI ALAN</div>
               <div class="font-mono text-xl font-bold text-cyan-400 mt-0.5">
-                ${this.totalUsedMb > 0 ? `${this.totalUsedMb} MB` : 'Hesaplanıyor...'}
+                ${this.totalUsedMb !== null ? `${this.totalUsedMb} MB` : 'Bilinmiyor'}
               </div>
             </div>
             <div class="text-right">
-              <div class="text-[10px] text-gray-400 font-medium">İNDİRİLEN BÖLGELER</div>
-              <div class="font-mono text-xs font-bold text-emerald-400 mt-0.5">
-                ${downloadedCount} / ${this.packs.length} Paket Hazır
-              </div>
+              <div class="text-[10px] text-gray-400 font-medium">SON KAYIT</div>
+              <div class="font-mono text-xs font-bold text-gray-200 mt-0.5">${escapeHtml(this.getLastSyncedText())}</div>
             </div>
           </div>
 
-          <!-- Pack List -->
-          <div class="space-y-2">
-            ${listHtml}
-          </div>
+          <p class="text-[11.5px] text-gray-300 leading-relaxed">
+            Temel veriler (toplanma alanları, hastaneler, fay hatları) ve bulunduğunuz konumun çevresindeki harita karoları bu cihaza kaydedilir.
+            Tarayıcı depolamayı silebilir; çevrimdışı açılış garanti edilmez.
+          </p>
 
-          <!-- Offline Guarantee Info -->
-          <div class="p-3 rounded-xl bg-cyan-500/[0.08] border border-cyan-500/20 text-gray-300 text-[11px] space-y-1">
-            <strong class="text-cyan-300 block">🛡️ Çevrimdışı Kullanım Garantisi:</strong>
-            <p class="leading-relaxed">
-              İndirilen paketler telefonunuzun kalıcı <code>CacheStorage</code> alanına kilitlenir. Uçak moduna alsanız veya SIM kartınız çekmese bile afet.live haritası tüm toplanma alanları ve hastanelerle açılacaktır.
-            </p>
+          <button
+            id="btn-run-offline-sync"
+            type="button"
+            class="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-[0.98] text-white text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            ${this.isSyncing ? 'disabled' : ''}
+          >
+            ${Icons.download('w-4 h-4')}
+            <span>${this.isSyncing ? 'Kaydediliyor...' : 'Verileri ve çevremdeki haritayı kaydet'}</span>
+          </button>
+
+          ${
+            this.isSyncing
+              ? `<div id="offline-sync-progress" class="text-center text-[11px] text-cyan-300 font-mono">${escapeHtml(this.progressText)}</div>`
+              : ''
+          }
+
+          ${this.renderResult()}
+
+          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-gray-400 text-[11px] leading-relaxed">
+            Kaydı internetiniz varken ve bulunduğunuz yerde yapın. Bölge değiştirirseniz yeniden kaydedin.
+            İnternet yokken haritanın yalnızca kaydedilmiş bölümleri görünür; canlı deprem listesi güncellenmez.
           </div>
         </div>
       </div>
@@ -238,21 +208,6 @@ export class OfflineMapPackModal {
     const q = <T extends HTMLElement>(sel: string) => this.container.querySelector(sel) as T | null;
 
     q<HTMLButtonElement>('#btn-close-map-pack-modal')?.addEventListener('click', () => this.hide());
-
-    this.container.querySelectorAll<HTMLButtonElement>('.btn-download-pack').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-download-pack');
-        if (id) this.downloadPack(id);
-      });
-    });
-
-    this.container.querySelectorAll<HTMLButtonElement>('.btn-delete-pack').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-delete-pack');
-        if (id && confirm('Bu çevrimdışı harita paketini silmek istiyor musunuz?')) {
-          this.deletePack(id);
-        }
-      });
-    });
+    q<HTMLButtonElement>('#btn-run-offline-sync')?.addEventListener('click', () => this.runSync());
   }
 }

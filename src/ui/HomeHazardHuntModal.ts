@@ -16,7 +16,7 @@ const HAZARD_QUESTIONS: HazardItem[] = [
     room: 'bedroom',
     roomLabel: 'Yatak Odası',
     title: 'Gardırop ve ağır dolaplar duvara L-demirle sabitlendi mi?',
-    description: 'Deprem sarsıntısında devrilen gardıroplar yatakta uyuyanların üzerine yıkılarak can kayıplarının en sık sebebidir.',
+    description: 'Deprem sarsıntısında devrilen gardıroplar yatakta uyuyanların üzerine yıkılarak ağır yaralanmalara yol açabilir.',
     points: 10,
     fixTip: 'Hırdavatçıdan 4x4 cm L-braket ve duvar tipine uygun dübel (tuğla için çelik, alçıpan için kanatlı dübel) ile en az 2 noktadan duvara vidalayın.'
   },
@@ -63,7 +63,7 @@ const HAZARD_QUESTIONS: HazardItem[] = [
     title: 'Üst mutfak dolaplarında deprem/çocuk kilit mandalı var mı?',
     description: 'Sarsıntıda dolap kapakları açılarak yüzlerce tabak, bardak ve cam kavanoz yerlere saçılır.',
     points: 10,
-    fixTip: 'Mutfak dolaplarının iç tarafına bas-çek mandallı veya yaylı çocuk kilitleri takın (Tanesi 15-20 TL).'
+    fixTip: 'Mutfak dolaplarının iç tarafına bas-çek mandallı veya yaylı çocuk kilitleri takın.'
   },
   {
     id: 'h-kit-heavy-low',
@@ -97,7 +97,7 @@ const HAZARD_QUESTIONS: HazardItem[] = [
     room: 'hallway',
     roomLabel: 'Antre & Kaçış',
     title: 'Elektrik sigortası ve doğalgaz ana vanasının yeri biliniyor mu?',
-    description: 'Sarsıntı bittiğinde evi terk etmeden önce gaz ve elektriği kesmek ikincil patlama ve yangınları %100 engeller.',
+    description: 'Sarsıntı bittiğinde evi terk etmeden önce gaz ve elektriği kesmek ikincil yangın ve patlama riskini azaltır.',
     points: 10,
     fixTip: 'Ana vana kolunun üzerine parlak fosforlu bant yapıştırın; gaz vanasını kapatmak için yanında kurbağacık anahtar bulundurun.'
   },
@@ -115,7 +115,7 @@ const HAZARD_QUESTIONS: HazardItem[] = [
     room: 'utility',
     roomLabel: 'Tesisat & Banyo',
     title: 'Kombi veya termosifon duvara çelik dübelle sabitlendi mi?',
-    description: 'Su dolu kombi 60-80 kg ağırlığa ulaşır. Devrildiğinde gaz borusunu kopararak evi anında havaya uçurur.',
+    description: 'Su dolu kombi 60-80 kg ağırlığa ulaşır. Devrildiğinde gaz borusunu kopararak gaz kaçağına ve yangına yol açabilir.',
     points: 10,
     fixTip: 'Kombiyi duvara en az 4 adet çelik gömlekli dübel ile sabitleyin (asla plastik dübel kullanmayın).'
   },
@@ -197,7 +197,7 @@ export class HomeHazardHuntModal {
       return {
         score,
         grade: 'A',
-        gradeText: 'Depreme Karşı Yüksek Güvenlik',
+        gradeText: 'Eşya Önlemleri Büyük Ölçüde Tamam',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
       };
     } else if (score >= 65) {
@@ -211,14 +211,14 @@ export class HomeHazardHuntModal {
       return {
         score,
         grade: 'C',
-        gradeText: 'Orta Risk (Sabitleme Gerekli)',
+        gradeText: 'Eksikler Var (Sabitleme Gerekli)',
         badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40'
       };
     } else {
       return {
         score,
         grade: 'D',
-        gradeText: 'Yüksek Tehlike (Acil Önlem Gerekli)',
+        gradeText: 'Çok Eksik (Öncelikli Önlem Gerekli)',
         badgeColor: 'bg-rose-500/25 text-rose-300 border-rose-500/50'
       };
     }
@@ -314,9 +314,9 @@ export class HomeHazardHuntModal {
             <div>
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-bold text-white">Ev İçi Tehlike Avı</h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">DEPREM GÜVENLİK DENETİMİ</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">EŞYA SABİTLEME KONTROLÜ</span>
               </div>
-              <p class="text-[11px] text-gray-400">Deprem yaralanmalarının %70'i mobilya devrilmesi kaynaklıdır. Odanızı denetleyin.</p>
+              <p class="text-[11px] text-gray-400">Deprem yaralanmalarının önemli bir bölümü devrilen eşyalardan kaynaklanır. Odanızı denetleyin.</p>
             </div>
           </div>
           <button id="btn-close-hazard-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -327,7 +327,7 @@ export class HomeHazardHuntModal {
         <!-- Score Banner -->
         <div class="p-3.5 sm:p-4 border-b border-white/10 bg-black/30 flex items-center justify-between gap-3 shrink-0">
           <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">EV DEPREM GÜVENLİK PUANI</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">EŞYA SABİTLEME PUANI</div>
             <div class="flex items-baseline gap-2 mt-0.5">
               <span class="font-mono text-3xl sm:text-4xl font-black text-white tabular-nums">${score}</span>
               <span class="text-xs text-gray-400 font-mono">/ 100</span>
@@ -335,6 +335,7 @@ export class HomeHazardHuntModal {
                 SEVİYE ${grade} · ${gradeText}
               </span>
             </div>
+            <div class="text-[10.5px] text-gray-400 mt-1">Kendi işaretlediğiniz maddelere göre hesaplanır. Bu puan binanın yapısal dayanıklılığını ölçmez.</div>
           </div>
           <button
             id="btn-copy-hazard-report"
@@ -398,12 +399,13 @@ export class HomeHazardHuntModal {
         .map((q) => `❌ [${q.roomLabel}] ${q.title} -> Öneri: ${q.fixTip}`)
         .join('\n');
 
-      const report = `🏠 EV DEPREM GÜVENLİK DENETİM RAPORU (afet.live)
+      const report = `🏠 EV İÇİ EŞYA SABİTLEME KONTROL LİSTESİ (afet.live)
 Puan: %${score} / 100 (Seviye ${grade} - ${gradeText})
 Tamamlanan Önlemler: ${completedCount}/${totalCount}
+Not: Kişinin kendi işaretlemesidir; binanın yapısal dayanıklılığını ölçmez.
 
-ACİL YAPILMASI GEREKENLER (Eksikler):
-${unchecked || 'Tebrikler! Tüm ev sabitleme önlemleri eksiksiz tamamlanmış.'}`;
+YAPILMASI GEREKENLER (Eksikler):
+${unchecked || 'Listedeki tüm eşya sabitleme önlemleri işaretlenmiş.'}`;
 
       navigator.clipboard.writeText(report).then(() => {
         const btn = q<HTMLButtonElement>('#btn-copy-hazard-report');

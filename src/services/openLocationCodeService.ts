@@ -12,9 +12,16 @@
  * 10 haneli, sesli harf içermeyen ve harf-rakam karışıklığını önleyen
  * standart bir koda (Örn: 8GG3VX2Q+9R) dönüştürür.
  *
- * %100 Çevrimdışı (Zero-Server-Dependency), sıfır harici kütüphane ve
- * AFAD / AKUT / TRAC telsiz operatörleri için NATO Fonetik Alfabesi desteği.
+ * Sunucuya istek atmaz, harici kütüphane kullanmaz; telsizde okumayı
+ * kolaylaştırmak için NATO fonetik alfabesi karşılıklarını da üretir.
+ *
+ * Yalnızca 10 haneli TAM kodlar çözülür (ör. 8GHCVX2Q+9R). Google Haritalar'ın
+ * paylaştığı kısa kodlar (ör. "VX2Q+9R Fatih") bir referans konum olmadan
+ * çözülemez; 11+ haneli kodlar da desteklenmez. Bu durumlarda yanlış koordinat
+ * üretmek yerine kod reddedilir (bkz. isShort / getInvalidReason).
  */
+
+export type PlusCodeInvalidReason = 'empty' | 'short' | 'too_long' | 'invalid';
 
 const CODE_ALPHABET = '23456789CFGHJMPQRVWX';
 const ENCODING_BASE = 20;
@@ -125,7 +132,7 @@ export class OpenLocationCodeService {
   public decode(code: string): PlusCodeArea | null {
     if (!this.isValid(code)) return null;
 
-    const clean = code.toUpperCase().replace(/\+/g, '').replace(/0+$/, '');
+    const clean = code.toUpperCase().trim().replace(/\+/g, '').replace(/0+$/, '');
     let latLo = -LATITUDE_MAX;
     let lngLo = -LONGITUDE_MAX;
     let latRes = 20.0;
@@ -162,28 +169,70 @@ export class OpenLocationCodeService {
    * Plus Code geçerliliğini kontrol eder.
    */
   public isValid(code: string): boolean {
+    return this.getInvalidReason(code) === null;
+  }
+
+  /**
+   * Kısa (yerel) kod mu? Ör. "VX2Q+9R" ya da "VX2Q+9R Fatih, İstanbul".
+   * Kısa kodlar tek başına konum vermez; decode() bunları çözmez.
+   */
+  public isShort(code: string): boolean {
     if (!code || typeof code !== 'string') return false;
-    const upper = code.toUpperCase().trim();
-    const sepIdx = upper.indexOf(SEPARATOR);
-    if (sepIdx === -1 || sepIdx > SEPARATOR_POSITION || sepIdx % 2 === 1) {
-      return false;
-    }
-    const charsOnly = upper.replace('+', '');
-    for (let i = 0; i < charsOnly.length; i++) {
-      const ch = charsOnly.charAt(i);
-      if (ch === '0') {
-        if (i < sepIdx) continue;
-        return false;
-      }
-      if (CODE_ALPHABET.indexOf(ch) === -1) {
-        return false;
-      }
+    const token = code.toUpperCase().trim().split(/[\s,]+/)[0] || '';
+    const sepIdx = token.indexOf(SEPARATOR);
+    if (sepIdx === -1 || sepIdx !== token.lastIndexOf(SEPARATOR)) return false;
+    if (sepIdx < 2 || sepIdx >= SEPARATOR_POSITION || sepIdx % 2 === 1) return false;
+    const before = token.slice(0, sepIdx);
+    const after = token.slice(sepIdx + 1);
+    if (after.length < 2 || after.length > 7) return false;
+    for (const ch of before + after) {
+      if (CODE_ALPHABET.indexOf(ch) === -1) return false;
     }
     return true;
   }
 
   /**
-   * Afet telsiz operatörleri (TRAC, AFAD, AKUT, UMKE) için NATO ve Türkçe fonetik heceleme tablosunu üretir.
+   * Kod neden çözülemiyor? Geçerli (10 haneli tam) kod için null döner.
+   *  - 'short'    : kısa/yerel kod (ör. VX2Q+9R) — tam kod gerekir
+   *  - 'too_long' : 10 haneden uzun kod — desteklenmiyor
+   *  - 'invalid'  : biçim hatalı
+   */
+  public getInvalidReason(code: string): PlusCodeInvalidReason | null {
+    if (!code || typeof code !== 'string' || !code.trim()) return 'empty';
+    if (this.isShort(code)) return 'short';
+
+    const upper = code.toUpperCase().trim();
+    const sepIdx = upper.indexOf(SEPARATOR);
+    if (sepIdx !== SEPARATOR_POSITION || sepIdx !== upper.lastIndexOf(SEPARATOR)) return 'invalid';
+
+    const before = upper.slice(0, sepIdx);
+    const after = upper.slice(sepIdx + 1);
+
+    const padMatch = before.match(/0+$/);
+    const padLength = padMatch ? padMatch[0].length : 0;
+    const significant = before.slice(0, before.length - padLength);
+
+    if (padLength > 0) {
+      // Dolgulu kodlar (ör. 8GHC0000+) yalnızca artıdan sonrası boşsa geçerlidir.
+      if (padLength % 2 === 1 || significant.length < 2 || after.length > 0) return 'invalid';
+    } else {
+      if (after.length > 2 && /^[23456789CFGHJMPQRVWX]+$/.test(after)) return 'too_long';
+      if (after.length !== 2 && after.length !== 0) return 'invalid';
+    }
+
+    for (const ch of significant + after) {
+      if (CODE_ALPHABET.indexOf(ch) === -1) return 'invalid';
+    }
+
+    // İlk çift: enlem en fazla 8 (180°/20°), boylam en fazla 17 (360°/20°) olabilir.
+    if (CODE_ALPHABET.indexOf(significant.charAt(0)) > 8) return 'invalid';
+    if (CODE_ALPHABET.indexOf(significant.charAt(1)) > 17) return 'invalid';
+
+    return null;
+  }
+
+  /**
+   * Telsizde okumak için NATO ve Türkçe fonetik heceleme tablosunu üretir.
    */
   public getPhoneticBreakdown(code: string): PhoneticItem[] {
     const clean = code.toUpperCase().trim();
@@ -207,7 +256,7 @@ export class OpenLocationCodeService {
    */
   public getRadioSpokenPhrase(code: string): string {
     const phonetic = this.getPhoneticBreakdown(code);
-    return phonetic.map((p) => (p.char === '+' ? 'ARTl (PLUS)' : `${p.char} (${p.tr})`)).join(' - ');
+    return phonetic.map((p) => (p.char === '+' ? 'ARTI (PLUS)' : `${p.char} (${p.tr})`)).join(' - ');
   }
 }
 

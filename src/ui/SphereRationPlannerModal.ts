@@ -1,20 +1,20 @@
 /**
  * SphereRationPlannerModal.ts
  * =============================================================================
- * Sphere Project & WHO İnsani Yardım Standartları:
- * 72 Saat Hayatta Kalma Rasyonu ve Su Stoku Planlayıcısı
- * Standart: The Sphere Handbook (Su Temini, Sanitasyon ve Beslenme)
- * =============================================================================
- * İlk 72 saat ("Altın 72 Saat") boyunca dış yardım gelene kadar ailenin
- * dehidrasyon ve yetersiz beslenmeden korunması için gereken su ve kalori
- * miktarını bilimsel katsayılarla hesaplar.
+ * 72 saatlik su ve erzak planlayıcısı.
+ * Su ve kalori: Sphere El Kitabı asgari ölçüleri (kişi başı 15 L su/gün,
+ * ortalama 2100 kcal/gün). Erzak listesi örnek öneridir, standart değildir.
  */
 
 import { Icons } from './icons';
 import {
   sphereRationService,
   SphereHouseholdInput,
-  SpherePlanResult
+  SpherePlanResult,
+  SPHERE_TOTAL_WATER_L_PER_PERSON_DAY,
+  DRINKING_WATER_L_PER_PERSON_DAY,
+  OTHER_WATER_L_PER_PERSON_DAY,
+  SPHERE_KCAL_PER_PERSON_DAY
 } from '../services/sphereRationService';
 import { registerModalOpen, registerModalClose, setupModalMobileDismiss } from '../utils/mobileModalHelper';
 
@@ -26,7 +26,6 @@ export class SphereRationPlannerModal {
     childrenCount: 1,
     infantsCount: 0,
     pregnantLactatingCount: 0,
-    isColdWinter: true,
     durationDays: 3
   };
 
@@ -70,7 +69,7 @@ export class SphereRationPlannerModal {
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-black tracking-tight text-white">72 Saat Hayatta Kalma Rasyonu</h2>
                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  Sphere / WHO
+                  Sphere asgari ölçüleri
                 </span>
               </div>
               <p class="text-[11px] text-white/60">Minimum Su, Kalori ve Rasyon Hesaplayıcısı</p>
@@ -120,7 +119,7 @@ export class SphereRationPlannerModal {
               </div>
 
               <div class="p-2 rounded-xl bg-black/40 border border-white/10 flex flex-col items-center">
-                <span class="text-[10px] text-white/60 font-bold mb-1">Hamile / Anne</span>
+                <span class="text-[10px] text-white/60 font-bold mb-1">Yetişkinlerden hamile / emziren</span>
                 <div class="flex items-center gap-2">
                   <button id="btn-dec-mom" class="w-6 h-6 rounded-lg bg-white/10 font-black">-</button>
                   <span class="font-mono font-black text-sm text-white w-4">${this.inputState.pregnantLactatingCount}</span>
@@ -166,37 +165,26 @@ export class SphereRationPlannerModal {
                 </button>
               </div>
 
-              <!-- Kış Hava Koşulu Butonu -->
-              <button
-                id="btn-toggle-winter"
-                class="px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  this.inputState.isColdWinter
-                    ? 'bg-blue-500/25 border-blue-400 text-blue-200 border'
-                    : 'bg-white/5 border-white/10 text-white/60 border hover:bg-white/10'
-                }"
-              >
-                <span>❄️</span>
-                <span>Kış / Soğuk Koşul (+%18 Kalori)</span>
-              </button>
+              <span class="text-[10px] text-white/50">Toplam ${plan.totalPeople} kişi</span>
             </div>
           </div>
 
           <!-- Sonuç Özet Kartı (Hero Metrics) -->
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <div class="p-3.5 rounded-2xl bg-gradient-to-br from-sky-950/40 to-black/60 border border-sky-500/30">
-              <span class="text-[10px] text-sky-400 font-bold block mb-1">💧 Toplam İçme Suyu</span>
+              <span class="text-[10px] text-sky-400 font-bold block mb-1">💧 İçme ve Yemek Hazırlama Suyu</span>
               <div class="font-mono text-xl sm:text-2xl font-black text-white">
                 ${plan.totalDrinkingWaterLiters} <span class="text-xs text-sky-300">Litre</span>
               </div>
-              <span class="text-[10px] text-white/50 block mt-0.5">Kişi başı 3.0L / gün</span>
+              <span class="text-[10px] text-white/50 block mt-0.5">Kişi başı ${DRINKING_WATER_L_PER_PERSON_DAY} L / gün</span>
             </div>
 
             <div class="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-950/40 to-black/60 border border-cyan-500/30">
-              <span class="text-[10px] text-cyan-400 font-bold block mb-1">🧼 Temel Hijyen Suyu</span>
+              <span class="text-[10px] text-cyan-400 font-bold block mb-1">🧼 Yemek Pişirme ve Hijyen Suyu</span>
               <div class="font-mono text-xl sm:text-2xl font-black text-white">
                 ${plan.totalHygieneWaterLiters} <span class="text-xs text-cyan-300">Litre</span>
               </div>
-              <span class="text-[10px] text-white/50 block mt-0.5">El/Yüz & yara temizliği</span>
+              <span class="text-[10px] text-white/50 block mt-0.5">Kişi başı ${OTHER_WATER_L_PER_PERSON_DAY} L / gün</span>
             </div>
 
             <div class="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/40 to-black/60 border border-amber-500/30">
@@ -204,17 +192,24 @@ export class SphereRationPlannerModal {
               <div class="font-mono text-xl sm:text-2xl font-black text-white">
                 ${plan.dailyTotalCalories.toLocaleString('tr-TR')} <span class="text-xs text-amber-300">kcal</span>
               </div>
-              <span class="text-[10px] text-white/50 block mt-0.5">${this.inputState.durationDays} gün toplamı: ${plan.totalPlanCalories.toLocaleString('tr-TR')} kcal</span>
+              <span class="text-[10px] text-white/50 block mt-0.5">Kişi başı ortalama ${SPHERE_KCAL_PER_PERSON_DAY} kcal • ${this.inputState.durationDays} gün: ${plan.totalPlanCalories.toLocaleString('tr-TR')} kcal</span>
             </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-[11px] text-sky-100 leading-relaxed">
+            <strong class="text-white">Toplam su: ${plan.totalWaterLiters} litre</strong>
+            (${plan.totalPeople} kişi × ${SPHERE_TOTAL_WATER_L_PER_PERSON_DAY} L × ${this.inputState.durationDays} gün).
+            Sphere asgari ölçüsü kişi başı günde toplam ${SPHERE_TOTAL_WATER_L_PER_PERSON_DAY} litredir; bunun yaklaşık ${DRINKING_WATER_L_PER_PERSON_DAY} litresi içme ve yemek hazırlama içindir.
+            Hepsini depolayamıyorsanız önce içme suyunu ayırın.
           </div>
 
           <!-- Erzak ve Stok Listesi -->
           <div class="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2.5">
             <div class="flex items-center justify-between">
               <h3 class="font-bold text-xs uppercase tracking-wider text-white/80">
-                📦 Tavsiye Edilen Acil Erzak Stoku
+                📦 Örnek Erzak Listesi
               </h3>
-              <span class="text-[10px] text-white/40 font-mono">Sphere Standartları</span>
+              <span class="text-[10px] text-white/40 font-mono">Öneridir, standart değildir</span>
             </div>
 
             <div class="space-y-1.5">
@@ -243,7 +238,7 @@ export class SphereRationPlannerModal {
           <!-- Gün Gün Rasyon Çizelgesi -->
           <div class="space-y-2">
             <h3 class="font-bold text-xs uppercase tracking-wider text-white/80">
-              📅 İlk 72 Saat Rasyon Disiplini
+              📅 İlk 72 Saat İçin Örnek Düzen
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               ${plan.dailySchedule
@@ -273,7 +268,7 @@ export class SphereRationPlannerModal {
 
         <!-- Footer -->
         <div class="p-3.5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-[11px] text-white/50 shrink-0">
-          <span>The Sphere Project Minimum Standards</span>
+          <span>Su ve kalori: Sphere El Kitabı asgari ölçüleri</span>
           <button id="btn-copy-sphere-list" class="px-3 py-1 rounded-xl bg-cyan-500/25 hover:bg-cyan-500/40 border border-cyan-500/40 text-cyan-200 font-bold flex items-center gap-1.5 transition-all">
             ${Icons.copy('w-3.5 h-3.5')} Erzak Listesini Kopyala
           </button>
@@ -288,6 +283,11 @@ export class SphereRationPlannerModal {
     // Adult counter
     this.container.querySelector('#btn-dec-adult')?.addEventListener('click', () => {
       if (this.inputState.adultsCount > 1) this.inputState.adultsCount--;
+      // Hamile / emziren sayısı yetişkin sayısını aşamaz
+      this.inputState.pregnantLactatingCount = Math.min(
+        this.inputState.pregnantLactatingCount,
+        this.inputState.adultsCount
+      );
       this.render();
     });
     this.container.querySelector('#btn-inc-adult')?.addEventListener('click', () => {
@@ -321,7 +321,9 @@ export class SphereRationPlannerModal {
       this.render();
     });
     this.container.querySelector('#btn-inc-mom')?.addEventListener('click', () => {
-      this.inputState.pregnantLactatingCount++;
+      if (this.inputState.pregnantLactatingCount < this.inputState.adultsCount) {
+        this.inputState.pregnantLactatingCount++;
+      }
       this.render();
     });
 
@@ -334,20 +336,15 @@ export class SphereRationPlannerModal {
       });
     });
 
-    // Toggle winter
-    this.container.querySelector('#btn-toggle-winter')?.addEventListener('click', () => {
-      this.inputState.isColdWinter = !this.inputState.isColdWinter;
-      this.render();
-    });
-
     // Copy list
     this.container.querySelector('#btn-copy-sphere-list')?.addEventListener('click', () => {
-      let text = `[SPHERE STANDARTLARI AFET ERZAK VE SU PLANI]\nSüre: ${this.inputState.durationDays} Gün | Kişi: ${this.inputState.adultsCount} Yetişkin, ${this.inputState.childrenCount} Çocuk, ${this.inputState.infantsCount} Bebek\n`;
-      text += `\n💧 Toplam İçme Suyu: ${plan.totalDrinkingWaterLiters} Litre`;
-      text += `\n🧼 Toplam Hijyen Suyu: ${plan.totalHygieneWaterLiters} Litre`;
+      let text = `[AFET SU VE ERZAK PLANI]\nSüre: ${this.inputState.durationDays} Gün | Kişi: ${this.inputState.adultsCount} Yetişkin, ${this.inputState.childrenCount} Çocuk, ${this.inputState.infantsCount} Bebek\n`;
+      text += `\n💧 İçme ve yemek hazırlama suyu: ${plan.totalDrinkingWaterLiters} Litre`;
+      text += `\n🧼 Yemek pişirme ve hijyen suyu: ${plan.totalHygieneWaterLiters} Litre`;
+      text += `\n💦 Toplam su: ${plan.totalWaterLiters} Litre (kişi başı günde ${SPHERE_TOTAL_WATER_L_PER_PERSON_DAY} L)`;
       text += `\n🔥 Günlük Kalori: ${plan.dailyTotalCalories} kcal\n\nERZAK LİSTESİ:\n`;
       plan.items.forEach((item) => {
-        text += `- ${item.name}: ${item.totalHouseholdAmount} ${item.unit}\n`;
+        text += `- ${item.name}: ${item.totalHouseholdAmount} ${item.unit}`.trimEnd() + '\n';
       });
       text += `\nafet.live — 72 Saat Hayatta Kalma Rehberi`;
 

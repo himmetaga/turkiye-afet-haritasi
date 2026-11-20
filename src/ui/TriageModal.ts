@@ -1,4 +1,8 @@
 import { Icons } from './icons';
+import { describeLocationForMessage } from '../utils/locationState';
+
+/** Sohbet kanalına gönderim. Gönderilemediyse { sent: false } döner ya da hata fırlatır. */
+export type BroadcastCallback = (text: string) => void | Promise<unknown>;
 
 export type TriageCategory = 'green' | 'yellow' | 'red' | 'black';
 
@@ -11,6 +15,8 @@ interface TriageResult {
   summary: string;
   directives: string[];
   immediateAction: string;
+  /** Triyaj sonucu değil, genel yönlendirme: sohbet kanalına gönderilmez. */
+  guidanceOnly?: boolean;
 }
 
 export class TriageModal {
@@ -18,10 +24,11 @@ export class TriageModal {
   private currentStep = 0;
   private answers: Record<string, boolean> = {};
   private result: TriageResult | null = null;
-  private onBroadcast?: (text: string) => void;
-  private userCoords: [number, number] = [28.9784, 41.0082];
+  private onBroadcast?: BroadcastCallback;
+  /** Uygulamadan gelen konum. Varsayılan bir şehir merkezi KULLANILMAZ. */
+  private userCoords: [number, number] | null = null;
 
-  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void) {
+  constructor(parent: HTMLElement, onBroadcast?: BroadcastCallback) {
     this.container = document.createElement('div');
     this.container.id = 'triage-modal';
     this.container.className =
@@ -54,6 +61,28 @@ export class TriageModal {
     this.render();
   }
 
+  /** START yalnızca çok yaralılı durumda geçerlidir; tek yaralıda doğrudan yardım edilir. */
+  private showSingleCasualtyGuidance(): void {
+    this.result = {
+      category: 'red',
+      title: 'Triyaj gerekmiyor — yaralıya doğrudan yardım edin',
+      badge: 'TEK YARALI',
+      bgClass: 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300',
+      textClass: 'text-cyan-200',
+      summary:
+        'Triyaj, yaralı sayısı yardım edebilecek kişi sayısından çok olduğunda öncelik belirlemek içindir. Tek yaralı varsa ya da herkese yardım edebiliyorsanız kimseyi sona bırakmayın.',
+      immediateAction: '112\'yi arayın. Yaralı tepki vermiyor ve normal nefes almıyorsa hemen kalp masajına başlayın; sağlık ekibi gelene kadar bırakmayın.',
+      directives: [
+        'Şiddetli kanama varsa temiz bir bezle üzerine sıkıca bastırın.',
+        'Bilinci kapalı ama nefes alıyorsa yan yatırın ve solunumunu izleyin.',
+        'Boyun ya da omurga yaralanmasından şüpheleniyorsanız, tehlike yoksa yaralıyı hareket ettirmeyin.',
+        'Yaralıyı sıcak tutun ve yalnız bırakmayın.'
+      ],
+      guidanceOnly: true
+    };
+    this.render();
+  }
+
   private evaluateTriage(): void {
     // START Algorithm (Simple Triage and Rapid Treatment)
     // 1. Can walk? -> GREEN
@@ -82,16 +111,16 @@ export class TriageModal {
         // Did not breathe even after opening airway -> BLACK
         this.result = {
           category: 'black',
-          title: 'SİYAH KOD — Vefat / Umutsuz (Ex)',
-          badge: 'MÜDAHALE EDİLMEZ',
+          title: 'SİYAH KOD — Hava yolu açıldığı halde solunum yok',
+          badge: 'YALNIZCA ÇOK YARALILI DURUMDA SONA BIRAKILIR',
           bgClass: 'bg-gray-800/60 border-gray-700 text-gray-400',
           textClass: 'text-gray-300',
           summary: 'Hava yolu açılmasına rağmen spontan solunum ve yaşam belirtisi yok.',
-          immediateAction: 'Afet sahasında CPR (kalp masajı) yapılmaz. Yaşama şansı olan diğer yaralılara geçin.',
+          immediateAction: 'Bu kural yalnızca çok sayıda ağır yaralı varken ve yardım yetersizken geçerlidir: o durumda yaşama şansı olan diğer yaralılara geçin. Tek yaralı varsa ya da bekleyen başka ağır yaralı yoksa 112\'yi arayın ve kalp masajına başlayın.',
           directives: [
-            'Hava yolu 2 kez pozisyonlanmasına rağmen solunum dönmediyse zaman kaybetmeyin.',
-            'Kitlesel afet triyaj kuralları gereği derhal bir sonraki canlı yaralıya geçin.',
-            'Cenazenin yerini not alın ve koordinatını kaydedin.'
+            'Bu sonuç bir ölüm tespiti değildir; ölüm kararını yalnızca sağlık ekibi verir.',
+            'Bekleyen başka ağır yaralı kalmadığında bu yaralıya dönün ve kalp masajına başlayın.',
+            'Yaralının yerini not alın ve gelen sağlık ekibine bildirin.'
           ]
         };
         this.render();
@@ -105,7 +134,7 @@ export class TriageModal {
           bgClass: 'bg-rose-500/15 border-rose-500/30 text-rose-400',
           textClass: 'text-rose-300',
           summary: 'Hava yolu manevrasıyla solunum döndü ancak stabil değil.',
-          immediateAction: 'Hava yolunu açık tutun (Koma/İyileşme pozisyonu) ve derhal 112/UMKE sevki sağlayın.',
+          immediateAction: 'Hava yolunu açık tutun (Koma/İyileşme pozisyonu) ve hemen 112\'yi arayın.',
           directives: [
             'Hastayı yan yatırarak (Koma pozisyonu) dilin arkaya kaçmasını önleyin.',
             'Solunumu sürekli takip edin, boyun travması şüphesi varsa başı sabitleyin.',
@@ -198,7 +227,21 @@ export class TriageModal {
       return;
     }
 
-    const steps = [
+    const steps: Array<{
+      id: string;
+      title: string;
+      desc: string;
+      yesLabel: string;
+      noLabel: string;
+      condition?: () => boolean;
+    }> = [
+      {
+        id: 'massCasualty',
+        title: 'Önce: Birden fazla ağır yaralı var ve yardım yetersiz mi?',
+        desc: 'Triyaj (öncelik sıralaması) yalnızca yaralı sayısı yardım edebilecek kişi sayısından çok olduğunda yapılır. Tek yaralı varsa ya da herkese yardım edebiliyorsanız triyaj yapmayın.',
+        yesLabel: 'Evet, çok yaralı var — sıralama gerekli',
+        noLabel: 'Hayır, tek yaralı / herkese yetişebiliyorum'
+      },
       {
         id: 'canWalk',
         title: '1. Adım: Yaralı Yürüyebiliyor mu?',
@@ -276,7 +319,7 @@ export class TriageModal {
                 Afet Triyaj Asistanı (START Protokolü)
               </h3>
               <p class="text-[11px] text-gray-400">
-                AFAD / UMKE uluslararası sahra hızlı öncelik belirleme algoritması
+                START hızlı triyaj algoritması — eğitimli personel içindir, tıbbi tanı değildir
               </p>
             </div>
           </div>
@@ -322,7 +365,7 @@ export class TriageModal {
 
         <!-- Protocol Disclaimer -->
         <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200/90 leading-relaxed">
-          ⚠️ <strong>Kitlesel Afet Kuralı:</strong> Tek bir yaralıya 60 saniyeden fazla zaman ayırmayın. Amaç, mevcut kaynaklarla en çok sayıda insanı hayatta tutmaktır.
+          ⚠️ <strong>Yalnızca çok yaralılı durumda:</strong> Sıralama yaparken tek bir yaralıya 60 saniyeden fazla zaman ayırmayın. Tek yaralı varsa triyaj yapmayın; 112'yi arayın ve yardım edin.
         </div>
       </div>
     `;
@@ -345,6 +388,10 @@ export class TriageModal {
   }
 
   private checkNext(): void {
+    if (this.answers.massCasualty === false) {
+      this.showSingleCasualtyGuidance();
+      return;
+    }
     if (this.answers.canWalk !== undefined) {
       if (this.answers.canWalk) {
         this.evaluateTriage();
@@ -404,7 +451,7 @@ export class TriageModal {
 
         <!-- Immediate Directive -->
         <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-200 mb-4 text-xs font-semibold leading-relaxed">
-          ⚡ <strong>ANLIK SAHRA TALİMATI:</strong><br/>
+          ⚡ <strong>${res.guidanceOnly ? 'ŞİMDİ YAPIN:' : 'İLK YAPILACAK:'}</strong><br/>
           ${res.immediateAction}
         </div>
 
@@ -414,14 +461,27 @@ export class TriageModal {
         </div>
 
         <!-- Action Buttons -->
+        <div id="triage-broadcast-status" class="hidden text-[11px] font-semibold leading-snug mb-2"></div>
         <div class="flex items-center gap-2 pt-2 border-t border-white/10">
+          ${
+            res.guidanceOnly
+              ? `
+          <a
+            href="tel:112"
+            class="flex-1 py-3 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
+          >
+            📞 112'yi Ara
+          </a>`
+              : `
           <button
             id="btn-triage-broadcast"
             type="button"
             class="flex-1 py-3 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            title="Triyaj notunu sohbet kanalına yazar. 112'ye iletilmez."
           >
-            📡 BitChat & Afet Ağına Bildir
-          </button>
+            📡 Sohbet Kanalına Yaz
+          </button>`
+          }
           <button
             id="btn-triage-restart"
             type="button"
@@ -436,15 +496,41 @@ export class TriageModal {
     this.container.querySelector('#btn-close-triage-res')?.addEventListener('click', () => this.hide());
     this.container.querySelector('#btn-triage-restart')?.addEventListener('click', () => this.reset());
 
-    this.container.querySelector('#btn-triage-broadcast')?.addEventListener('click', () => {
-      const text = `🚨 TRİYAJ BİLDİRİMİ: [${res.title}] - Konum: [${this.userCoords[1].toFixed(5)}, ${this.userCoords[0].toFixed(5)}]. Talimat: ${res.immediateAction}`;
-      if (this.onBroadcast) {
-        this.onBroadcast(text);
-        this.hide();
-      } else {
+    const broadcastBtn = this.container.querySelector<HTMLButtonElement>('#btn-triage-broadcast');
+    broadcastBtn?.addEventListener('click', async () => {
+      // Gerçek konum ölçümü yoksa koordinat yazılmaz (varsayılan şehir merkezi asla gönderilmez).
+      const locationLine = this.userCoords
+        ? describeLocationForMessage(this.userCoords)
+        : 'Konum alınamadı — adresimi ayrıca yazıyorum:';
+      const text = `🚨 TRİYAJ NOTU: [${res.title}] - ${locationLine}`;
+
+      if (!this.onBroadcast) {
         navigator.clipboard?.writeText(text);
-        alert('Triyaj raporu panoya kopyalandı! BitChat veya SMS ile gönderebilirsiniz.');
+        alert("Triyaj notu panoya kopyalandı. 112'ye iletilmez; ayrıca 112'yi arayın.");
+        return;
       }
+
+      // Gönderimin sonucu bilinmeden "gönderildi" deme.
+      let sent = true;
+      broadcastBtn.disabled = true;
+      try {
+        const result = await Promise.resolve(this.onBroadcast(text));
+        if (result && typeof result === 'object' && (result as { sent?: unknown }).sent === false) {
+          sent = false;
+        }
+      } catch {
+        sent = false;
+      }
+      broadcastBtn.disabled = false;
+
+      const statusEl = this.container.querySelector('#triage-broadcast-status');
+      if (statusEl) {
+        statusEl.className = `text-[11px] font-semibold leading-snug mb-2 ${sent ? 'text-cyan-300' : 'text-rose-300'}`;
+        statusEl.textContent = sent
+          ? "Sohbet kanalına gönderildi (112'ye iletilmez — ayrıca 112'yi arayın)"
+          : "İnternet yok — gönderilemedi. 112'yi arayın.";
+      }
+      if (sent) window.setTimeout(() => this.hide(), 2500);
     });
 
     this.container.addEventListener('click', (e) => {

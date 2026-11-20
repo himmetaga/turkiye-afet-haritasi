@@ -1,10 +1,11 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
 import { airQualityService, AirQualityData } from '../services/airQualityService';
 
 export class AirQualityRadarModal {
   private container: HTMLElement;
   private userCoords: [number, number];
-  private currentCity = 'İstanbul';
+  private currentCity = '';
   private data: AirQualityData | null = null;
   private isLoading = false;
 
@@ -58,10 +59,10 @@ export class AirQualityRadarModal {
             </span>
             <div>
               <h3 class="text-base font-bold text-white tracking-wide">
-                Hava Kalitesi & Enkaz Duman Radarı
+                Hava Kalitesi (model tahmini)
               </h3>
               <p class="text-[11px] text-gray-400">
-                ${this.currentCity} [${this.userCoords[1].toFixed(3)}, ${this.userCoords[0].toFixed(3)}] • Open-Meteo Atmosfer Telemetrisi
+                ${this.currentCity ? escapeHtml(this.currentCity) + ' ' : ''}[${this.userCoords[1].toFixed(3)}, ${this.userCoords[0].toFixed(3)}] • Open-Meteo / CAMS model tahmini (ölçüm değildir)
               </p>
             </div>
           </div>
@@ -76,7 +77,7 @@ export class AirQualityRadarModal {
             ? `
           <div class="py-12 flex flex-col items-center justify-center gap-3 text-gray-400">
             <div class="w-7 h-7 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs">Atmosfer partikül ve zehirli gaz sensörleri okunuyor...</p>
+            <p class="text-xs">Model verisi alınıyor...</p>
           </div>
         `
             : d
@@ -86,11 +87,11 @@ export class AirQualityRadarModal {
             <div>
               <div class="text-[11px] font-semibold uppercase tracking-wider opacity-80">Avrupa Hava Kalitesi (AQI)</div>
               <div class="text-xl font-black mt-0.5">${d.aqiLabel}</div>
-              <div class="text-[11px] opacity-75 mt-0.5">İndeks Değeri: ${d.aqi} / 100</div>
+              <div class="text-[11px] opacity-75 mt-0.5">İndeks Değeri: ${d.aqi}</div>
             </div>
             <div class="text-right">
               <span class="px-3 py-1 rounded-lg text-xs font-black uppercase bg-white/10">
-                ${d.debrisRisk === 'critical' || d.debrisRisk === 'high' ? '⚠️ TOZ ALARMI' : 'STABİL'}
+                ${d.debrisRisk === 'critical' || d.debrisRisk === 'high' ? '⚠️ Model: yüksek partikül' : 'Model: düşük partikül'}
               </span>
             </div>
           </div>
@@ -101,7 +102,7 @@ export class AirQualityRadarModal {
               <div class="text-[10px] text-gray-400 font-medium">PM2.5 (İnce Toz)</div>
               <div class="text-base font-black text-white mt-0.5">${d.pm25.toFixed(1)} <span class="text-[10px] text-gray-400 font-normal">µg/m³</span></div>
               <div class="text-[9.5px] ${d.pm25 > 25 ? 'text-rose-400' : 'text-emerald-400'} mt-0.5">
-                ${d.pm25 > 25 ? 'Yüksek' : 'Normal'}
+                ${d.pm25 > 25 ? 'Yüksek' : 'Düşük'}
               </div>
             </div>
 
@@ -109,17 +110,21 @@ export class AirQualityRadarModal {
               <div class="text-[10px] text-gray-400 font-medium">PM10 (Kaba Toz)</div>
               <div class="text-base font-black text-white mt-0.5">${d.pm10.toFixed(1)} <span class="text-[10px] text-gray-400 font-normal">µg/m³</span></div>
               <div class="text-[9.5px] ${d.pm10 > 50 ? 'text-rose-400' : 'text-emerald-400'} mt-0.5">
-                ${d.pm10 > 50 ? 'Enkaz Tozu' : 'Normal'}
+                ${d.pm10 > 50 ? 'Yüksek' : 'Düşük'}
               </div>
             </div>
 
             <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
               <div class="text-[10px] text-gray-400 font-medium">Karbonmonoksit</div>
-              <div class="text-base font-black text-white mt-0.5">${Math.round(d.co)} <span class="text-[10px] text-gray-400 font-normal">µg/m³</span></div>
-              <div class="text-[9.5px] ${d.generatorRisk !== 'safe' ? 'text-rose-400 font-bold' : 'text-emerald-400'} mt-0.5">
-                ${d.generatorRisk === 'safe' ? 'Zehirsiz' : '⚠️ Tehlike'}
+              <div class="text-base font-black text-white mt-0.5">${d.co === null ? 'Veri yok' : `${Math.round(d.co)} <span class="text-[10px] text-gray-400 font-normal">µg/m³</span>`}</div>
+              <div class="text-[9.5px] ${d.generatorRisk === 'warning' || d.generatorRisk === 'danger' ? 'text-rose-400 font-bold' : 'text-gray-400'} mt-0.5">
+                ${d.generatorRisk === 'warning' || d.generatorRisk === 'danger' ? '⚠️ Yüksek (dış ortam)' : 'Dış ortam (model)'}
               </div>
             </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[10.5px] text-gray-300 mb-4 leading-relaxed">
+            Bu değerler bölgesel bir hava modeli tahminidir, bulunduğunuz noktadaki ölçüm değildir. Enkaz tozunu, asbesti veya çadır/ev içindeki karbonmonoksiti gösteremez.
           </div>
 
           <!-- Mask Advice Box -->
@@ -131,14 +136,14 @@ export class AirQualityRadarModal {
           <!-- Disaster Directives -->
           <div class="rounded-xl bg-white/5 border border-white/10 p-3.5 space-y-2 mb-4 text-xs text-gray-300">
             <div class="text-amber-300 font-bold flex items-center gap-1.5">
-              <span>⚠️ Hayati Afet & Zehirlenme Uyarıları:</span>
+              <span>⚠️ Genel Uyarılar:</span>
             </div>
             ${d.guidelines.map((g) => `<div class="flex items-start gap-2 leading-relaxed"><span>•</span><span>${g}</span></div>`).join('')}
           </div>
         `
             : `
           <div class="py-8 text-center text-gray-400 text-xs">
-            Hava kalitesi verisi alınamadı. İnternet bağlantınızı kontrol edin.
+            Veri yok: hava kalitesi verisi alınamadı. İnternet bağlantınızı kontrol edin.
           </div>
         `
         }

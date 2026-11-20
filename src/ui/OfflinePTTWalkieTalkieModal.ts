@@ -1,39 +1,43 @@
 import { Icons } from './icons';
-import { bitChatService } from '../services/bitChatService';
-import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
 import { escapeHtml } from '../utils/safeText';
 
-interface RadioTransmission {
+/**
+ * Sesli Not Kaydı (telsiz DEĞİLDİR).
+ *
+ * Bu ekran yalnızca bu cihazda ses kaydeder ve kaydı hoparlörden çalar.
+ * Hiçbir radyo frekansı, mesh ağı ya da başka cihaz kullanılmaz; kayıt kimseye
+ * iletilmez. (Sınıf adı, main.ts'teki mevcut bağlantı bozulmasın diye korunmuştur.)
+ */
+
+interface VoiceNote {
   id: string;
-  senderName: string;
-  channel: string;
   timestamp: number;
   durationSec: number;
-  audioBlob?: Blob;
-  audioUrl?: string;
-  isMe: boolean;
+  audioUrl: string;
+}
+
+const STORAGE_KEY = 'afet_ptt_transmissions_v1';
+const MAX_STORED = 10;
+const MAX_IN_MEMORY = 25;
+
+/** Yalnızca gömülü ses verisi kabul edilir; başka adresler asla fetch edilmez. */
+function isAudioDataUrl(value: unknown): value is string {
+  return typeof value === 'string' && /^data:audio\//i.test(value);
 }
 
 export class OfflinePTTWalkieTalkieModal {
   private container: HTMLElement;
-  private audioCtx: AudioContext | null = null;
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private isRecording = false;
-  private currentChannel = 'Kanal 8 (446.093 MHz - Arama Kurtarma)';
-  private transmissions: RadioTransmission[] = [];
+  private notes: VoiceNote[] = [];
   private recordStartTime = 0;
   private recordTimerInterval: any = null;
 
-  // Auto SOS Loop
-  private isSosLoopActive = false;
-  private sosLoopInterval: any = null;
-  private savedSosAudioBlob: Blob | null = null;
-  private savedSosAudioUrl: string | null = null;
-
-  // P2P Mesh Voice Bus
-  private instanceId = `peer-${Math.random().toString(36).substring(2, 9)}`;
-  private broadcastChannel: BroadcastChannel | null = null;
+  // Son kaydı hoparlörden aralıklı tekrar çalma
+  private isLoopActive = false;
+  private loopInterval: any = null;
+  private lastAudioUrl: string | null = null;
 
   constructor(parent: HTMLElement) {
     this.container = document.createElement('div');
@@ -42,7 +46,7 @@ export class OfflinePTTWalkieTalkieModal {
       'fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md hidden transition-opacity';
     parent.appendChild(this.container);
 
-    this.initMeshRadio();
+    this.loadStoredNotes();
     this.render();
   }
 
@@ -53,104 +57,15 @@ export class OfflinePTTWalkieTalkieModal {
 
   public hide(): void {
     this.stopRecording();
+    this.stopLoop();
     this.container.classList.add('hidden');
-  }
-
-  private getAudioContext(): AudioContext {
-    if (!this.audioCtx || this.audioCtx.state === 'closed') {
-      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      this.audioCtx = new AudioCtxClass();
-    }
-    if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
-    }
-    return this.audioCtx;
-  }
-
-  // Realistic Roger Beep: 1200 Hz then 1500 Hz
-  private playRogerBeep(): void {
-    try {
-      const ctx = this.getAudioContext();
-      const now = ctx.currentTime;
-
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1200, now);
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1500, now + 0.08);
-
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc1.start(now);
-      osc1.stop(now + 0.08);
-      osc2.start(now + 0.08);
-      osc2.stop(now + 0.18);
-    } catch {}
-  }
-
-  // Realistic Squelch Click & White Noise Burst
-  private playSquelchSound(): void {
-    try {
-      const ctx = this.getAudioContext();
-      const bufferSize = ctx.sampleRate * 0.05; // 50ms burst
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * 0.12;
-      }
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-      noise.connect(gain);
-      gain.connect(ctx.destination);
-      noise.start();
-    } catch {}
-  }
-
-  // 1750 Hz Repeater Tone
-  private play1750HzTone(): void {
-    try {
-      const ctx = this.getAudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1750, ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.6);
-    } catch {}
   }
 
   private async startRecording(): Promise<void> {
     if (this.isRecording) return;
 
-    // Rate-limiting check (prevent frequency jamming & abuse)
-    const rateCheck = antiManipulationService.checkRateLimit('sos');
-    if (!rateCheck.allowed) {
-      alert(`⏱️ Telsiz Frekans Güvenliği: Mandala tekrar basmak için lütfen ${rateCheck.waitSeconds} saniye bekleyin (Kanal kilitlenmesini ve kötüye kullanımı önleme kuralı).`);
-      return;
-    }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.playSquelchSound();
 
       this.audioChunks = [];
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
@@ -175,7 +90,7 @@ export class OfflinePTTWalkieTalkieModal {
       this.mediaRecorder.start();
       this.isRecording = true;
       this.recordStartTime = Date.now();
-      this.updatePttButtonState(true);
+      this.updateRecordButtonState(true);
       this.startRecordTimer();
     } catch (err) {
       alert('Mikrofon erişimi sağlanamadı. Lütfen tarayıcıdan mikrofon izni verin.');
@@ -186,8 +101,7 @@ export class OfflinePTTWalkieTalkieModal {
     if (!this.isRecording) return;
     this.isRecording = false;
     clearInterval(this.recordTimerInterval);
-    this.updatePttButtonState(false);
-    this.playRogerBeep();
+    this.updateRecordButtonState(false);
 
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       this.mediaRecorder.stop();
@@ -199,241 +113,161 @@ export class OfflinePTTWalkieTalkieModal {
     this.recordTimerInterval = setInterval(() => {
       if (!this.isRecording) return;
       const sec = ((Date.now() - this.recordStartTime) / 1000).toFixed(1);
-      if (timerEl) timerEl.textContent = `${sec}s TX`;
+      if (timerEl) timerEl.textContent = `${sec} sn kaydediliyor`;
     }, 100);
   }
 
-  private updatePttButtonState(isTransmitting: boolean): void {
+  private updateRecordButtonState(isRecording: boolean): void {
     const btn = this.container.querySelector('#btn-ptt-trigger');
-    const onAirBadge = this.container.querySelector('#ptt-on-air-badge');
+    const badge = this.container.querySelector('#ptt-recording-badge');
     const timerEl = this.container.querySelector('#ptt-record-timer');
 
     if (btn) {
-      if (isTransmitting) {
+      if (isRecording) {
         btn.classList.add('bg-rose-600', 'ring-4', 'ring-rose-500/50', 'scale-95');
         btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
       } else {
         btn.classList.remove('bg-rose-600', 'ring-4', 'ring-rose-500/50', 'scale-95');
         btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
-        if (timerEl) timerEl.textContent = 'MANDALA BASILI TUTUN';
+        if (timerEl) timerEl.textContent = 'KAYIT İÇİN BASILI TUTUN';
       }
     }
 
-    if (onAirBadge) {
-      if (isTransmitting) {
-        onAirBadge.classList.remove('hidden');
-      } else {
-        onAirBadge.classList.add('hidden');
-      }
-    }
+    if (badge) badge.classList.toggle('hidden', !isRecording);
   }
 
-  private initMeshRadio(): void {
-    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-      try {
-        this.broadcastChannel = new BroadcastChannel('afet_ptt_mesh_audio_channel');
-        this.broadcastChannel.onmessage = (event) => this.handleIncomingBroadcast(event.data);
-      } catch {}
-    }
-    this.loadStoredTransmissions();
-  }
-
-  private loadStoredTransmissions(): void {
+  private loadStoredNotes(): void {
     try {
-      const stored = localStorage.getItem('afet_ptt_transmissions_v1');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          for (const item of parsed) {
-            if (item.base64Audio) {
-              fetch(item.base64Audio)
-                .then((r) => r.blob())
-                .then((blob) => {
-                  this.transmissions.push({
-                    id: item.id,
-                    senderName: item.senderName,
-                    channel: item.channel,
-                    timestamp: item.timestamp,
-                    durationSec: item.durationSec,
-                    audioBlob: blob,
-                    audioUrl: URL.createObjectURL(blob),
-                    isMe: item.isMe
-                  });
-                  this.renderTransmissions();
-                })
-                .catch(() => {});
-            }
-          }
-        }
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return;
+
+      for (const item of parsed) {
+        // Yalnızca gömülü ses verisi (data:audio/...) okunur; başka adres fetch edilmez.
+        if (!item || !isAudioDataUrl(item.base64Audio)) continue;
+        fetch(item.base64Audio)
+          .then((r) => r.blob())
+          .then((blob) => {
+            this.notes.push({
+              id: String(item.id || `note-${Date.now()}`),
+              timestamp: Number(item.timestamp) || 0,
+              durationSec: Number(item.durationSec) || 0,
+              audioUrl: URL.createObjectURL(blob)
+            });
+            this.notes.sort((a, b) => b.timestamp - a.timestamp);
+            this.renderNotes();
+          })
+          .catch(() => {});
       }
     } catch {}
   }
 
-  private saveTransmissionLocally(trans: RadioTransmission, base64Audio: string): void {
+  private saveNoteLocally(note: VoiceNote, base64Audio: string): void {
+    if (!isAudioDataUrl(base64Audio)) return;
     try {
-      const stored = localStorage.getItem('afet_ptt_transmissions_v1');
-      const list = stored ? JSON.parse(stored) : [];
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      const list: any[] = Array.isArray(parsed) ? parsed : [];
       list.unshift({
-        id: trans.id,
-        senderName: trans.senderName,
-        channel: trans.channel,
-        timestamp: trans.timestamp,
-        durationSec: trans.durationSec,
-        isMe: trans.isMe,
+        id: note.id,
+        timestamp: note.timestamp,
+        durationSec: note.durationSec,
         base64Audio
       });
-      if (list.length > 10) list.pop();
-      localStorage.setItem('afet_ptt_transmissions_v1', JSON.stringify(list));
+      while (list.length > MAX_STORED) list.pop();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     } catch {}
-  }
-
-  private handleIncomingBroadcast(data: any): void {
-    if (!data || data.type !== 'PTT_VOICE_TX' || data.senderId === this.instanceId) return;
-
-    fetch(data.base64Audio)
-      .then((r) => r.blob())
-      .then((recBlob) => {
-        const recUrl = URL.createObjectURL(recBlob);
-        const incomingTrans: RadioTransmission = {
-          id: data.id,
-          senderName: data.senderName,
-          channel: data.channel,
-          timestamp: data.timestamp,
-          durationSec: data.durationSec,
-          audioBlob: recBlob,
-          audioUrl: recUrl,
-          isMe: false
-        };
-
-        this.transmissions.unshift(incomingTrans);
-        if (this.transmissions.length > 25) this.transmissions.pop();
-        this.renderTransmissions();
-
-        // If currently monitoring this channel and modal is active, automatically play radio squelch & voice
-        if (this.currentChannel === data.channel && !this.container.classList.contains('hidden')) {
-          this.playSquelchSound();
-          setTimeout(() => {
-            const a = new Audio(recUrl);
-            a.volume = 1.0;
-            a.onended = () => this.playRogerBeep();
-            a.play().catch(() => {});
-          }, 120);
-        }
-      })
-      .catch(() => {});
   }
 
   private handleRecordedAudio(blob: Blob, durationSec: number): void {
     const audioUrl = URL.createObjectURL(blob);
-    this.savedSosAudioBlob = blob;
-    this.savedSosAudioUrl = audioUrl;
+    this.lastAudioUrl = audioUrl;
 
-    const trans: RadioTransmission = {
-      id: `tx-${Date.now()}`,
-      senderName: 'Ben (Bu Cihaz)',
-      channel: this.currentChannel,
+    const note: VoiceNote = {
+      id: `note-${Date.now()}`,
       timestamp: Date.now(),
       durationSec,
-      audioBlob: blob,
-      audioUrl,
-      isMe: true
+      audioUrl
     };
 
-    this.transmissions.unshift(trans);
-    if (this.transmissions.length > 25) this.transmissions.pop();
-    this.renderTransmissions();
+    this.notes.unshift(note);
+    if (this.notes.length > MAX_IN_MEMORY) this.notes.pop();
+    this.renderNotes();
 
-    // Convert to Base64 and broadcast audio payload to peer mesh
+    // Kayıt yalnızca bu cihazda saklanır; hiçbir yere gönderilmez.
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64Audio = reader.result as string;
-      this.saveTransmissionLocally(trans, base64Audio);
-      if (this.broadcastChannel) {
-        this.broadcastChannel.postMessage({
-          type: 'PTT_VOICE_TX',
-          senderId: this.instanceId,
-          id: trans.id,
-          senderName: 'Uzak Eş (Mesh Telsiz)',
-          channel: trans.channel,
-          timestamp: trans.timestamp,
-          durationSec: trans.durationSec,
-          base64Audio
-        });
-      }
+      if (typeof reader.result === 'string') this.saveNoteLocally(note, reader.result);
     };
     reader.readAsDataURL(blob);
-
-    // Broadcast announcement over P2P BitChat text mesh
-    bitChatService.broadcastMessage(
-      `🎙️ [${this.currentChannel}] Telsiz Anonsu (${durationSec}s)`,
-      'sos'
-    );
   }
 
-  private toggleSosVoiceLoop(): void {
-    this.isSosLoopActive = !this.isSosLoopActive;
-    if (this.isSosLoopActive) {
-      if (!this.savedSosAudioUrl) {
-        alert('Önce mandala basılı tutarak en az bir kez 3-5 saniyelik sesli S.O.S mesajınızı kaydedin.');
-        this.isSosLoopActive = false;
+  private toggleLoop(): void {
+    if (this.isLoopActive) {
+      this.stopLoop();
+    } else {
+      const url = this.lastAudioUrl || this.notes[0]?.audioUrl || null;
+      if (!url) {
+        alert('Önce düğmeye basılı tutarak kısa bir sesli not kaydedin.');
         return;
       }
-      this.playSosVoiceLoop();
-      this.sosLoopInterval = setInterval(() => {
-        this.playSosVoiceLoop();
-      }, 45000); // Repeat every 45s
-    } else {
-      clearInterval(this.sosLoopInterval);
+      this.lastAudioUrl = url;
+      this.isLoopActive = true;
+      this.playLoopOnce();
+      this.loopInterval = setInterval(() => this.playLoopOnce(), 45000);
     }
     this.render();
   }
 
-  private playSosVoiceLoop(): void {
-    if (!this.savedSosAudioUrl) return;
-    this.playSquelchSound();
-    setTimeout(() => {
-      const audio = new Audio(this.savedSosAudioUrl!);
-      audio.volume = 1.0;
-      audio.onended = () => {
-        this.playRogerBeep();
-      };
-      audio.play().catch(() => {});
-    }, 150);
+  private stopLoop(): void {
+    this.isLoopActive = false;
+    clearInterval(this.loopInterval);
+    this.loopInterval = null;
   }
 
-  private renderTransmissions(): void {
+  private playLoopOnce(): void {
+    if (!this.lastAudioUrl) return;
+    const audio = new Audio(this.lastAudioUrl);
+    audio.volume = 1.0;
+    audio.play().catch(() => {});
+  }
+
+  private renderNotes(): void {
     const feed = this.container.querySelector('#ptt-transmissions-feed');
     if (!feed) return;
 
-    if (this.transmissions.length === 0) {
+    if (this.notes.length === 0) {
       feed.innerHTML = `
         <div class="p-4 text-center text-xs text-gray-500">
-          Henüz telsiz anonsu yapılmadı. Mandala basılı tutarak sesinizi kaydedin ve yayınlayın.
+          Henüz sesli not yok. Düğmeye basılı tutarak kaydedin.
         </div>
       `;
       return;
     }
 
-    feed.innerHTML = this.transmissions
-      .map((t) => {
-        const time = new Date(t.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    feed.innerHTML = this.notes
+      .map((t, idx) => {
+        const time = t.timestamp
+          ? new Date(t.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+          : '';
         return `
           <div class="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="p-2 rounded-lg ${t.isMe ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}">
-                ${Icons.radio('w-4 h-4')}
+              <span class="p-2 rounded-lg bg-emerald-500/20 text-emerald-300">
+                ${Icons.mic('w-4 h-4')}
               </span>
               <div class="min-w-0">
                 <div class="font-bold text-white flex items-center gap-1.5">
-                  <span>${escapeHtml(t.senderName)}</span>
-                  <span class="text-[10px] text-gray-400 font-mono">${time}</span>
+                  <span>Sesli not</span>
+                  <span class="text-[10px] text-gray-400 font-mono">${escapeHtml(time)}</span>
                 </div>
-                <div class="text-[11px] text-gray-400 truncate">${t.channel} · ${t.durationSec}s</div>
+                <div class="text-[11px] text-gray-400 truncate">${Number(t.durationSec) || 0} sn · yalnızca bu cihazda</div>
               </div>
             </div>
 
             <button
-              data-audio-url="${t.audioUrl}"
+              data-note-index="${idx}"
               type="button"
               class="btn-play-tx p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 text-[11px] font-semibold active:scale-95 transition-all"
             >
@@ -446,15 +280,8 @@ export class OfflinePTTWalkieTalkieModal {
 
     feed.querySelectorAll<HTMLButtonElement>('.btn-play-tx').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const url = btn.getAttribute('data-audio-url');
-        if (url) {
-          this.playSquelchSound();
-          setTimeout(() => {
-            const a = new Audio(url);
-            a.onended = () => this.playRogerBeep();
-            a.play();
-          }, 100);
-        }
+        const note = this.notes[Number(btn.getAttribute('data-note-index'))];
+        if (note) new Audio(note.audioUrl).play().catch(() => {});
       });
     });
   }
@@ -466,14 +293,11 @@ export class OfflinePTTWalkieTalkieModal {
         <div class="flex items-center justify-between p-3.5 sm:p-4 border-b border-white/10 bg-white/5 shrink-0">
           <div class="flex items-center gap-2.5">
             <span class="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
-              ${Icons.radio('w-5 h-5')}
+              ${Icons.mic('w-5 h-5')}
             </span>
             <div>
-              <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-bold text-white">İnternetsiz Bas-Konuş Telsiz</h2>
-                <span class="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">P2P MESH</span>
-              </div>
-              <p class="text-[11px] text-gray-400">PMR 446 & WebRTC Yerel Ağ Bas-Konuş (PTT)</p>
+              <h2 class="text-sm sm:text-base font-bold text-white">Sesli Not Kaydı (telsiz DEĞİLDİR)</h2>
+              <p class="text-[11px] text-gray-400">Kayıt yalnızca bu cihazda saklanır ve hoparlörden çalınır; kimseye iletilmez.</p>
             </div>
           </div>
           <button
@@ -488,100 +312,70 @@ export class OfflinePTTWalkieTalkieModal {
 
         <!-- Body -->
         <div class="p-3.5 sm:p-4 overflow-y-auto space-y-3.5 text-xs">
-          <!-- Channel Selector & 1750 Hz Tone -->
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Telsiz Kanalı</label>
-              <select
-                id="ptt-channel-select"
-                class="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
-              >
-                <option value="Kanal 8 (446.093 MHz - Arama Kurtarma)">Kanal 8 (446.093 MHz - Arama Kurtarma)</option>
-                <option value="Kanal 1 (446.006 MHz - Genel Çağrı)">Kanal 1 (446.006 MHz - Genel Çağrı)</option>
-                <option value="Kanal 2 (446.018 MHz - Tıbbi & Triyaj)">Kanal 2 (446.018 MHz - Tıbbi & Triyaj)</option>
-                <option value="Kanal 16 (446.193 MHz - Kriz & Lojistik)">Kanal 16 (446.193 MHz - Kriz & Lojistik)</option>
-              </select>
-            </div>
-
-            <button
-              id="btn-1750-tone"
-              type="button"
-              class="mt-4 py-2 px-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white font-mono text-[11px] font-bold border border-white/10 transition-all flex items-center gap-1"
-              title="Telsiz rölelerini tetikleyen 1750 Hz tonu çalar"
-            >
-              <span>1750Hz</span>
-            </button>
+          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11.5px] text-amber-200 leading-relaxed">
+            Bu ekran telsiz değildir: radyo frekansı ya da başka bir cihazla bağlantı kullanmaz, sesinizi kimseye ulaştırmaz.
+            Yardım çağırmak için 112'yi arayın; telefon çekmiyorsa düdük çalın ya da boruya / duvara 3'er kez vurun.
           </div>
 
-          <!-- PTT (Push-To-Talk) Tactical Button Area -->
+          <!-- Record button -->
           <div class="p-4 rounded-2xl bg-black/60 border border-white/10 flex flex-col items-center justify-center gap-3 relative overflow-hidden">
-            <div id="ptt-on-air-badge" class="hidden absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-mono font-bold text-[9px] animate-pulse">
-              ● YAYINDA (ON AIR)
+            <div id="ptt-recording-badge" class="hidden absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-mono font-bold text-[9px] animate-pulse">
+              ● KAYDEDİLİYOR
             </div>
 
             <div class="text-[11px] font-mono text-gray-400" id="ptt-record-timer">
-              MANDALA BASILI TUTUN
+              KAYIT İÇİN BASILI TUTUN
             </div>
 
-            <!-- Big PTT Trigger Button -->
             <button
               id="btn-ptt-trigger"
               type="button"
               class="w-28 h-28 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-2xl flex flex-col items-center justify-center gap-1 select-none transition-all cursor-pointer active:scale-95"
             >
               ${Icons.mic('w-8 h-8')}
-              <span class="text-[11px] font-black tracking-wider uppercase">BAS-KONUŞ</span>
-              <span class="text-[9px] opacity-75 font-mono">PTT MANDAL</span>
+              <span class="text-[11px] font-black tracking-wider uppercase">BAS-KAYDET</span>
             </button>
 
             <p class="text-[10px] text-gray-400 text-center max-w-xs">
-              Mandala basılı tutarak konuşun, bıraktığınızda <em>Roger Beep</em> çalar ve anons yerel P2P ağına dağıtılır.
+              Düğmeye basılı tutarak konuşun; bıraktığınızda kayıt bu cihaza kaydedilir.
             </p>
           </div>
 
-          <!-- Automated SOS Voice Loop -->
+          <!-- Loop playback -->
           <div class="p-3 rounded-xl bg-rose-500/[0.08] border border-rose-500/20 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1.5 text-rose-300 font-bold">
-                <span>🔊 Otomatik Enkaz S.O.S Ses Döngüsü</span>
+                <span>🔊 Son kaydı aralıklı tekrar çal</span>
               </div>
               <button
                 id="btn-toggle-sos-loop"
                 type="button"
                 class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition-all ${
-                  this.isSosLoopActive ? 'bg-rose-600 text-white animate-pulse' : 'bg-white/10 text-rose-300 hover:bg-white/15'
+                  this.isLoopActive ? 'bg-rose-600 text-white animate-pulse' : 'bg-white/10 text-rose-300 hover:bg-white/15'
                 }"
               >
-                ${this.isSosLoopActive ? 'Durdur ⏹' : 'Başlat ▶'}
+                ${this.isLoopActive ? 'Durdur ⏹' : 'Başlat ▶'}
               </button>
             </div>
             <p class="text-[10.5px] text-gray-300 leading-relaxed">
-              Enkaz altındayken sesinizi yormamak için son kaydettiğiniz ses anonsunu her 45 saniyede bir maksimum ses seviyesinde hoparlörden telsiz anonsu olarak otomatik tekrarlar.
+              Kaydınızı 45 saniyede bir hoparlörden tekrar çalar (yalnızca yakınınızdakiler duyar). Sesi sonuna kadar açın; ekran kapanırsa çalma durabilir.
             </p>
           </div>
 
-          <!-- Radio Transmissions Feed -->
+          <!-- Notes list -->
           <div class="space-y-1.5">
             <div class="flex items-center justify-between text-[11px] font-bold text-gray-300 px-1">
-              <span>📻 Kanal Dinleme ve Son Anonslar</span>
-              <span class="text-[10px] text-emerald-400 font-mono">CANLI KANAL</span>
+              <span>Kayıtlı sesli notlar</span>
+              <span class="text-[10px] text-gray-500 font-mono">bu cihazda</span>
             </div>
             <div id="ptt-transmissions-feed" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
           </div>
-        </div>
-
-        <!-- Anti-Manipulation & Legal Disclaimer Footer -->
-        <div class="p-3 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
-          <span class="shrink-0 text-sm">📡</span>
-          <p class="leading-tight">
-            <strong>Hukuki Sorumluluk & Telsiz Disiplini:</strong> Bu modül yerel eşler (P2P Mesh / WebRTC) arasında sivil ses aktarımı ve telsiz simülasyonudur. PMR446 donanımı veya AFAD / 112 acil telsiz rölelerinin yerine geçmez. Asılsız acil çağrı ve taciz yayınları TCK m. 217/A ve Elektronik Haberleşme Kanunu uyarınca suçtur.
-          </p>
         </div>
       </div>
     `;
 
     this.bindEvents();
-    this.renderTransmissions();
+    this.renderNotes();
   }
 
   private bindEvents(): void {
@@ -589,45 +383,36 @@ export class OfflinePTTWalkieTalkieModal {
 
     q<HTMLButtonElement>('#btn-close-ptt-modal')?.addEventListener('click', () => this.hide());
 
-    const channelSelect = q<HTMLSelectElement>('#ptt-channel-select');
-    channelSelect?.addEventListener('change', () => {
-      this.currentChannel = channelSelect.value;
-    });
-
-    q<HTMLButtonElement>('#btn-1750-tone')?.addEventListener('click', () => {
-      this.play1750HzTone();
-    });
-
     q<HTMLButtonElement>('#btn-toggle-sos-loop')?.addEventListener('click', () => {
-      this.toggleSosVoiceLoop();
+      this.toggleLoop();
     });
 
-    const pttBtn = q<HTMLButtonElement>('#btn-ptt-trigger');
-    if (pttBtn) {
+    const recBtn = q<HTMLButtonElement>('#btn-ptt-trigger');
+    if (recBtn) {
       // Touch events (Mobile)
-      pttBtn.addEventListener('touchstart', (e) => {
+      recBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
         this.startRecording();
       });
-      pttBtn.addEventListener('touchend', (e) => {
+      recBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
         this.stopRecording();
       });
-      pttBtn.addEventListener('touchcancel', (e) => {
+      recBtn.addEventListener('touchcancel', (e) => {
         e.preventDefault();
         this.stopRecording();
       });
 
       // Mouse events (Desktop)
-      pttBtn.addEventListener('mousedown', (e) => {
+      recBtn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         this.startRecording();
       });
-      pttBtn.addEventListener('mouseup', (e) => {
+      recBtn.addEventListener('mouseup', (e) => {
         e.preventDefault();
         this.stopRecording();
       });
-      pttBtn.addEventListener('mouseleave', () => {
+      recBtn.addEventListener('mouseleave', () => {
         if (this.isRecording) this.stopRecording();
       });
     }

@@ -6,12 +6,14 @@ export interface AirQualityData {
   aqiColorClass: string;
   pm25: number;
   pm10: number;
-  co: number; // carbon monoxide
-  no2: number;
-  so2: number;
-  ozone: number;
+  co: number | null; // carbon monoxide (model verisi yoksa null)
+  no2: number | null;
+  so2: number | null;
+  ozone: number | null;
+  /** Modelin partikül (PM) düzeyi sınıfı. Enkaz tozunu ÖLÇMEZ. */
   debrisRisk: 'low' | 'moderate' | 'high' | 'critical';
-  generatorRisk: 'safe' | 'warning' | 'danger';
+  /** Dış ortam model CO sınıfı. Kapalı alandaki CO'yu ÖLÇMEZ. 'unknown': veri yok. */
+  generatorRisk: 'safe' | 'warning' | 'danger' | 'unknown';
   maskAdvice: string;
   guidelines: string[];
 }
@@ -35,29 +37,35 @@ class AirQualityService {
       const curr = json.current;
       if (!curr) return null;
 
-      const aqi = Math.round(curr.european_aqi ?? 20);
-      const pm25 = Number(curr.pm2_5 ?? 10);
-      const pm10 = Number(curr.pm10 ?? 15);
-      const co = Number(curr.carbon_monoxide ?? 200);
-      const no2 = Number(curr.nitrogen_dioxide ?? 10);
-      const so2 = Number(curr.sulphur_dioxide ?? 2);
-      const ozone = Number(curr.ozone ?? 50);
+      // Eksik alanlar için değer UYDURULMAZ: temel alanlardan biri yoksa veri yok sayılır.
+      const num = (v: unknown): number | null =>
+        typeof v === 'number' && Number.isFinite(v) ? v : null;
+      const aqiRaw = num(curr.european_aqi);
+      const pm25 = num(curr.pm2_5);
+      const pm10 = num(curr.pm10);
+      if (aqiRaw === null || pm25 === null || pm10 === null) return null;
+
+      const aqi = Math.round(aqiRaw);
+      const co = num(curr.carbon_monoxide);
+      const no2 = num(curr.nitrogen_dioxide);
+      const so2 = num(curr.sulphur_dioxide);
+      const ozone = num(curr.ozone);
 
       let aqiLevel: AirQualityData['aqiLevel'] = 'good';
-      let aqiLabel = 'Temiz & Güvenli';
+      let aqiLabel = 'İyi';
       let aqiColorClass = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
 
       if (aqi > 80 || pm25 > 50) {
         aqiLevel = 'very_poor';
-        aqiLabel = 'Ağır Tehlikeli / Duman';
+        aqiLabel = 'Çok Kötü';
         aqiColorClass = 'text-purple-400 bg-purple-500/10 border-purple-500/30';
       } else if (aqi > 60 || pm25 > 35) {
         aqiLevel = 'poor';
-        aqiLabel = 'Sağlıksız / Yoğun Toz';
+        aqiLabel = 'Kötü';
         aqiColorClass = 'text-rose-400 bg-rose-500/10 border-rose-500/30';
       } else if (aqi > 40 || pm25 > 20) {
         aqiLevel = 'moderate';
-        aqiLabel = 'Orta / Hassas';
+        aqiLabel = 'Orta';
         aqiColorClass = 'text-amber-400 bg-amber-500/10 border-amber-500/30';
       } else if (aqi > 20) {
         aqiLevel = 'fair';
@@ -73,10 +81,12 @@ class AirQualityService {
 
       // Carbon monoxide generator & indoor fire risk
       let generatorRisk: AirQualityData['generatorRisk'] = 'safe';
-      if (co > 1000) generatorRisk = 'danger';
+      if (co === null) generatorRisk = 'unknown';
+      else if (co > 1000) generatorRisk = 'danger';
       else if (co > 500) generatorRisk = 'warning';
 
-      let maskAdvice = 'Normal ortam, standart cerrahi maske yeterlidir.';
+      let maskAdvice =
+        'Model tahminine göre partikül düzeyi düşük. Bu veri enkaz tozunu ölçmez: yıkım veya enkaz yakınındaysanız yine de FFP2/N95 maske takın.';
       if (pm25 > 35 || pm10 > 50) {
         maskAdvice = '⚠️ FFP2 / FFP3 veya N95 toz/partikül maskesi takılması zorunludur.';
       } else if (pm25 > 20) {
@@ -88,9 +98,8 @@ class AirQualityService {
         guidelines.push('Enkaz yıkıntısı ve toz bölgelerinde asbest liflerine karşı N95/FFP3 maskesiz bulunmayın.');
         guidelines.push('Gözleri korumak için toz gözlüğü (goggle) takın.');
       }
-      if (generatorRisk !== 'safe') {
-        guidelines.push('🚨 JENERATÖR TEHLİKESİ: Jeneratörleri ASLA çadır, ev, otopark veya kapalı alanda çalıştırmayın (Karbonmonoksit kokusuz öldürür).');
-      }
+      // Bu uyarı ölçüme bağlı değildir; her zaman gösterilir.
+      guidelines.push('Jeneratörleri ASLA çadır, ev, otopark veya kapalı alanda çalıştırmayın (karbonmonoksit kokusuzdur ve öldürür). Bu ekran kapalı alandaki karbonmonoksiti ölçemez.');
       guidelines.push('Çadır veya geçici barınaklarda mangal veya açık tüplü ısıtıcı ile uyumayın.');
       guidelines.push('Yoğun duman durumunda ıslak bezle ağız-burun bölgesini kapatın ve alçak seviyede kalın.');
 

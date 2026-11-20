@@ -79,7 +79,7 @@ class EarlyWarningEngine {
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(`Dikkat! Deprem uyarısı. ${protocolText}`);
+        const utterance = new SpeechSynthesisUtterance(`Dikkat! Yakınınızda deprem bildirildi. ${protocolText}`);
         utterance.lang = 'tr-TR';
         utterance.rate = 1.05;
         utterance.pitch = 1.0;
@@ -133,7 +133,7 @@ class EarlyWarningEngine {
       sWaveRadiusKm: 0,
       estimatedMMI: 'I',
       intensityLevel: 'low',
-      protocolText: 'Sistem tetikte ve aktif izlemede.',
+      protocolText: 'Deprem listesi izleniyor (erken uyarı değildir).',
       hasPWaveArrived: false,
       hasSWaveArrived: false
     };
@@ -185,17 +185,17 @@ class EarlyWarningEngine {
     const mmiRoman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][mmiValue - 1];
 
     let intensityLevel: 'low' | 'moderate' | 'strong' | 'severe' = 'low';
-    let protocolText = 'Hafif titreşim hissedilebilir. Güvenli bölgede kalın.';
+    let protocolText = 'Hafif titreşim hissedilebilir.';
 
     if (mmiValue >= 8) {
       intensityLevel = 'severe';
-      protocolText = 'ŞİDDETLİ YIKICI SARSINTI! DERHAL ÇÖK-KAPAN-TUTUN!';
+      protocolText = 'ŞİDDETLİ SARSINTI OLABİLİR! DERHAL ÇÖK-KAPAN-TUTUN!';
     } else if (mmiValue >= 6) {
       intensityLevel = 'strong';
-      protocolText = 'GÜÇLÜ SARSINTI BEKLENİYOR! Pencerelerden ve dolaplardan uzaklaşın!';
+      protocolText = 'Güçlü sarsıntı olabilir! Çök-Kapan-Tutun; pencerelerden ve dolaplardan uzak durun.';
     } else if (mmiValue >= 4) {
       intensityLevel = 'moderate';
-      protocolText = 'Hissedilir sarsıntı bekleniyor. Sağlam bir masa altına çökün.';
+      protocolText = 'Hissedilir sarsıntı olabilir. Çök-Kapan-Tutun.';
     }
 
     if (isFirst && this.soundEnabled && (intensityLevel === 'strong' || intensityLevel === 'severe')) {

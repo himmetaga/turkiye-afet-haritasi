@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
+import { escapeHtml } from '../utils/safeText';
 
 export interface AidItem {
   id: string;
@@ -72,9 +73,9 @@ export class FieldAidCoordinationModal {
   private container: HTMLElement;
   private state: AidRequestState;
   private activeCategory: AidItem['category'] = 'bebek';
-  private onBroadcast?: (text: string) => void;
+  private onBroadcast?: (text: string) => void | Promise<unknown>;
 
-  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void) {
+  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void | Promise<unknown>) {
     this.onBroadcast = onBroadcast;
     this.container = document.createElement('div');
     this.container.id = 'field-aid-coordination-modal';
@@ -156,12 +157,12 @@ export class FieldAidCoordinationModal {
         : this.state.items.map((i) => `${i.count}x ${i.name}`).join(', ');
 
     return `${prefix}\n` +
-      `Konum/Çadır: ${this.state.tentLocation.trim() || 'Sahra Bölgesi'}\n` +
+      `Konum/Çadır: ${this.state.tentLocation.trim() || 'Belirtilmedi'}\n` +
       `Aciliyet: ${urgencyText}\n` +
       `İhtiyaç/Malzeme: ${itemsSummary}\n` +
       (this.state.contactPhone ? `İletişim: ${this.state.contactPhone.trim()}\n` : '') +
       (this.state.notes ? `Not: ${this.state.notes.trim()}\n` : '') +
-      `Tarih: ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (Çevrimdışı P2P Sahra Koordinasyonu)`;
+      `Tarih: ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (afet.live gönüllü bildirimi — doğrulanmamıştır)`;
   }
 
   private render(): void {
@@ -243,8 +244,8 @@ export class FieldAidCoordinationModal {
               .map(
                 (i) => `
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-xs font-medium text-amber-200">
-                  <strong class="font-bold text-amber-400">${i.count}x</strong> ${i.name}
-                  <button type="button" data-remove-name="${i.name}" class="btn-remove-chip ml-1 text-amber-400 hover:text-white">&times;</button>
+                  <strong class="font-bold text-amber-400">${Number(i.count) || 0}x</strong> ${escapeHtml(i.name)}
+                  <button type="button" data-remove-name="${escapeHtml(i.name)}" class="btn-remove-chip ml-1 text-amber-400 hover:text-white">&times;</button>
                 </span>
               `
               )
@@ -263,9 +264,9 @@ export class FieldAidCoordinationModal {
             <div>
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-bold text-white">Afet Sahra İhtiyaç & Yardım Masası</h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">ÇADIRKENT AĞI</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">GÖNÜLLÜ LİSTE</span>
               </div>
-              <p class="text-[11px] text-gray-400">Çadırkent ve sahra bölgelerinde ihtiyaç/fazla malzeme pusulası oluşturun, BitChat ağına yayınlayın.</p>
+              <p class="text-[11px] text-gray-400">İhtiyaç ya da fazla malzeme listesi hazırlayın; metni kopyalayın veya BitChat sohbetine gönderin. Resmi bir yardım kanalı değildir.</p>
             </div>
           </div>
           <button id="btn-close-field-aid" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -307,7 +308,7 @@ export class FieldAidCoordinationModal {
                 id="input-aid-location"
                 type="text"
                 placeholder="Çadırkent / Mahalle / Çadır No (Örn: Çadır A-12)"
-                value="${this.state.tentLocation}"
+                value="${escapeHtml(this.state.tentLocation)}"
                 class="w-full px-3 py-2 pr-8 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
               <button
@@ -336,7 +337,7 @@ export class FieldAidCoordinationModal {
                 id="input-aid-phone"
                 type="tel"
                 placeholder="İletişim Tel (Opsiyonel)"
-                value="${this.state.contactPhone}"
+                value="${escapeHtml(this.state.contactPhone)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400"
               />
             </div>
@@ -389,7 +390,7 @@ export class FieldAidCoordinationModal {
         <div class="px-3.5 py-2 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
           <span class="shrink-0 text-sm">⚖️</span>
           <p class="leading-snug">
-            <strong>Sivil Afet Lojistiği & Sorumluluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Listeler eşler arası sivil dayanışma içindir; resmi AFAD/112 lojistik kanalı değildir. Asılsız ihtiyaç veya sahte stok beyanında bulunmak TCK m. 217/A uyarınca cezai sorumluluk doğurur.
+            <strong>Sivil Afet Lojistiği & Sorumluluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Listeler gönüllüler arası dayanışma içindir ve doğrulanmaz; AFAD/112'ye ulaşmaz. Asılsız ihtiyaç veya sahte stok beyanında bulunmak TCK m. 217/A uyarınca cezai sorumluluk doğurur.
           </p>
         </div>
 
@@ -413,12 +414,13 @@ export class FieldAidCoordinationModal {
               class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-xs font-bold text-white shadow-lg shadow-cyan-600/30 transition-all"
             >
               ${Icons.messages('w-4 h-4')}
-              <span>BitChat Afet Ağına Yayınla</span>
+              <span>BitChat Sohbetine Gönder</span>
             </button>
           `
               : ''
           }
         </div>
+        <div id="aid-broadcast-status" class="hidden px-4 pb-3 bg-black/30 text-[11.5px] font-semibold shrink-0"></div>
       </div>
     `;
 
@@ -525,15 +527,16 @@ export class FieldAidCoordinationModal {
       navigator.clipboard.writeText(text).then(() => {
         const btn = e.currentTarget as HTMLButtonElement;
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = `${Icons.checkCircle('w-4 h-4 text-emerald-400')} <span class="text-emerald-400">Pusula Kopyalandı!</span>`;
+        btn.innerHTML = `${Icons.checkCircle('w-4 h-4 text-emerald-400')} <span class="text-emerald-400">Liste Kopyalandı!</span>`;
         setTimeout(() => {
           btn.innerHTML = originalHtml;
         }, 1800);
       });
     });
 
-    q<HTMLButtonElement>('#btn-broadcast-aid-bitchat')?.addEventListener('click', (e) => {
+    q<HTMLButtonElement>('#btn-broadcast-aid-bitchat')?.addEventListener('click', async (e) => {
       if (this.onBroadcast) {
+        const btn = e.currentTarget as HTMLButtonElement;
         // Anti-manipulation rate limiting
         const rateCheck = antiManipulationService.checkRateLimit('aid');
         if (!rateCheck.allowed) {
@@ -552,13 +555,23 @@ export class FieldAidCoordinationModal {
           if (!proceed) return;
         }
 
-        this.onBroadcast(text);
-        const btn = e.currentTarget as HTMLButtonElement;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = `${Icons.checkCircle('w-4 h-4 text-cyan-300')} <span class="text-cyan-300">Ağa Yayınlandı!</span>`;
-        setTimeout(() => {
-          btn.innerHTML = originalHtml;
-        }, 1800);
+        // Sonuç beklenir: gönderilemediyse "gönderildi" denmez.
+        let sent = true;
+        btn.disabled = true;
+        try {
+          const result = await Promise.resolve(this.onBroadcast(text));
+          if (result && typeof result === 'object' && (result as { sent?: unknown }).sent === false) sent = false;
+        } catch {
+          sent = false;
+        }
+        btn.disabled = false;
+
+        const statusEl = q<HTMLElement>('#aid-broadcast-status');
+        if (statusEl) {
+          statusEl.textContent = sent ? 'Sohbet kanalına gönderildi (resmi kuruma ulaşmaz)' : 'İnternet yok — gönderilemedi. Metni kopyalayıp SMS ile iletin.';
+          statusEl.classList.remove('hidden', 'text-emerald-300', 'text-rose-300');
+          statusEl.classList.add(sent ? 'text-emerald-300' : 'text-rose-300');
+        }
       }
     });
   }

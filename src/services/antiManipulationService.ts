@@ -1,5 +1,3 @@
-import { haversineDistanceMeters } from '../utils/geoMath';
-
 export interface PoWResult {
   nonce: number;
   hash: string;
@@ -12,13 +10,6 @@ export interface HeuristicAnalysisResult {
   category?: 'panic_rumor' | 'flood_panic' | 'military_unrest' | 'magnitude_exaggeration';
   warningMessage?: string;
   detectedKeyword?: string;
-}
-
-export interface ProximityCheckResult {
-  isLocal: boolean;
-  distanceKm: number;
-  badgeLabel: string;
-  badgeClass: string;
 }
 
 export interface ReputationSummary {
@@ -198,42 +189,10 @@ class AntiManipulationService {
   }
 
   /**
-   * 4. COĞRAFİ MESAFE ÇİTİ (GEOFENCING & YERİNDE DOĞRULAMA)
-   * Kullanıcının bildirilen konumdan ne kadar uzakta olduğunu ölçer.
-   * 3 km'den yakınsa "Yerinde Teyitli", uzaksa "Uzaktan Bildirim" damgası üretir.
-   */
-  public checkProximity(userCoords: [number, number], targetCoords?: [number, number]): ProximityCheckResult {
-    if (!targetCoords) {
-      return {
-        isLocal: false,
-        distanceKm: 0,
-        badgeLabel: 'Konumsuz Bildirim',
-        badgeClass: 'bg-gray-500/15 text-gray-400 border-gray-500/25'
-      };
-    }
-
-    const distMeters = haversineDistanceMeters(userCoords, targetCoords);
-    const distKm = Number((distMeters / 1000).toFixed(1));
-
-    if (distKm <= 3.0) {
-      return {
-        isLocal: true,
-        distanceKm: distKm,
-        badgeLabel: `📍 Yerinde Doğrulandı (${distKm} km)`,
-        badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-      };
-    }
-
-    return {
-      isLocal: false,
-      distanceKm: distKm,
-      badgeLabel: `⚠️ Uzaktan Bildirim (${distKm} km)`,
-      badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-    };
-  }
-
-  /**
-   * 5. TOPLULUK KONSENSÜSÜ & ASILSIZ İHBAR ETİKETLEME (QUORUM)
+   * 5. KİŞİSEL MESAJ NOTU
+   * Kullanıcının bir mesajı kendi cihazında "güvenilir" / "şüpheli" olarak
+   * işaretlemesi. Yalnızca bu cihazın localStorage'ında durur; başka
+   * kullanıcılara iletilmez, bir topluluk oylaması DEĞİLDİR.
    */
   public voteMessage(messageId: string, voterPubkey: string, vote: 'verify' | 'flag'): ReputationSummary {
     let rep = this.reputationCache.get(messageId);

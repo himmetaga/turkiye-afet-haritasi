@@ -1,15 +1,17 @@
 import { Icons } from './icons';
 import { antiManipulationService, LEGAL_DISCLAIMER } from '../services/antiManipulationService';
+import { escapeHtml } from '../utils/safeText';
 
 export interface CampInfrastructureReport {
   campName: string;
   locationDetails: string;
-  foodStatus: 'active' | 'preparing' | 'none';
-  waterStatus: 'available' | 'low' | 'none';
-  toiletStatus: 'ready' | 'insufficient' | 'none';
-  capacityStatus: 'low' | 'half' | 'full';
-  powerStatus: 'active' | 'solar' | 'none';
-  securityStatus: 'police' | 'volunteer' | 'none';
+  // 'unknown' = kullanıcı bu konuyu gözlemlemedi; bildirime yazılmaz.
+  foodStatus: 'unknown' | 'active' | 'preparing' | 'none';
+  waterStatus: 'unknown' | 'available' | 'low' | 'none';
+  toiletStatus: 'unknown' | 'ready' | 'insufficient' | 'none';
+  capacityStatus: 'unknown' | 'low' | 'half' | 'full';
+  powerStatus: 'unknown' | 'active' | 'solar' | 'none';
+  securityStatus: 'unknown' | 'police' | 'volunteer' | 'none';
   notes: string;
   reportedAt: number;
 }
@@ -19,9 +21,9 @@ const STORAGE_KEY = 'afet_camp_status_report_v1';
 export class FieldCampStatusModal {
   private container: HTMLElement;
   private report: CampInfrastructureReport;
-  private onBroadcast?: (text: string) => void;
+  private onBroadcast?: (text: string) => void | Promise<unknown>;
 
-  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void) {
+  constructor(parent: HTMLElement, onBroadcast?: (text: string) => void | Promise<unknown>) {
     this.onBroadcast = onBroadcast;
 
     this.container = document.createElement('div');
@@ -42,12 +44,13 @@ export class FieldCampStatusModal {
     return {
       campName: '',
       locationDetails: '',
-      foodStatus: 'preparing',
-      waterStatus: 'available',
-      toiletStatus: 'insufficient',
-      capacityStatus: 'half',
-      powerStatus: 'active',
-      securityStatus: 'volunteer',
+      // Hiçbir durum ön seçili gelmez: gözlemlenmeyen şey bildirilmez.
+      foodStatus: 'unknown',
+      waterStatus: 'unknown',
+      toiletStatus: 'unknown',
+      capacityStatus: 'unknown',
+      powerStatus: 'unknown',
+      securityStatus: 'unknown',
       notes: '',
       reportedAt: Date.now()
     };
@@ -72,23 +75,44 @@ export class FieldCampStatusModal {
     this.container.classList.add('hidden');
   }
 
-  private formatSummaryText(): string {
-    const foodMap = { active: '🟢 Sıcak Çorba/Yemek Başladı', preparing: '🟡 Yemek Hazırlanıyor', none: '🔴 Yemek Dağıtımı Yok' };
-    const waterMap = { available: '🟢 İçme Suyu Var', low: '🟡 Su Kritik Düzeyde', none: '🔴 Su Tükendi / Yok' };
-    const toiletMap = { ready: '🟢 Sahra WC Kurulu', insufficient: '🟡 Tuvalet Yetersiz / Sıra Var', none: '🔴 WC Yok' };
-    const capacityMap = { low: '🟢 Çadır Yeri Var (%25)', half: '🟡 Yarı Dolu (%50)', full: '🔴 Tamamen Dolu (%100)' };
-    const powerMap = { active: '🟢 Jeneratör Şarj İstasyonu Aktif', solar: '🟡 Sınırlı Güneş/Akü', none: '🔴 Elektrik/Şarj Yok' };
+  /** Kullanıcının gerçekten işaretlediği (bilinmiyor olmayan) durum satırları. */
+  private getObservedLines(): string[] {
+    const foodMap: Record<string, string> = { active: '🟢 Sıcak yemek dağıtılıyor', preparing: '🟡 Yemek hazırlanıyor', none: '🔴 Yemek dağıtımı yok' };
+    const waterMap: Record<string, string> = { available: '🟢 İçme suyu var', low: '🟡 Su azalıyor', none: '🔴 İçme suyu yok' };
+    const toiletMap: Record<string, string> = { ready: '🟢 Tuvalet var', insufficient: '🟡 Tuvalet yetersiz / sıra var', none: '🔴 Tuvalet yok' };
+    const capacityMap: Record<string, string> = { low: '🟢 Boş çadır yeri var', half: '🟡 Yarı dolu', full: '🔴 Tamamen dolu' };
+    const powerMap: Record<string, string> = { active: '🟢 Jeneratör / şarj imkânı var', solar: '🟡 Sınırlı güneş paneli / akü', none: '🔴 Elektrik / şarj yok' };
+    const securityMap: Record<string, string> = { police: '🟢 Polis / jandarma / AFAD görevlisi var', volunteer: '🟡 Gönüllüler yönetiyor', none: '🔴 Görevli / koordinatör yok' };
 
-    return `🏕️ [TOPLANMA ALANI SAHRA ALTYAPI KARNESİ]\n` +
-      `Saha: ${this.report.campName.trim() || 'Sahra Toplanma Alanı'}\n` +
-      `Detay: ${this.report.locationDetails.trim() || '-'}\n` +
-      `• Yemek: ${foodMap[this.report.foodStatus]}\n` +
-      `• Su: ${waterMap[this.report.waterStatus]}\n` +
-      `• WC/Hijyen: ${toiletMap[this.report.toiletStatus]}\n` +
-      `• Kapasite: ${capacityMap[this.report.capacityStatus]}\n` +
-      `• Enerji: ${powerMap[this.report.powerStatus]}\n` +
-      (this.report.notes ? `Not: ${this.report.notes.trim()}\n` : '') +
-      `Rapor Saati: ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (P2P Sahra Bildirimi)`;
+    const lines: string[] = [];
+    const add = (label: string, map: Record<string, string>, value: string) => {
+      if (value !== 'unknown' && map[value]) lines.push(`• ${label}: ${map[value]}`);
+    };
+    add('Yemek', foodMap, this.report.foodStatus);
+    add('Su', waterMap, this.report.waterStatus);
+    add('WC/Hijyen', toiletMap, this.report.toiletStatus);
+    add('Çadır', capacityMap, this.report.capacityStatus);
+    add('Enerji', powerMap, this.report.powerStatus);
+    add('Düzen', securityMap, this.report.securityStatus);
+    return lines;
+  }
+
+  private formatSummaryText(): string {
+    const lines = this.getObservedLines();
+    const details = (this.report.locationDetails || '').trim();
+    const notes = (this.report.notes || '').trim();
+
+    return `🏕️ [TOPLANMA ALANI DURUM BİLDİRİMİ]\n` +
+      `Saha: ${(this.report.campName || '').trim() || 'Ad belirtilmedi'}\n` +
+      (details ? `Detay: ${details}\n` : '') +
+      (lines.length > 0 ? `${lines.join('\n')}\n` : '') +
+      (notes ? `Not: ${notes}\n` : '') +
+      `Gözlem saati: ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (afet.live gönüllü bildirimi — doğrulanmamıştır)`;
+  }
+
+  /** Paylaşılacak gerçek bir gözlem var mı? */
+  private hasObservation(): boolean {
+    return this.getObservedLines().length > 0 || (this.report.notes || '').trim().length > 0;
   }
 
   private render(): void {
@@ -102,10 +126,10 @@ export class FieldCampStatusModal {
             </span>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-sm sm:text-base font-bold text-white">Toplanma Alanı Sahra Karnesi</h2>
+                <h2 class="text-sm sm:text-base font-bold text-white">Toplanma Alanı Durum Bildirimi</h2>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">ÇADIRKENT DURUMU</span>
               </div>
-              <p class="text-[11px] text-gray-400">Yemek, içme suyu, tuvalet ve çadır doluluk durumunu raporlayın ve BitChat ağına aktarın.</p>
+              <p class="text-[11px] text-gray-400">Yalnızca kendi gördüğünüz durumu işaretleyin; bilmediğinizi "Bilmiyorum" bırakın. Metni kopyalayabilir ya da BitChat sohbetine gönderebilirsiniz.</p>
             </div>
           </div>
           <button id="btn-close-camp-modal" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -122,7 +146,7 @@ export class FieldCampStatusModal {
               id="input-camp-name"
               type="text"
               placeholder="Örn: Kadıköy Yoğurtçu Parkı Toplanma Alanı"
-              value="${this.report.campName}"
+              value="${escapeHtml(this.report.campName)}"
               class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400"
             />
           </div>
@@ -133,6 +157,7 @@ export class FieldCampStatusModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <label class="block font-bold text-gray-200">🍲 Sıcak Yemek / Çorba</label>
               <select id="select-food-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
+                <option value="unknown" ${this.report.foodStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
                 <option value="active" ${this.report.foodStatus === 'active' ? 'selected' : ''}>🟢 Sıcak Yemek Dağıtılıyor</option>
                 <option value="preparing" ${this.report.foodStatus === 'preparing' ? 'selected' : ''}>🟡 Dağıtım Hazırlanıyor</option>
                 <option value="none" ${this.report.foodStatus === 'none' ? 'selected' : ''}>🔴 Sıcak Yemek Yok</option>
@@ -143,6 +168,7 @@ export class FieldCampStatusModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <label class="block font-bold text-gray-200">💧 İçme Suyu Durumu</label>
               <select id="select-water-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
+                <option value="unknown" ${this.report.waterStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
                 <option value="available" ${this.report.waterStatus === 'available' ? 'selected' : ''}>🟢 İçme Suyu Var</option>
                 <option value="low" ${this.report.waterStatus === 'low' ? 'selected' : ''}>🟡 Su Azalıyor / Kritik</option>
                 <option value="none" ${this.report.waterStatus === 'none' ? 'selected' : ''}>🔴 İçme Suyu Yok / Tükendi</option>
@@ -153,6 +179,7 @@ export class FieldCampStatusModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <label class="block font-bold text-gray-200">🚻 Sahra Tuvaleti / WC</label>
               <select id="select-toilet-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
+                <option value="unknown" ${this.report.toiletStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
                 <option value="ready" ${this.report.toiletStatus === 'ready' ? 'selected' : ''}>🟢 Sahra WC Kurulu & Temiz</option>
                 <option value="insufficient" ${this.report.toiletStatus === 'insufficient' ? 'selected' : ''}>🟡 WC Yetersiz / Yoğun Kuyruk</option>
                 <option value="none" ${this.report.toiletStatus === 'none' ? 'selected' : ''}>🔴 Tuvalet Yok</option>
@@ -161,11 +188,12 @@ export class FieldCampStatusModal {
 
             <!-- Capacity -->
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
-              <label class="block font-bold text-gray-200">⛺ Çadır Doluluk Oranı</label>
+              <label class="block font-bold text-gray-200">⛺ Çadır Doluluğu</label>
               <select id="select-capacity-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
-                <option value="low" ${this.report.capacityStatus === 'low' ? 'selected' : ''}>🟢 Boş Çadır Yeri Var (%25)</option>
-                <option value="half" ${this.report.capacityStatus === 'half' ? 'selected' : ''}>🟡 Yarı Dolu (%50)</option>
-                <option value="full" ${this.report.capacityStatus === 'full' ? 'selected' : ''}>🔴 Tamamen Dolu (%100)</option>
+                <option value="unknown" ${this.report.capacityStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
+                <option value="low" ${this.report.capacityStatus === 'low' ? 'selected' : ''}>🟢 Boş Çadır Yeri Var</option>
+                <option value="half" ${this.report.capacityStatus === 'half' ? 'selected' : ''}>🟡 Yarı Dolu</option>
+                <option value="full" ${this.report.capacityStatus === 'full' ? 'selected' : ''}>🔴 Tamamen Dolu</option>
               </select>
             </div>
 
@@ -173,6 +201,7 @@ export class FieldCampStatusModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <label class="block font-bold text-gray-200">⚡ Jeneratör & Telefon Şarjı</label>
               <select id="select-power-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
+                <option value="unknown" ${this.report.powerStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
                 <option value="active" ${this.report.powerStatus === 'active' ? 'selected' : ''}>🟢 Jeneratör / Şarj Masası Aktif</option>
                 <option value="solar" ${this.report.powerStatus === 'solar' ? 'selected' : ''}>🟡 Sınırlı Güneş Paneli</option>
                 <option value="none" ${this.report.powerStatus === 'none' ? 'selected' : ''}>🔴 Elektrik / Şarj İstasyonu Yok</option>
@@ -183,6 +212,7 @@ export class FieldCampStatusModal {
             <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
               <label class="block font-bold text-gray-200">🛡️ Asayiş & Koordinasyon</label>
               <select id="select-security-status" class="w-full px-2.5 py-1.5 rounded-lg bg-obsidian-900 border border-white/10 text-xs text-white outline-none">
+                <option value="unknown" ${this.report.securityStatus === 'unknown' ? 'selected' : ''}>⚪ Bilmiyorum / gözlemlemedim</option>
                 <option value="police" ${this.report.securityStatus === 'police' ? 'selected' : ''}>🟢 Polis / Jandarma / AFAD Nöbette</option>
                 <option value="volunteer" ${this.report.securityStatus === 'volunteer' ? 'selected' : ''}>🟡 Sivil Gönüllüler Yönetiyor</option>
                 <option value="none" ${this.report.securityStatus === 'none' ? 'selected' : ''}>🔴 Güvenlik / Koordinatör Yok</option>
@@ -198,7 +228,7 @@ export class FieldCampStatusModal {
               rows="2"
               placeholder="Örn: Çocuk bezi acil aranıyor, 3. kapıda çorba dağıtımı var..."
               class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-amber-400 resize-none"
-            >${this.report.notes}</textarea>
+            >${escapeHtml(this.report.notes)}</textarea>
           </div>
         </div>
 
@@ -206,7 +236,7 @@ export class FieldCampStatusModal {
         <div class="px-3.5 py-2 bg-amber-500/10 border-t border-amber-500/20 text-[10.5px] text-amber-300 flex items-start gap-2 shrink-0">
           <span class="shrink-0 text-sm">🏕️</span>
           <p class="leading-snug">
-            <strong>Sahra Karnesi Doğruluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Çadırkent durum karneleri sahadaki gözlemleri yansıtır. Resmi tahliye ve güvenlik kararları için lütfen mülki amirlik ve AFAD anonslarını esas alınız.
+            <strong>Doğruluk Uyarısı:</strong> ${LEGAL_DISCLAIMER.shortNotice} Bu bildirim bir gönüllünün kendi gözlemidir; doğrulanmamıştır. Resmi tahliye ve güvenlik kararları için lütfen mülki amirlik ve AFAD anonslarını esas alınız.
           </p>
         </div>
 
@@ -230,12 +260,13 @@ export class FieldCampStatusModal {
               class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-xs font-bold text-black transition-all shadow-lg shadow-amber-500/20 flex items-center gap-1.5"
             >
               ${Icons.messages('w-3.5 h-3.5')}
-              <span>BitChat Ağına Yayınla</span>
+              <span>BitChat Sohbetine Gönder</span>
             </button>
           `
               : ''
           }
         </div>
+        <div id="camp-broadcast-status" class="hidden px-4 pb-3 bg-black/30 text-[11.5px] font-semibold shrink-0"></div>
       </div>
     `;
 
@@ -277,12 +308,18 @@ export class FieldCampStatusModal {
       });
     });
 
-    q<HTMLButtonElement>('#btn-broadcast-camp-status')?.addEventListener('click', (e) => {
+    q<HTMLButtonElement>('#btn-broadcast-camp-status')?.addEventListener('click', async (e) => {
       if (this.onBroadcast) {
+        const btn = e.currentTarget as HTMLButtonElement;
+        if (!this.hasObservation()) {
+          alert('Gönderilecek bir gözlem yok. En az bir durumu işaretleyin ya da not yazın.');
+          return;
+        }
+
         // Anti-manipulation rate limiting
         const rateCheck = antiManipulationService.checkRateLimit('aid');
         if (!rateCheck.allowed) {
-          alert(`⏱️ Çok sık sahra karnesi güncellendi. Lütfen ${rateCheck.waitSeconds} saniye bekleyin.`);
+          alert(`⏱️ Çok sık bildirim gönderildi. Lütfen ${rateCheck.waitSeconds} saniye bekleyin.`);
           return;
         }
 
@@ -297,11 +334,23 @@ export class FieldCampStatusModal {
           if (!proceed) return;
         }
 
-        this.onBroadcast(text);
-        const btn = e.currentTarget as HTMLButtonElement;
-        const original = btn.innerHTML;
-        btn.innerHTML = `${Icons.checkCircle('w-3.5 h-3.5 text-black')} <span>Ağa Yayınlandı!</span>`;
-        setTimeout(() => (btn.innerHTML = original), 1800);
+        // Sonuç beklenir: gönderilemediyse "gönderildi" denmez.
+        let sent = true;
+        btn.disabled = true;
+        try {
+          const result = await Promise.resolve(this.onBroadcast(text));
+          if (result && typeof result === 'object' && (result as { sent?: unknown }).sent === false) sent = false;
+        } catch {
+          sent = false;
+        }
+        btn.disabled = false;
+
+        const statusEl = q<HTMLElement>('#camp-broadcast-status');
+        if (statusEl) {
+          statusEl.textContent = sent ? 'Sohbet kanalına gönderildi (resmi kuruma ulaşmaz)' : 'İnternet yok — gönderilemedi. Metni kopyalayıp SMS ile iletin.';
+          statusEl.classList.remove('hidden', 'text-emerald-300', 'text-rose-300');
+          statusEl.classList.add(sent ? 'text-emerald-300' : 'text-rose-300');
+        }
       }
     });
   }

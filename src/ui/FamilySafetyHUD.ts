@@ -1,6 +1,7 @@
 import { AssemblyPoint } from '../types';
 import { Icons } from './icons';
 import { setupModalMobileDismiss, registerModalOpen, registerModalClose } from '../utils/mobileModalHelper';
+import { describeLocationForMessage, hasUsableLocation } from '../utils/locationState';
 
 export interface FamilySafetyContext {
   userCoords: [number, number] | null;
@@ -23,8 +24,6 @@ export class FamilySafetyHUD {
       container: this.container,
       hide: () => this.hide()
     });
-
-    this.checkBattery();
   }
 
   private async checkBattery(): Promise<void> {
@@ -32,8 +31,10 @@ export class FamilySafetyHUD {
       try {
         const b = await (navigator as any).getBattery();
         this.batteryPct = `%${Math.round(b.level * 100)}`;
+        return;
       } catch {}
     }
+    this.batteryPct = 'Bilinmiyor';
   }
 
   public show(context: FamilySafetyContext): void {
@@ -41,6 +42,10 @@ export class FamilySafetyHUD {
     this.container.classList.remove('hidden');
     registerModalOpen('family-safety-modal', () => this.hide());
     this.render();
+    // Pil düzeyi mesaja yazıldığı için her açılışta yeniden okunur.
+    this.checkBattery().then(() => {
+      if (!this.container.classList.contains('hidden')) this.render();
+    });
   }
 
   public hide(): void {
@@ -56,10 +61,8 @@ export class FamilySafetyHUD {
     let msg = `[AFET BİLDİRİMİ - BEN GÜVENDEYİM]\n`;
     msg += `Saat: ${time}\n`;
     msg += `Şarjım: ${this.batteryPct}\n`;
-    if (coords) {
-      msg += `Konumum: https://maps.google.com/?q=${coords[1]},${coords[0]}\n`;
-    }
-    if (point) {
+    msg += `${coords ? describeLocationForMessage(coords) : 'Konum alınamadı — adresimi ayrıca yazıyorum:'}\n`;
+    if (point && coords && hasUsableLocation()) {
       msg += `Bulunduğum/Gittiğim Toplanma Alanı: ${point.name} (${point.district})\n`;
     }
     msg += `Durumum iyi, lütfen hatları meşgul etmeyin. SMS ile haberleşelim.`;
@@ -74,10 +77,8 @@ export class FamilySafetyHUD {
     let msg = `[ACİL YARDIM ÇAĞRISI]\n`;
     msg += `Saat: ${time}\n`;
     msg += `Şarjım: ${this.batteryPct}\n`;
-    if (coords) {
-      msg += `Tam Konumum: https://maps.google.com/?q=${coords[1]},${coords[0]} (${coords[1].toFixed(5)}, ${coords[0].toFixed(5)})\n`;
-    }
-    if (point) {
+    msg += `${coords ? describeLocationForMessage(coords) : 'Konum alınamadı — adresimi ayrıca yazıyorum:'}\n`;
+    if (point && coords && hasUsableLocation()) {
       msg += `En Yakın Toplanma Alanı: ${point.name}\n`;
     }
     msg += `Acil desteğe / arama-kurtarmaya ihtiyacım var!`;
@@ -97,7 +98,7 @@ export class FamilySafetyHUD {
               <h2 class="text-sm font-bold tracking-wider text-emerald-400 uppercase">
                 Ailem Güvende & Durum Bildir
               </h2>
-              <p class="text-[11px] text-gray-400">Şebeke kilitlendiğinde tek tıkla konumlu durum iletisi</p>
+              <p class="text-[11px] text-gray-400">Yakınlarınıza gönderebileceğiniz hazır durum mesajı</p>
             </div>
           </div>
           <button id="btn-close-family" class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-400 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer touch-manipulation">
@@ -114,7 +115,7 @@ export class FamilySafetyHUD {
                 <span>Ben İyiyim / Güvendeyim</span>
               </div>
               <p class="text-[11px] text-gray-300 mb-3">
-                Aile fertlerine iyi olduğunuzu, şarjınızı ve konumunuzu tek tıkla iletin.
+                İyi olduğunuzu bildiren hazır bir mesaj açar; alıcıyı siz seçersiniz.
               </p>
             </div>
 
@@ -124,7 +125,7 @@ export class FamilySafetyHUD {
                 class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-glow-emerald transition-all text-center"
               >
                 ${Icons.share('w-3.5 h-3.5')}
-                <span>SMS ile Herkese Gönder</span>
+                <span>SMS taslağı aç</span>
               </a>
               <a
                 href="https://api.whatsapp.com/send?text=${encodeURIComponent(safeMsg)}"
@@ -145,7 +146,7 @@ export class FamilySafetyHUD {
                 <span>Acil Yardım Lazım</span>
               </div>
               <p class="text-[11px] text-gray-300 mb-3">
-                Tam koordinatlarınızı ve en yakın toplanma alanını kurtarma ekiplerine iletir.
+                Yardım isteyen hazır bir mesaj açar; alıcıyı siz seçersiniz. Hayati tehlikede önce 112'yi arayın.
               </p>
             </div>
 
@@ -155,7 +156,7 @@ export class FamilySafetyHUD {
                 class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-glow-red transition-all text-center"
               >
                 ${Icons.share('w-3.5 h-3.5')}
-                <span>Acil SMS İlet</span>
+                <span>Acil SMS taslağı aç</span>
               </a>
               <a
                 href="https://api.whatsapp.com/send?text=${encodeURIComponent(helpMsg)}"

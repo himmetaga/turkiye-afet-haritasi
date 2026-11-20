@@ -49,7 +49,18 @@ class SeismicSensorNode {
     this.handleDeviceMotion = this.handleDeviceMotion.bind(this);
   }
 
+  /** Cihaz hareket sensörü API'si var mı? (Olması, veri geleceğini garanti etmez.) */
+  public isSensorSupported(): boolean {
+    return this.isSupported;
+  }
+
+  /** Son gerçek ölçümün zamanı (ms). Hiç ölçüm gelmediyse 0. */
+  public getLastSampleTime(): number {
+    return this.lastSampleTime;
+  }
+
   public async start(): Promise<boolean> {
+    if (!this.isSupported) return false;
     if (this.isListening) return true;
 
     // iOS 13+ requires explicit permission request
@@ -116,6 +127,8 @@ class SeismicSensorNode {
   private handleDeviceMotion(e: DeviceMotionEvent): void {
     const acc = e.acceleration || e.accelerationIncludingGravity;
     if (!acc) return;
+    // Sensörü olmayan cihazlar olayı null değerlerle gönderir: bunu ölçüm sayma.
+    if (acc.x === null && acc.y === null && acc.z === null) return;
 
     const x = acc.x || 0;
     const y = acc.y || 0;
@@ -127,6 +140,7 @@ class SeismicSensorNode {
   private processSample(x: number, y: number, z: number): void {
     this.sampleCount++;
     const now = Date.now();
+    this.lastSampleTime = now;
 
     // Instantaneous acceleration magnitude (approx vector norm)
     const rawMag = Math.sqrt(x * x + y * y + z * z);

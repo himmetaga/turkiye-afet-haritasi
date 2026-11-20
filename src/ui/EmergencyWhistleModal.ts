@@ -176,11 +176,11 @@ export class EmergencyWhistleModal {
       if (isGeo) {
         geophoneBtn.className =
           'py-2.5 px-3 rounded-xl bg-cyan-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1 shadow-glow-cyan animate-pulse';
-        geophoneBtn.textContent = '⏹ Geofon Darbesini Durdur';
+        geophoneBtn.textContent = '⏹ Aralıklı Bipi Durdur';
       } else {
         geophoneBtn.className =
           'py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
-        geophoneBtn.textContent = '🎯 Geofon Sonar (3.5 kHz)';
+        geophoneBtn.textContent = '🔁 Aralıklı 3 Bip (pil tasarrufu)';
       }
     }
 
@@ -190,11 +190,11 @@ export class EmergencyWhistleModal {
       if (isDog) {
         dogBtn.className =
           'py-2.5 px-3 rounded-xl bg-amber-500 text-obsidian-950 font-bold text-xs active:scale-95 transition-all flex-1 shadow-glow-amber animate-pulse';
-        dogBtn.textContent = '⏹ Köpek Düdüğünü Durdur';
+        dogBtn.textContent = '⏹ Yüksek Frekansı Durdur';
       } else {
         dogBtn.className =
           'py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1';
-        dogBtn.textContent = '🐕 Arama Köpeği (18.5 kHz)';
+        dogBtn.textContent = '🧪 18.5 kHz (deneysel, duyulmaz)';
       }
     }
 
@@ -224,10 +224,10 @@ export class EmergencyWhistleModal {
             </span>
             <div>
               <h3 class="text-base font-bold text-white tracking-wide">
-                Afet Düdüğü & Akustik Enkaz Sinyali
+                Afet Düdüğü
               </h3>
               <p class="text-[11px] text-gray-400">
-                2.9 - 3.5 kHz beton delici akustik frekans ve K9 ultrasonik çağrısı
+                Yüksek sesli düdük tonu (yaklaşık 3 kHz), Mors SOS ve ışık
               </p>
             </div>
           </div>
@@ -253,18 +253,18 @@ export class EmergencyWhistleModal {
           <button
             id="btn-geophone-toggle"
             type="button"
-            title="AFAD ve kurtarma ekiplerinin sismik dinleme mikrofonları (geofon) için 15 saniyede bir 3 darbe ve titreşim gönderir (Pil tasarruflu)"
+            title="15 saniyede bir 3 kısa bip ve titreşim verir; sürekli düdüğe göre daha az pil harcar"
             class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
           >
-            🎯 Geofon Sonar (3.5 kHz)
+            🔁 Aralıklı 3 Bip (pil tasarrufu)
           </button>
           <button
             id="btn-dog-toggle"
             type="button"
-            title="Arama kurtarma köpeklerinin duyduğu yüksek frekanslı (18.5 kHz) ultrasonik çağrı"
+            title="Deneysel: insanlar duyamaz, çoğu telefon hoparlörü bu frekansı veremez, işe yaradığı kanıtlanmamıştır"
             class="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs active:scale-95 transition-all flex-1"
           >
-            🐕 Arama Köpeği (18.5 kHz)
+            🧪 18.5 kHz (deneysel, duyulmaz)
           </button>
         </div>
 
@@ -289,10 +289,11 @@ export class EmergencyWhistleModal {
         <!-- Rescue Guidance -->
         <div class="rounded-xl bg-white/5 border border-white/10 p-3 text-[11px] text-gray-300 space-y-1.5">
           <div class="flex items-center gap-1.5 text-cyan-300 font-semibold">
-            <span>🔋 Pil Tasarrufu & Hayatta Kalma Modu:</span>
+            <span>ℹ️ Modlar hakkında:</span>
           </div>
-          <p>• <strong>Geofon Sonar Modu:</strong> Enkaz altındayken pili tüketmemek için her 15 saniyede bir 3 güçlü akustik darbe ve titreşim yayarak sismik cihazların yerinizi saptamasını sağlar.</p>
-          <p>• <strong>Arama Köpeği Modu:</strong> İnsan kulağının yorulmadığı 18.5 kHz frekansıyla K9 canlı arama köpeklerini doğrudan enkaz boşluğunuza çeker.</p>
+          <p>• <strong>Aralıklı 3 Bip:</strong> Pili korumak için 15 saniyede bir 3 kısa bip ve titreşim verir. Kurtarma cihazlarının bunu algılayacağının garantisi yoktur.</p>
+          <p>• <strong>18.5 kHz (deneysel):</strong> İnsanlar bu sesi duyamaz ve işe yaradığı kanıtlanmamıştır. Arama köpekleri kokuyla çalışır. Sesinizi duyurmak için duyulabilir düdüğü tercih edin.</p>
+          <p>• Telefon hoparlörü gerçek bir düdük kadar yüksek ses veremez; elinizde düdük varsa onu kullanın.</p>
         </div>
       </div>
     `;

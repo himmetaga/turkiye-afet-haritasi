@@ -2,6 +2,8 @@ import qrcode from 'qrcode-generator';
 import { AssemblyPoint } from '../types';
 import { findNearestAssemblyPoints } from '../utils/geoMath';
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { hasUsableLocation } from '../utils/locationState';
 
 export interface ICEProfile {
   fullName: string;
@@ -28,16 +30,7 @@ export class LockScreenICEGenerator {
     this.userCoords = userCoords;
     this.assemblyPoints = assemblyPoints;
 
-    const saved = localStorage.getItem('afet_ice_profile');
-    if (saved) {
-      try {
-        this.profile = JSON.parse(saved);
-      } catch {
-        this.profile = this.getDefaultProfile();
-      }
-    } else {
-      this.profile = this.getDefaultProfile();
-    }
+    this.profile = this.loadProfile();
 
     this.container = document.createElement('div');
     this.container.id = 'lock-screen-ice-modal';
@@ -48,34 +41,97 @@ export class LockScreenICEGenerator {
     this.render();
   }
 
+  /**
+   * Tıbbi kimlik kartı boş başlar: örnek isim, kan grubu ya da "hastalık yok"
+   * gibi bir değer asla ön tanımlı gelmez; her alanı kullanıcı kendisi doldurur.
+   */
   private getDefaultProfile(): ICEProfile {
-    let nearestName = 'En Yakın AFAD Toplanma Alanı';
-    if (this.assemblyPoints.length > 0) {
-      const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
-      if (nearest.length > 0) nearestName = nearest[0].point.name;
-    }
-
     return {
-      fullName: 'Ahmet Yılmaz',
-      bloodType: 'A Rh(+)',
+      fullName: '',
+      bloodType: 'Bilinmiyor',
+      emergencyContact1Name: '',
+      emergencyContact1Phone: '',
+      emergencyContact2Name: '',
+      emergencyContact2Phone: '',
+      medicalNotes: '',
+      assemblyAreaName: ''
+    };
+  }
+
+  private loadProfile(): ICEProfile {
+    const empty = this.getDefaultProfile();
+    let saved: Partial<ICEProfile> | null = null;
+    try {
+      const raw = localStorage.getItem('afet_ice_profile');
+      if (raw) saved = JSON.parse(raw);
+    } catch {}
+    if (!saved || typeof saved !== 'object') return empty;
+
+    const profile: ICEProfile = { ...empty };
+    (Object.keys(empty) as Array<keyof ICEProfile>).forEach((key) => {
+      const val = saved![key];
+      if (typeof val === 'string') profile[key] = val;
+    });
+
+    // Eski sürümün kaydettiği örnek (uydurma) değerleri temizle.
+    const untouchedSample = profile.fullName === 'Ahmet Yılmaz' && profile.emergencyContact1Phone === '0532 000 00 00';
+    const oldSamples: Partial<ICEProfile> = {
       emergencyContact1Name: 'Eşim (Ayşe)',
       emergencyContact1Phone: '0532 000 00 00',
       emergencyContact2Name: 'Kardeşim (Mehmet)',
       emergencyContact2Phone: '0542 000 00 00',
       medicalNotes: 'Kronik rahatsızlık yok. Düzenli kullanılan ilaç yok.',
-      assemblyAreaName: nearestName
+      assemblyAreaName: 'En Yakın AFAD Toplanma Alanı'
     };
+    (Object.keys(oldSamples) as Array<keyof ICEProfile>).forEach((key) => {
+      if (profile[key] === oldSamples[key]) profile[key] = '';
+    });
+    if (untouchedSample) {
+      profile.fullName = '';
+      profile.bloodType = 'Bilinmiyor';
+      profile.assemblyAreaName = '';
+    }
+    return profile;
   }
 
   public setData(userCoords: [number, number], assemblyPoints: AssemblyPoint[]): void {
     this.userCoords = userCoords;
     this.assemblyPoints = assemblyPoints;
-    if (this.profile.assemblyAreaName === 'En Yakın AFAD Toplanma Alanı' && assemblyPoints.length > 0) {
-      const nearest = findNearestAssemblyPoints(userCoords, assemblyPoints, 1);
-      if (nearest.length > 0) {
-        this.profile.assemblyAreaName = nearest[0].point.name;
-      }
+  }
+
+  /** Kart yalnızca ad ve en az bir telefon girildiyse dışa aktarılabilir. */
+  private canExport(): boolean {
+    return (
+      this.profile.fullName.trim().length > 0 &&
+      (this.profile.emergencyContact1Phone.trim().length > 0 || this.profile.emergencyContact2Phone.trim().length > 0)
+    );
+  }
+
+  private updateExportState(): void {
+    const ok = this.canExport();
+    ['#btn-download-ice', '#btn-share-ice'].forEach((sel) => {
+      const btn = this.container.querySelector(sel) as HTMLButtonElement | null;
+      if (!btn) return;
+      btn.disabled = !ok;
+      btn.classList.toggle('opacity-40', !ok);
+      btn.classList.toggle('cursor-not-allowed', !ok);
+    });
+    const hint = this.container.querySelector('#ice-export-hint') as HTMLElement | null;
+    if (hint) hint.classList.toggle('hidden', ok);
+  }
+
+  private suggestNearestAssembly(): void {
+    if (!hasUsableLocation() || this.assemblyPoints.length === 0) {
+      alert('Konumunuz alınamadığı için öneri yapılamıyor. Buluşma noktanızı elle yazın.');
+      return;
     }
+    const nearest = findNearestAssemblyPoints(this.userCoords, this.assemblyPoints, 1);
+    if (nearest.length === 0) return;
+    this.profile.assemblyAreaName = nearest[0].point.name;
+    this.saveProfile();
+    const input = this.container.querySelector('#ice-assembly') as HTMLInputElement | null;
+    if (input) input.value = this.profile.assemblyAreaName;
+    this.drawPreview();
   }
 
   public show(): void {
@@ -83,6 +139,7 @@ export class LockScreenICEGenerator {
     this.container.classList.remove('opacity-0', 'pointer-events-none');
     this.container.classList.add('opacity-100', 'pointer-events-auto');
     this.drawPreview();
+    this.updateExportState();
   }
 
   public hide(): void {
@@ -96,8 +153,9 @@ export class LockScreenICEGenerator {
 
   private render(): void {
     const bloodTypes = [
+      'Bilinmiyor',
       '0 Rh(+)', '0 Rh(-)', 'A Rh(+)', 'A Rh(-)',
-      'B Rh(+)', 'B Rh(-)', 'AB Rh(+)', 'AB Rh(-)', 'Bilinmiyor'
+      'B Rh(+)', 'B Rh(-)', 'AB Rh(+)', 'AB Rh(-)'
     ];
 
     this.container.innerHTML = `
@@ -113,7 +171,7 @@ export class LockScreenICEGenerator {
                 Kilit Ekranı Tıbbi Kimlik & Acil Durum Duvar Kağıdı
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono">ICE (In Case of Emergency)</span>
               </h2>
-              <p class="text-[11px] text-gray-400">Enkaz altında veya baygınlıkta telefon kilitliyken ilk yardım ekiplerinin kan grubunuzu ve yakınlarınızı görmesini sağlar.</p>
+              <p class="text-[11px] text-gray-400">Kilit ekranı duvar kağıdı yaparsanız, telefon kilitliyken size yardım eden kişi kan grubunuzu ve yakınlarınızı görebilir. Yalnızca kendi yazdığınız bilgiler görünür.</p>
             </div>
           </div>
           <button id="btn-close-ice" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -131,21 +189,21 @@ export class LockScreenICEGenerator {
                 <input
                   id="ice-name"
                   type="text"
-                  value="${this.profile.fullName}"
+                  value="${escapeHtml(this.profile.fullName)}"
                   class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                   placeholder="Adınız Soyadınız"
                 />
               </div>
 
               <div>
-                <label class="text-[11px] font-semibold text-gray-300 block mb-1">Kan Grubu (Hayati Önem)</label>
+                <label class="text-[11px] font-semibold text-gray-300 block mb-1">Kan Grubu (emin değilseniz "Bilinmiyor" bırakın)</label>
                 <select
                   id="ice-blood"
                   class="w-full px-3 py-2 rounded-xl bg-obsidian-950 border border-white/10 text-xs text-rose-300 font-bold focus:outline-none focus:border-rose-500"
                 >
                   ${bloodTypes
                     .map(
-                      (b) => `<option value="${b}" ${b === this.profile.bloodType ? 'selected' : ''}>${b}</option>`
+                      (b) => `<option value="${escapeHtml(b)}" ${b === this.profile.bloodType ? 'selected' : ''}>${escapeHtml(b)}</option>`
                     )
                     .join('')}
                 </select>
@@ -159,14 +217,14 @@ export class LockScreenICEGenerator {
                 <input
                   id="ice-c1-name"
                   type="text"
-                  value="${this.profile.emergencyContact1Name}"
+                  value="${escapeHtml(this.profile.emergencyContact1Name)}"
                   class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500"
                   placeholder="Yakınlık ve İsim (örn. Eşim Ayşe)"
                 />
                 <input
                   id="ice-c1-phone"
                   type="tel"
-                  value="${this.profile.emergencyContact1Phone}"
+                  value="${escapeHtml(this.profile.emergencyContact1Phone)}"
                   class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500 font-mono"
                   placeholder="Telefon (örn. 0532 111 22 33)"
                 />
@@ -180,14 +238,14 @@ export class LockScreenICEGenerator {
                 <input
                   id="ice-c2-name"
                   type="text"
-                  value="${this.profile.emergencyContact2Name}"
+                  value="${escapeHtml(this.profile.emergencyContact2Name)}"
                   class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500"
                   placeholder="Yakınlık ve İsim (örn. Kardeşim)"
                 />
                 <input
                   id="ice-c2-phone"
                   type="tel"
-                  value="${this.profile.emergencyContact2Phone}"
+                  value="${escapeHtml(this.profile.emergencyContact2Phone)}"
                   class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500 font-mono"
                   placeholder="Telefon (örn. 0542 333 44 55)"
                 />
@@ -202,18 +260,21 @@ export class LockScreenICEGenerator {
                 rows="2"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 resize-none"
                 placeholder="Örn: Tip 1 Diyabet hastası (İnsülin), Penisilin alerjisi var, Kalp pili mevcut."
-              >${this.profile.medicalNotes}</textarea>
+              >${escapeHtml(this.profile.medicalNotes)}</textarea>
             </div>
 
             <!-- Assembly Area -->
             <div>
-              <label class="text-[11px] font-semibold text-gray-300 block mb-1">Aile Toplanma Alanı</label>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <label class="text-[11px] font-semibold text-gray-300 block">Aile Buluşma Noktası (isteğe bağlı)</label>
+                <button id="btn-ice-suggest-assembly" type="button" class="text-[10.5px] font-semibold text-emerald-300 hover:text-emerald-200 underline cursor-pointer">En yakın alanı öner</button>
+              </div>
               <input
                 id="ice-assembly"
                 type="text"
-                value="${this.profile.assemblyAreaName}"
+                value="${escapeHtml(this.profile.assemblyAreaName)}"
                 class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-                placeholder="En yakın AFAD toplanma sahası adı"
+                placeholder="Ailenizle kararlaştırdığınız buluşma yeri"
               />
             </div>
           </div>
@@ -247,6 +308,10 @@ export class LockScreenICEGenerator {
                 <span>Telefonda Paylaş / Kaydet</span>
               </button>
 
+              <p id="ice-export-hint" class="text-[10.5px] text-amber-300 text-center leading-relaxed">
+                İndirmek için adınızı ve en az bir yakınınızın telefonunu yazın.
+              </p>
+
               <p class="text-[10px] text-gray-400 text-center leading-relaxed">
                 İndirdiğiniz görseli telefonunuzun <strong>Kilit Ekranı</strong> (Lock Screen) duvar kağıdı olarak ayarlayınız.
               </p>
@@ -270,6 +335,7 @@ export class LockScreenICEGenerator {
         this.profile[key] = el.value;
         this.saveProfile();
         this.drawPreview();
+        this.updateExportState();
       });
     };
 
@@ -284,6 +350,8 @@ export class LockScreenICEGenerator {
 
     q('#btn-download-ice')?.addEventListener('click', () => this.downloadWallpaper());
     q('#btn-share-ice')?.addEventListener('click', () => this.shareWallpaper());
+    q('#btn-ice-suggest-assembly')?.addEventListener('click', () => this.suggestNearestAssembly());
+    this.updateExportState();
   }
 
   private drawPreview(): void {
@@ -361,7 +429,7 @@ export class LockScreenICEGenerator {
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 48px Outfit, sans-serif';
-    const displayName = this.profile.fullName || 'Ad Soyad';
+    const displayName = this.profile.fullName || '—';
     ctx.fillText(displayName, 130, currentY + 125);
 
     // Blood Type Giant Badge (Right side of hero)
@@ -464,11 +532,11 @@ export class LockScreenICEGenerator {
 
     ctx.fillStyle = '#6EE7B7';
     ctx.font = '700 24px Inter, sans-serif';
-    ctx.fillText('🛡️ AFAD AİLE TOPLANMA ALANI', 120, currentY + 50);
+    ctx.fillText('AİLE BULUŞMA NOKTASI', 120, currentY + 50);
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 36px Outfit, sans-serif';
-    ctx.fillText((this.profile.assemblyAreaName || 'Toplanma Alanı').slice(0, 38), 120, currentY + 105);
+    ctx.fillText((this.profile.assemblyAreaName || 'Belirtilmedi').slice(0, 38), 120, currentY + 105);
 
     currentY += 190;
 
@@ -485,6 +553,7 @@ export class LockScreenICEGenerator {
   }
 
   private downloadWallpaper(): void {
+    if (!this.canExport()) return;
     const canvas = this.container.querySelector('#ice-canvas') as HTMLCanvasElement | null;
     if (!canvas) return;
 
@@ -495,6 +564,7 @@ export class LockScreenICEGenerator {
   }
 
   private async shareWallpaper(): Promise<void> {
+    if (!this.canExport()) return;
     const canvas = this.container.querySelector('#ice-canvas') as HTMLCanvasElement | null;
     if (!canvas) return;
 

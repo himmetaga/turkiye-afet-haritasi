@@ -54,12 +54,12 @@ export class BuildingCollapseZoneModal {
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-bold text-white tracking-wide">Yıkılma & Moloz Güvenlik Çemberi</h2>
+                <h2 class="text-base font-bold text-white tracking-wide">Hasarlı Bina Uzaklık Hesabı</h2>
                 <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider" style="color: ${assessment.dangerColor}; background: ${assessment.dangerColor}20; border: 1px solid ${assessment.dangerColor}40;">
-                  ${assessment.isStreetDeathTrap ? 'ÖLÜM KANYONU TEHLİKESİ' : 'GÜVENLİ MESAFE'}
+                  ${assessment.isStreetDeathTrap ? 'SOKAK ENKAZ ALANINDA' : 'SOKAK 1.5 x H\'DEN GENİŞ (TAHMİN)'}
                 </span>
               </div>
-              <p class="text-xs text-gray-400">USAR / FEMA 1.5 x H Kuralı & Sokak Genişliği Enkaz Analizi</p>
+              <p class="text-xs text-gray-400">1.5 x bina yüksekliği kuralına göre kaba tahmin (uzman değerlendirmesi değildir)</p>
             </div>
           </div>
           <button id="btn-close-collapse" class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors">
@@ -75,7 +75,7 @@ export class BuildingCollapseZoneModal {
             <div class="flex items-center justify-between text-xs">
               <span class="font-bold text-gray-300">Sokak & Bina Enkaz Kesiti (Debris Arc)</span>
               <span class="text-[11px] ${assessment.isStreetDeathTrap ? 'text-rose-400 font-bold' : 'text-emerald-400'}">
-                ${assessment.isStreetDeathTrap ? '⚠️ Karşı Kaldırım Enkaz Altında Kalır!' : '✅ Karşı Taraf Güvenli Bölge'}
+                ${assessment.isStreetDeathTrap ? '⚠️ Karşı kaldırım da enkaz alanında kalabilir!' : 'Karşı taraf 1.5 x H mesafesinin dışında görünüyor (tahmin)'}
               </span>
             </div>
             
@@ -93,15 +93,15 @@ export class BuildingCollapseZoneModal {
             </div>
 
             <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center">
-              <div class="text-[10px] text-rose-300 font-medium">1.5x Güvenli Standoff</div>
+              <div class="text-[10px] text-rose-300 font-medium">1.5 x H Uzaklık</div>
               <div class="text-base font-extrabold text-rose-400 mt-1">${assessment.safeStandoffRadiusM} <span class="text-[10px] font-normal text-gray-400">m</span></div>
-              <div class="text-[9px] text-rose-300/70 mt-0.5">Asgari Güvenli Çap</div>
+              <div class="text-[9px] text-rose-300/70 mt-0.5">En az uzaklık (tahmin)</div>
             </div>
 
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center">
               <div class="text-[10px] text-amber-300 font-medium">2.0x Cam/Parapet</div>
               <div class="text-base font-extrabold text-amber-400 mt-1">${assessment.shrapnelRadiusM} <span class="text-[10px] font-normal text-gray-400">m</span></div>
-              <div class="text-[9px] text-amber-300/70 mt-0.5">Ağır Şarapnel Bölgesi</div>
+              <div class="text-[9px] text-amber-300/70 mt-0.5">Parça savrulma payı</div>
             </div>
 
             <div class="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-center">
@@ -168,7 +168,7 @@ export class BuildingCollapseZoneModal {
           <!-- USAR Standoff Rules -->
           <div class="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5">
             <div class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-              <span>⚠️</span> Hayati Tahliye ve Artçı Şok Kuralları
+              <span>⚠️</span> Uzaklaşma ve Artçı Sarsıntı Notları
             </div>
             <div class="space-y-2 text-[11px] text-gray-300">
               ${assessment.tacticalRules.map((rule) => `
@@ -183,7 +183,7 @@ export class BuildingCollapseZoneModal {
           <!-- Action Button: Copy Collapse Zone Safety Report -->
           <button id="btn-copy-collapse-report" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
             ${Icons.share('w-4 h-4')}
-            Yıkılma Güvenlik Raporunu Kopyala / Ekiplere İlet
+            Mesafe Notunu Kopyala
           </button>
         </div>
       </div>
@@ -245,7 +245,7 @@ export class BuildingCollapseZoneModal {
         <!-- 1.5x Standoff Marker -->
         <line x1="${standoffX}" y1="${groundY - 40}" x2="${standoffX}" y2="${groundY}" stroke="#EF4444" stroke-width="2" stroke-linecap="round" />
         <circle cx="${standoffX}" cy="${groundY}" r="4" fill="#EF4444" />
-        <text x="${standoffX}" y="${groundY - 45}" fill="#F87171" font-size="8" font-weight="bold" text-anchor="middle">1.5x Güvenli Sınır (${a.safeStandoffRadiusM}m)</text>
+        <text x="${standoffX}" y="${groundY - 45}" fill="#F87171" font-size="8" font-weight="bold" text-anchor="middle">1.5 x H Sınırı (${a.safeStandoffRadiusM}m)</text>
 
         <!-- Opposite Building / Wall -->
         <rect x="${streetEndX}" y="${groundY - 45}" width="30" height="45" fill="#1F2937" stroke="#4B5563" stroke-width="1.5" rx="1" />
@@ -254,9 +254,9 @@ export class BuildingCollapseZoneModal {
         <!-- Warning Label on Opposite Sidewalk if Trap -->
         ${isDeathTrap ? `
           <rect x="${streetEndX - 4}" y="${groundY - 25}" width="40" height="15" fill="#EF4444" rx="3" />
-          <text x="${streetEndX + 16}" y="${groundY - 15}" fill="#FFFFFF" font-size="7" font-weight="black" text-anchor="middle">ÖLÜM TUZAĞI</text>
+          <text x="${streetEndX + 16}" y="${groundY - 15}" fill="#FFFFFF" font-size="7" font-weight="black" text-anchor="middle">ENKAZ ALANI</text>
         ` : `
-          <text x="${streetEndX + 16}" y="${groundY - 15}" fill="#10B981" font-size="7" font-weight="bold" text-anchor="middle">GÜVENLİ</text>
+          <text x="${streetEndX + 16}" y="${groundY - 15}" fill="#10B981" font-size="7" font-weight="bold" text-anchor="middle">1.5xH DIŞI</text>
         `}
       </svg>
     `;
@@ -304,18 +304,18 @@ export class BuildingCollapseZoneModal {
           this.structuralType
         );
 
-        const text = `[HASARLI BİNA YIKILMA GÜVENLİK ALANI RAPORU]\n` +
+        const text = `[HASARLI BİNA UZAKLIK NOTU — kaba tahmindir, uzman değerlendirmesi değildir]\n` +
           `• Kat Sayısı: ${a.floors} Kat | Yükseklik (H): ${a.buildingHeightM} Metre\n` +
           `• Yapı Türü: ${a.structureProfile.name}\n` +
-          `• 1.5x USAR ASGARİ GÜVENLİ MESAFE: ${a.safeStandoffRadiusM} Metre\n` +
-          `• 2.0x Ağır Parapet / Cam Fırlama Menzili: ${a.shrapnelRadiusM} Metre\n` +
-          `• Sokak Durumu: ${a.streetWidthM}m Sokak Genişliği -> ${a.isStreetDeathTrap ? 'ÖLÜM TUZAĞI (Sokağın tamamı ve karşı kaldırım enkaz altında kalır!)' : 'Açık alan yeterli'}\n` +
+          `• En az uzaklık (1.5 x H kuralı): ${a.safeStandoffRadiusM} Metre\n` +
+          `• Cam / parça savrulma payı (2 x H): ${a.shrapnelRadiusM} Metre\n` +
+          `• Sokak Durumu: ${a.streetWidthM}m Sokak Genişliği -> ${a.isStreetDeathTrap ? 'Sokak 1.5 x H mesafesinden DAR: karşı kaldırım da enkaz alanında kalabilir' : 'Sokak 1.5 x H mesafesinden geniş görünüyor (tahmin)'}\n` +
           `⚠️ TALİMAT: Binanın altından veya karşı kaldırımdan yürümeyiniz. Acilen sokağa dik ana caddelere veya açık parklara çıkınız!\n` +
           `afet.live ile oluşturuldu.`;
 
         if (navigator.clipboard) {
           navigator.clipboard.writeText(text);
-          btnCopy.innerHTML = `${Icons.checkCircle('w-4 h-4')} Güvenlik Raporu Panoya Kopyalandı!`;
+          btnCopy.innerHTML = `${Icons.checkCircle('w-4 h-4')} Panoya kopyalandı`;
           setTimeout(() => this.render(), 2000);
         }
       });

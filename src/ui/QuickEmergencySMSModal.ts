@@ -1,4 +1,6 @@
 import { Icons } from './icons';
+import { escapeHtml } from '../utils/safeText';
+import { describeLocationForMessage, getLocationSourceLabel, hasGpsFix, hasUsableLocation } from '../utils/locationState';
 
 export class QuickEmergencySMSModal {
   private container: HTMLElement;
@@ -51,16 +53,15 @@ export class QuickEmergencySMSModal {
   }
 
   private generateSMSMessage(): string {
-    const lat = this.userCoords[1].toFixed(5);
-    const lon = this.userCoords[0].toFixed(5);
-    const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
+    // Konum satırı yalnızca gerçek GPS ölçümü varsa koordinat içerir; yoksa adres yazılması istenir.
+    const loc = describeLocationForMessage(this.userCoords);
     const extra = this.customNote.trim() ? ` Not: ${this.customNote.trim()}` : '';
     const batt = this.batteryLevel !== null ? ` (Pil:%${this.batteryLevel})` : '';
 
     if (this.selectedTemplate === 'help') {
-      return `ACİL DURUM! Enkaz altındayım / yardıma ihtiyacım var!${batt} Konumum: Enlem ${lat}, Boylam ${lon} (Harita: ${mapUrl}).${extra} Lütfen AFAD ve 112'ye iletin!`;
+      return `ACİL DURUM! Enkaz altındayım / yardıma ihtiyacım var!${batt} ${loc}${extra} Lütfen 112'ye iletin!`;
     } else {
-      return `Ben ve yanımdakiler GÜVENDEYİZ.${batt} Konumum: ${lat}, ${lon} (Harita: ${mapUrl}).${extra} Şebekeyi meşgul etmemek için SMS atıyorum.`;
+      return `Ben ve yanımdakiler GÜVENDEYİZ.${batt} ${loc}${extra} Şebekeyi meşgul etmemek için SMS atıyorum.`;
     }
   }
 
@@ -114,9 +115,9 @@ export class QuickEmergencySMSModal {
                 <h2 class="text-sm sm:text-base font-bold text-white">
                   Acil Durum SMS & Hatlar
                 </h2>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono">2G / 3G UYUMLU</span>
+                
               </div>
-              <p class="text-[11px] text-gray-400">4G/5G veri şebekesi çöktüğünde SMS paketleri baz istasyonu sinyal kuyruğundan iletilir.</p>
+              <p class="text-[11px] text-gray-400">SMS internet olmadan da gönderilebilir, ama şebeke yoksa gitmez. Teslim garantisi yoktur.</p>
             </div>
           </div>
           <button id="btn-close-sms" type="button" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -126,21 +127,19 @@ export class QuickEmergencySMSModal {
 
         <!-- Scrollable Body -->
         <div class="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
-          <!-- GPS Coords pill -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
-            <div class="flex items-center gap-2 text-emerald-400 font-mono text-xs">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span>GPS: ${lat}, ${lon}</span>
-            </div>
-            <a
-              href="https://maps.google.com/?q=${lat},${lon}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-[11px] text-sky-400 hover:underline flex items-center gap-1"
-            >
-              Haritada Aç ↗
-            </a>
-          </div>
+          <!-- Konum durumu -->
+          ${
+            hasUsableLocation()
+              ? `<div class="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/[0.04] border border-white/10">
+                  <div class="text-xs font-mono ${hasGpsFix() ? 'text-emerald-400' : 'text-amber-300'}">
+                    ${escapeHtml(getLocationSourceLabel())}: ${lat}, ${lon}
+                  </div>
+                  <a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-sky-400 hover:underline shrink-0">Haritada Aç ↗</a>
+                </div>`
+              : `<div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-snug">
+                  ⚠️ <strong>${escapeHtml(getLocationSourceLabel())}.</strong> Mesaja koordinat eklenmedi. Konum iznini açın ya da adresinizi aşağıdaki not alanına yazın.
+                </div>`
+          }
 
           <!-- Template Selector -->
           <div>
@@ -160,7 +159,7 @@ export class QuickEmergencySMSModal {
                 }">
                   🚨 Enkaz Altındayım / Yardım
                 </span>
-                <span class="text-[10px] opacity-80">Kurtarma ekipleri ve yakınlar için acil konum çağrısı.</span>
+                <span class="text-[10px] opacity-80">Yakınlarınıza gönderilecek acil yardım mesajı.</span>
               </button>
 
               <button
@@ -191,7 +190,7 @@ export class QuickEmergencySMSModal {
               id="input-sms-target"
               type="tel"
               placeholder="Örn: 0532 123 45 67 veya boş bırakın"
-              value="${this.targetPhone}"
+              value="${escapeHtml(this.targetPhone)}"
               class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-amber-500"
             />
           </div>
@@ -205,7 +204,7 @@ export class QuickEmergencySMSModal {
               id="input-sms-note"
               type="text"
               placeholder="Örn: Apartman no 14, 2. kat veya İyiyiz toplanma alanındayız"
-              value="${this.customNote}"
+              value="${escapeHtml(this.customNote)}"
               class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-amber-500"
             />
           </div>
@@ -219,18 +218,24 @@ export class QuickEmergencySMSModal {
               </span>
             </div>
             <div id="sms-preview-box" class="p-3 rounded-xl bg-black/40 border border-white/10 text-gray-200 font-mono text-[11.5px] leading-relaxed select-all">
-              ${currentMessage}
+              ${escapeHtml(currentMessage)}
             </div>
           </div>
 
           <!-- Actions -->
           <div class="space-y-2 pt-1">
+            <a
+              href="tel:112"
+              class="w-full py-3 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-xl transition-all active:scale-95"
+            >
+              <span>📞</span> 112'Yİ ARA
+            </a>
             <button
               id="btn-send-sms-112"
               type="button"
-              class="w-full py-3 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-xl shadow-rose-600/30 transition-all active:scale-[0.98]"
+              class="w-full py-2 px-4 rounded-xl font-bold text-[11px] flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95"
             >
-              <span>🚨</span> 112 ACİL MERKEZİNE SMS İLET (112)
+              112'ye SMS taslağı aç (SMS ile 112'ye ulaşım her yerde desteklenmeyebilir)
             </button>
 
             <div class="grid grid-cols-2 gap-2">
@@ -269,11 +274,11 @@ export class QuickEmergencySMSModal {
               </a>
 
               <a
-                href="tel:122"
+                href="tel:168"
                 class="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 hover:bg-amber-500/25 flex flex-col items-center text-center transition-all group"
               >
-                <span class="text-base font-black text-amber-400 group-hover:scale-110 transition-transform">122</span>
-                <span class="text-[10px] font-medium text-gray-300">AFAD</span>
+                <span class="text-base font-black text-amber-400 group-hover:scale-110 transition-transform">168</span>
+                <span class="text-[10px] font-medium text-gray-300">Kızılay</span>
               </a>
 
               <a
